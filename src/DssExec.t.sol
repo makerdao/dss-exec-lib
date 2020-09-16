@@ -2,13 +2,24 @@ pragma solidity ^0.6.7;
 
 import "ds-test/test.sol";
 
-import "./DssLibExec.sol";
+import "./DssExec.sol";
+import "./DssExecLib.sol";
+
+contract DssSpellAction {
+    using DssExecLib for *;
+
+
+
+}
+
+contract DssSpellTest is DssExec("A test dss exec spell", now, true, address(new DssSpellAction())) {
+
+}
 
 contract DssLibExecTest is DSTest {
-    DssLibExec exec;
 
     function setUp() public {
-        exec = new DssLibExec();
+
     }
 
     function testFail_basic_sanity() public {
