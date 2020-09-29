@@ -8,6 +8,7 @@ interface DSPauseAbstract {
 
 contract DssExec {
 
+    // TODO: Can we use the on-chain changelog here to generalize this for mainnet or kovan
     DSPauseAbstract public pause =
         DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
     address         public action;

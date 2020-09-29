@@ -25,6 +25,10 @@ interface Pricing {
     function poke(bytes32) external;
 }
 
+interface DssVat {
+    function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
+}
+
 library DssExecLib {
 
     address constant public MCD_VAT             = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
@@ -59,7 +63,13 @@ library DssExecLib {
     ////  Dripping MCD ////
     ///////////////////////
 
+    function drip() public {
+        Drippable(MCD_POT).drip();
+    }
 
+    function drip(bytes32 ilk) public {
+        Drippable(MCD_JUG).drip(ilk);
+    }
 
     ///////////////////////
     //// Debt Ceilings ////
@@ -93,10 +103,6 @@ library DssExecLib {
         setIlkLine(MCD_VAT, ilk, amount);
     }
 
-    // TODO increaseIlkLine
-
-    // TODO decreaseIlkLine
-
     // Set a collateral debt ceiling
     //
     // @param vat     The address of the Vat core accounting contract
@@ -107,8 +113,11 @@ library DssExecLib {
         require(amount < WAD, "LibDssExec/incorrect-ilk-line-precision");
 
         Fileable(vat).file(ilk, "line", amount * RAD);
-
     }
+
+    // TODO increaseIlkLine
+    
+    // TODO decreaseIlkLine
 
     ////////////////////////
     //// Stability Fees ////
@@ -153,14 +162,23 @@ library DssExecLib {
     //// Dai Savings Rate ////
     //////////////////////////
 
-    // TODO set DSR
-    //    PotAbstract(MCD_POT).file("dsr", DSR_RATE);
+    // Set the Dai Savings Rate
+    //
+    // @param rate The accumulated rate (ex. 4% => 1000000001243680656318820312)
+    //    See setStabilityFee()
+    function setDSR(uint256 rate) public {
+        require(rate >= RAY,     "LibDssExec/dsr-too-low");
+        require(rate <= 2 * RAY, "LibDssExec/dsr-too-high");
 
+        Fileable(MCD_POT).file("dsr", rate);
+    }
+    
     ///////////////////////////////
     //// Collateral Onboarding ////
     ///////////////////////////////
 
     // TODO addCollateral
+    // FIXME in progress
     function addNewCollateral(
         bytes32 ilk,
         address join,

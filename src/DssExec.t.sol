@@ -5,21 +5,25 @@ import "ds-test/test.sol";
 import "./DssExec.sol";
 import "./DssExecLib.sol";
 
-contract DssSpellAction {
+contract DssSpellActionTest {
     using DssExecLib for *;
 
 
 
 }
 
-contract DssSpellTest is DssExec("A test dss exec spell", now, true, address(new DssSpellAction())) {
-
-}
+contract DssSpellTest is DssExec(
+    "A test dss exec spell",                    // Description
+    now + 30 days,                              // Expiration
+    true,                                       // OfficeHours enabled
+    address(new DssSpellActionTest())) {}       // Use the action above
 
 contract DssLibExecTest is DSTest {
 
-    function setUp() public {
+    DssSpellTest dssTest;
 
+    function setUp() public {
+        dssTest = new DssSpellTest();
     }
 
     function testFail_basic_sanity() public {
