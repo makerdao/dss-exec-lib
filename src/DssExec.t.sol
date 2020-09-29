@@ -8,8 +8,10 @@ import "./DssExecLib.sol";
 contract DssSpellActionTest {
     using DssExecLib for *;
 
-
-
+    // Add spell actions here
+    // ex. 
+    //   setGlobalLine(1200 * MILLION);
+    //   setStabilityFee("ETH-A", 1000000001243680656318820312);
 }
 
 contract DssSpellTest is DssExec(
