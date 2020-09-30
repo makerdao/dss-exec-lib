@@ -31,22 +31,20 @@ interface DssVat {
 
 library DssExecLib {
 
-    address constant public MCD_VAT             = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
-    address constant public MCD_CAT             = 0x78F2c2AF65126834c51822F56Be0d7469D7A523E;
-    address constant public MCD_JUG             = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
-    address constant public MCD_POT             = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
+    address constant public MCD_VAT     = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
+    address constant public MCD_CAT     = 0x78F2c2AF65126834c51822F56Be0d7469D7A523E;
+    address constant public MCD_JUG     = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
+    address constant public MCD_POT     = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
+    address constant public MCD_SPOT    = 0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3;
+    address constant public MCD_END     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
 
-    address constant public MCD_SPOT            = 0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3;
-    address constant public MCD_END             = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
+    address constant public FLIPPER_MOM = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
-    address constant public FLIPPER_MOM         = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
-
-    uint256 constant THOUSAND = 10 ** 3;
-    uint256 constant MILLION  = 10 ** 6;
-    uint256 constant BILLION  = 10 ** 9;
-    uint256 constant WAD      = 10 ** 18;
-    uint256 constant RAY      = 10 ** 27;
-    uint256 constant RAD      = 10 ** 45;
+    uint256 constant public THOUSAND = 10 ** 3;
+    uint256 constant public MILLION  = 10 ** 6;
+    uint256 constant public WAD      = 10 ** 18;
+    uint256 constant public RAY      = 10 ** 27;
+    uint256 constant public RAD      = 10 ** 45;
 
     ////////////////////////
     //// Authorizations ////
