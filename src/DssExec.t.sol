@@ -15,13 +15,15 @@ interface Hevm {
     function store(address,bytes32,bytes32) external;
 }
 
-// contract DssLibSpellAction {
-//     function execute() external {
-//         lib.setGlobalLine(1200 * lib.MILLION);
-//     }
+contract DssLibSpellAction {
+    using lib for *;
     
-//     // setStabilityFee("ETH-A", 1000000001243680656318820312);
-// }
+    function execute() external {
+        lib.setGlobalLine(1200 * lib.MILLION);
+    }
+    
+    // setStabilityFee("ETH-A", 1000000001243680656318820312);
+}
 
 contract DssLibSpell is DssExec(
     "A test dss exec spell",                    // Description
