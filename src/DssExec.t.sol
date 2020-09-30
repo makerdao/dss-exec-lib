@@ -1,6 +1,7 @@
 pragma solidity ^0.6.7;
 
 import "ds-test/test.sol";
+import "ds-math/math.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
 
@@ -14,25 +15,21 @@ interface Hevm {
     function store(address,bytes32,bytes32) external;
 }
 
-contract DssSpellActionTest {
-    constructor() public {
-        // Add spell actions here
-        lib.setGlobalLine(1200 * lib.MILLION);
-    }
+// contract DssLibSpellAction {
+//     function execute() external {
+//         lib.setGlobalLine(1200 * lib.MILLION);
+//     }
     
-    // setStabilityFee("ETH-A", 1000000001243680656318820312);
-}
+//     // setStabilityFee("ETH-A", 1000000001243680656318820312);
+// }
 
 contract DssLibSpell is DssExec(
     "A test dss exec spell",                    // Description
     now + 30 days,                              // Expiration
     true,                                       // OfficeHours enabled
-    address(new DssSpellActionTest())) {}       // Use the action above
+    address(new DssLibSpellAction())) {}       // Use the action above
 
-
-// Tests
-
-contract DssLibExecTest is DSTest {
+contract DssLibExecTest is DSTest, DSMath {
 
     struct CollateralValues {
         uint256 line;
@@ -67,7 +64,7 @@ contract DssLibExecTest is DSTest {
 
     Hevm hevm;
 
-    DssLibSpell spell;
+    DssExec spell;
 
     // MAINNET ADDRESSES
     DSPauseAbstract      pause = DSPauseAbstract(    0xbE286431454714F511008713973d3B053A2d38f3);
@@ -95,9 +92,46 @@ contract DssLibExecTest is DSTest {
     uint256 constant THOUSAND = 10 ** 3;
     uint256 constant MILLION  = 10 ** 6;
     uint256 constant BILLION  = 10 ** 9;
-    uint256 constant WAD      = 10 ** 18;
-    uint256 constant RAY      = 10 ** 27;
     uint256 constant RAD      = 10 ** 45;
+
+    // not provided in DSMath
+    function rpow(uint x, uint n, uint b) internal pure returns (uint z) {
+      assembly {
+        switch x case 0 {switch n case 0 {z := b} default {z := 0}}
+        default {
+          switch mod(n, 2) case 0 { z := b } default { z := x }
+          let half := div(b, 2)  // for rounding.
+          for { n := div(n, 2) } n { n := div(n,2) } {
+            let xx := mul(x, x)
+            if iszero(eq(div(xx, x), x)) { revert(0,0) }
+            let xxRound := add(xx, half)
+            if lt(xxRound, xx) { revert(0,0) }
+            x := div(xxRound, b)
+            if mod(n,2) {
+              let zx := mul(z, x)
+              if and(iszero(iszero(x)), iszero(eq(div(zx, x), z))) { revert(0,0) }
+              let zxRound := add(zx, half)
+              if lt(zxRound, zx) { revert(0,0) }
+              z := div(zxRound, b)
+            }
+          }
+        }
+      }
+    }
+    // 10^-5 (tenth of a basis point) as a RAY
+    uint256 TOLERANCE = 10 ** 22;
+
+    function yearlyYield(uint256 duty) public pure returns (uint256) {
+        return rpow(duty, (365 * 24 * 60 *60), RAY);
+    }
+
+    function expectedRate(uint256 percentValue) public pure returns (uint256) {
+        return (100000 + percentValue) * (10 ** 22);
+    }
+
+    function diffCalc(uint256 expectedRate_, uint256 yearlyYield_) public pure returns (uint256) {
+        return (expectedRate_ > yearlyYield_) ? expectedRate_ - yearlyYield_ : yearlyYield_ - expectedRate_;
+    }
 
     function ray(uint wad) internal pure returns (uint) {
         return wad * 10 ** 9;
@@ -109,7 +143,12 @@ contract DssLibExecTest is DSTest {
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
 
-        spell = new DssLibSpell();
+        spell = new DssExec(
+            "A test dss exec spell",                    // Description
+            now + 30 days,                              // Expiration
+            true,                                       // OfficeHours enabled
+            address(new DssLibSpellAction())
+        );
 
         //
         // Test for all system configuration changes
@@ -526,30 +565,34 @@ contract DssLibExecTest is DSTest {
         assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);  // liquidations == 1 => on
     }
 
-    function testFail_basic_sanity() public {
-        assertTrue(false);
-    }
-
-    function test_basic_sanity() public {
-        assertTrue(true);
-    }
-
-    function testFailWrongDay() public {
-        vote();
-        scheduleWaitAndCastFailDay();
-    }
-
-    function testFailTooEarly() public {
-        vote();
-        scheduleWaitAndCastFailEarly();
-    }
-
-    function testFailTooLate() public {
-        vote();
-        scheduleWaitAndCastFailLate();
-    }
-
-    // function test_global_line() public {
-    //     assertEq(Vat(lib.MCD_VAT).Line(), 1200 * MILLION);
+    // function testFail_basic_sanity() public {
+    //     assertTrue(false);
     // }
+
+    // function test_basic_sanity() public {
+    //     assertTrue(true);
+    // }
+
+    // function testFailWrongDay() public {
+    //     vote();
+    //     scheduleWaitAndCastFailDay();
+    // }
+
+    // function testFailTooEarly() public {
+    //     vote();
+    //     scheduleWaitAndCastFailEarly();
+    // }
+
+    // function testFailTooLate() public {
+    //     vote();
+    //     scheduleWaitAndCastFailLate();
+    // }
+
+    function test_global_line() public {
+        vote();
+        scheduleWaitAndCast();
+        assertTrue(spell.done());
+        
+        assertEq(vat.Line(), 1200 * MILLION * RAD);
+    }
 }

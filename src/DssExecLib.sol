@@ -89,7 +89,7 @@ library DssExecLib {
     //   Amount will be converted to the correct internal precision
     function setGlobalLine(address vat, uint256 amount) public {
         // Precision checks
-        require(amount < WAD, "LibDssExec/incorrect-global-Line-precision");
+        require(amount < 0, "LibDssExec/incorrect-global-Line-precision");
 
         Fileable(vat).file("Line", amount * RAD);
     }
