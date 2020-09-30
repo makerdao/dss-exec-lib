@@ -43,6 +43,7 @@ library DssExecLib {
 
     uint256 constant THOUSAND = 10 ** 3;
     uint256 constant MILLION  = 10 ** 6;
+    uint256 constant BILLION  = 10 ** 9;
     uint256 constant WAD      = 10 ** 18;
     uint256 constant RAY      = 10 ** 27;
     uint256 constant RAD      = 10 ** 45;
@@ -116,7 +117,7 @@ library DssExecLib {
     }
 
     // TODO increaseIlkLine
-    
+
     // TODO decreaseIlkLine
 
     ////////////////////////
@@ -149,7 +150,7 @@ library DssExecLib {
     // @param drip    `true` to accumulate stability fees for the collateral
     function setStabilityFee(address jug, bytes32 ilk, uint256 rate, bool drip) public {
         // precision check
-        require((rate >= 10 * RAY) && (rate < 20 * RAY), "LibDssExec/stability-fee-out-of-bounds");
+        require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/stability-fee-out-of-bounds");
 
         if (drip) {
              Drippable(jug).drip(ilk);
@@ -167,12 +168,11 @@ library DssExecLib {
     // @param rate The accumulated rate (ex. 4% => 1000000001243680656318820312)
     //    See setStabilityFee()
     function setDSR(uint256 rate) public {
-        require(rate >= RAY,     "LibDssExec/dsr-too-low");
-        require(rate <= 2 * RAY, "LibDssExec/dsr-too-high");
+        require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/dsr-out-of-bounds");
 
         Fileable(MCD_POT).file("dsr", rate);
     }
-    
+
     ///////////////////////////////
     //// Collateral Onboarding ////
     ///////////////////////////////
