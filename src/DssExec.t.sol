@@ -17,7 +17,7 @@ interface Hevm {
 
 contract DssLibSpellAction {
     using lib for *;
-    
+
     function execute() external {
         lib.setGlobalLine(1200 * lib.MILLION);
     }
@@ -145,12 +145,7 @@ contract DssLibExecTest is DSTest, DSMath {
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
 
-        spell = new DssExec(
-            "A test dss exec spell",                    // Description
-            now + 30 days,                              // Expiration
-            true,                                       // OfficeHours enabled
-            address(new DssLibSpellAction())
-        );
+        spell = new DssLibSpell();
 
         //
         // Test for all system configuration changes
