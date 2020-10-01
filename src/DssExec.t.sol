@@ -8,18 +8,21 @@ import "ds-value/value.sol";
 import "lib/dss-interfaces/src/Interfaces.sol";
 
 import "./DssExec.sol";
-import {DssExecLib as lib} from "./DssExecLib.sol";
+import {DssExecLib} from "./DssExecLib.sol";
 
 interface Hevm {
     function warp(uint256) external;
     function store(address,bytes32,bytes32) external;
 }
 
-contract DssLibSpellAction {
-    using lib for *;
+contract DssLibSpellAction is DssExecLib {
+    // using lib for *;
+    // uint a = 0;
 
     function execute() external {
-        lib.setGlobalLine(1200 * lib.MILLION);
+        // setGlobalLine(           1500 * MILLION);
+        // setIlkLine(     "ETH-A", 600 * MILLION);
+        // setStabilityFee("ETH-A", 1000000001243680656318820312);
     }
     
     // setStabilityFee("ETH-A", 1000000001243680656318820312);
@@ -170,10 +173,10 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         540 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000000705562181084137268,
-            // pct:          2.25 * 1000,
-            duty:         1000000000000000000000000000,
-            pct:          0 * 1000,
+            duty:         1000000000705562181084137268,
+            pct:          2.25 * 1000,
+            // duty:         1000000000000000000000000000,
+            // pct:          0 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          150 * RAY / 100,
@@ -183,13 +186,13 @@ contract DssLibExecTest is DSTest, DSMath {
             liquidations: 1
         });
         afterSpell.collaterals["BAT-A"] = CollateralValues({
-            // line:         10 * MILLION * RAD,
-            line:         5 * MILLION * RAD,
+            line:         10 * MILLION * RAD,
+            // line:         5 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000001319814647332759691,
-            // pct:          4.25 * 1000,
-            duty:         1000000001243680656318820312,
-            pct:          4 * 1000,
+            duty:         1000000001319814647332759691,
+            pct:          4.25 * 1000,
+            // duty:         1000000001243680656318820312,
+            // pct:          4 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          150 * RAY / 100,
@@ -199,13 +202,13 @@ contract DssLibExecTest is DSTest, DSMath {
             liquidations: 1
         });
         afterSpell.collaterals["USDC-A"] = CollateralValues({
-            // line:         485 * MILLION * RAD,
-            line:         400 * MILLION * RAD,
+            line:         485 * MILLION * RAD,
+            // line:         400 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000001319814647332759691,
-            // pct:          4.25 * 1000,
-            duty:         1000000001243680656318820312,
-            pct:          4 * 1000,
+            duty:         1000000001319814647332759691,
+            pct:          4.25 * 1000,
+            // duty:         1000000001243680656318820312,
+            // pct:          4 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          101 * RAY / 100,
@@ -217,10 +220,10 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["USDC-B"] = CollateralValues({
             line:         30 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000012910019978921115695,
-            // pct:          50.25 * 1000,
-            duty:         1000000012857214317438491659,
-            pct:          50 * 1000,
+            duty:         1000000012910019978921115695,
+            pct:          50.25 * 1000,
+            // duty:         1000000012857214317438491659,
+            // pct:          50 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          120 * RAY / 100,
@@ -232,10 +235,10 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["WBTC-A"] = CollateralValues({
             line:         120 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000001319814647332759691,
-            // pct:          4.25 * 1000,
-            duty:         1000000001243680656318820312,
-            pct:          4 * 1000,
+            duty:         1000000001319814647332759691,
+            pct:          4.25 * 1000,
+            // duty:         1000000001243680656318820312,
+            // pct:          4 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          150 * RAY / 100,
@@ -245,13 +248,13 @@ contract DssLibExecTest is DSTest, DSMath {
             liquidations: 1
         });
         afterSpell.collaterals["TUSD-A"] = CollateralValues({
-            // line:         135 * MILLION * RAD,
-            line:         50 * MILLION * RAD,
+            line:         135 * MILLION * RAD,
+            // line:         50 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000001319814647332759691,
-            // pct:          4.25 * 1000,
-            duty:         1000000001243680656318820312,
-            pct:          4 * 1000,
+            duty:         1000000001319814647332759691,
+            pct:          4.25 * 1000,
+            // duty:         1000000001243680656318820312,
+            // pct:          4 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          101 * RAY / 100,
@@ -263,10 +266,10 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["KNC-A"] = CollateralValues({
             line:         5 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000001319814647332759691,
-            // pct:          4.25 * 1000,
-            duty:         1000000001243680656318820312,
-            pct:          4 * 1000,
+            duty:         1000000001319814647332759691,
+            pct:          4.25 * 1000,
+            // duty:         1000000001243680656318820312,
+            // pct:          4 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          175 * RAY / 100,
@@ -278,10 +281,10 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["ZRX-A"] = CollateralValues({
             line:         5 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000001319814647332759691,
-            // pct:          4.25 * 1000,
-            duty:         1000000001243680656318820312,
-            pct:          4 * 1000,
+            duty:         1000000001319814647332759691,
+            pct:          4.25 * 1000,
+            // duty:         1000000001243680656318820312,
+            // pct:          4 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          175 * RAY / 100,
@@ -293,10 +296,10 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["MANA-A"] = CollateralValues({
             line:         1 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000003664330950215446102,
-            // pct:          12.25 * 1000,
-            duty:         1000000003593629043335673582,
-            pct:          12 * 1000,
+            duty:         1000000003664330950215446102,
+            pct:          12.25 * 1000,
+            // duty:         1000000003593629043335673582,
+            // pct:          12 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          175 * RAY / 100,
@@ -308,10 +311,10 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["USDT-A"] = CollateralValues({
             line:         10 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000002513736079215619839,
-            // pct:          8.25 * 1000,
-            duty:         1000000002440418608258400030,
-            pct:          8 * 1000,
+            duty:         1000000002513736079215619839,
+            pct:          8.25 * 1000,
+            // duty:         1000000002440418608258400030,
+            // pct:          8 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          150 * RAY / 100,
@@ -321,13 +324,13 @@ contract DssLibExecTest is DSTest, DSMath {
             liquidations: 1
         });
         afterSpell.collaterals["PAXUSD-A"] = CollateralValues({
-            // line:         60 * MILLION * RAD,
-            line:         30 * MILLION * RAD,
+            line:         60 * MILLION * RAD,
+            // line:         30 * MILLION * RAD,
             dust:         100 * RAD,
-            // duty:         1000000001319814647332759691,
-            // pct:          4.25 * 1000,
-            duty:         1000000001243680656318820312,
-            pct:          4 * 1000,
+            duty:         1000000001319814647332759691,
+            pct:          4.25 * 1000,
+            // duty:         1000000001243680656318820312,
+            // pct:          4 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          101 * RAY / 100,
@@ -585,11 +588,16 @@ contract DssLibExecTest is DSTest, DSMath {
     //     scheduleWaitAndCastFailLate();
     // }
 
-    function test_global_line() public {
+    function testSpellIsCast() public {
         vote();
         scheduleWaitAndCast();
         assertTrue(spell.done());
-        
-        assertEq(vat.Line(), 1200 * MILLION * RAD);
+
+        checkSystemValues(afterSpell);
+
+        bytes32[] memory ilks = reg.list();
+        for(uint i = 0; i < ilks.length; i++) {
+            checkCollateralValues(ilks[i],  afterSpell);
+        }
     }
 }
