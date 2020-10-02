@@ -4,7 +4,6 @@ import "ds-test/test.sol";
 import "ds-math/math.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
-import "ds-chief/chief.sol";
 
 import "dss-interfaces/Interfaces.sol";
 
@@ -36,10 +35,6 @@ contract DssLibSpell is DssExec(
     address(new DssLibSpellAction())) {}       // Use the action above
 
 contract DssLibExecTest is DSTest, DSMath {
-
-    DSToken gov;
-    DSToken iou;
-    DSChief chief;
 
     struct CollateralValues {
         uint256 line;
@@ -403,11 +398,7 @@ contract DssLibExecTest is DSTest, DSMath {
         scheduleWaitAndCast();
         assertTrue(spell.done());
 
-        // checkSystemValues(afterSpell);
-
-        // bytes32[] memory ilks = reg.list();
-        // for(uint i = 0; i < ilks.length; i++) {
-        //     checkCollateralValues(ilks[i],  afterSpell);
-        // }
+        checkSystemValues(afterSpell);
+        checkCollateralValues("ETH-A",  afterSpell);
     }
 }
