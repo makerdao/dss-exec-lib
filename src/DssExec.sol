@@ -1,6 +1,10 @@
 pragma solidity ^0.6.7;
 
-import "lib/dss-interfaces/src/dapp/DSPauseAbstract.sol";
+interface DSPauseAbstract {
+    function delay() external view returns (uint256);
+    function plot(address, bytes32, bytes calldata, uint256) external;
+    function exec(address, bytes32, bytes calldata, uint256) external returns (bytes memory);
+}
 
 contract DssExec {
 

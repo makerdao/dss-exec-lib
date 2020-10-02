@@ -5,7 +5,7 @@ import "ds-math/math.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
 
-import "lib/dss-interfaces/src/Interfaces.sol";
+import "dss-interfaces/Interfaces.sol";
 
 import "./DssExec.sol";
 import {DssExecLib} from "./DssExecLib.sol";
@@ -70,24 +70,6 @@ contract DssLibExecTest is DSTest, DSMath {
     Hevm hevm;
 
     DssExec spell;
-
-    // MAINNET ADDRESSES
-    DSPauseAbstract      pause = DSPauseAbstract(    0xbE286431454714F511008713973d3B053A2d38f3);
-    address         pauseProxy =                     0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB;
-    DSChiefAbstract      chief = DSChiefAbstract(    0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
-    VatAbstract            vat = VatAbstract(        0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
-    VowAbstract            vow = VowAbstract(        0xA950524441892A31ebddF91d3cEEFa04Bf454466);
-    CatAbstract            cat = CatAbstract(        0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
-    PotAbstract            pot = PotAbstract(        0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
-    JugAbstract            jug = JugAbstract(        0x19c0976f590D67707E62397C87829d896Dc0f1F1);
-    SpotAbstract          spot = SpotAbstract(       0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
-
-    DSTokenAbstract        gov = DSTokenAbstract(    0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
-    EndAbstract            end = EndAbstract(        0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5);
-    IlkRegistryAbstract    reg = IlkRegistryAbstract(0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24);
-
-    OsmMomAbstract      osmMom = OsmMomAbstract(     0x76416A4d5190d071bfed309861527431304aA14f);
-    FlipperMomAbstract flipMom = FlipperMomAbstract( 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472);
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -175,204 +157,9 @@ contract DssLibExecTest is DSTest, DSMath {
             dust:         100 * RAD,
             duty:         1000000000705562181084137268,
             pct:          2.25 * 1000,
-            // duty:         1000000000000000000000000000,
-            // pct:          0 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
             mat:          150 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["BAT-A"] = CollateralValues({
-            line:         10 * MILLION * RAD,
-            // line:         5 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001319814647332759691,
-            pct:          4.25 * 1000,
-            // duty:         1000000001243680656318820312,
-            // pct:          4 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          150 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["USDC-A"] = CollateralValues({
-            line:         485 * MILLION * RAD,
-            // line:         400 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001319814647332759691,
-            pct:          4.25 * 1000,
-            // duty:         1000000001243680656318820312,
-            // pct:          4 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          101 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          3 days,
-            liquidations: 0
-        });
-        afterSpell.collaterals["USDC-B"] = CollateralValues({
-            line:         30 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000012910019978921115695,
-            pct:          50.25 * 1000,
-            // duty:         1000000012857214317438491659,
-            // pct:          50 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          120 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          3 days,
-            liquidations: 0
-        });
-        afterSpell.collaterals["WBTC-A"] = CollateralValues({
-            line:         120 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001319814647332759691,
-            pct:          4.25 * 1000,
-            // duty:         1000000001243680656318820312,
-            // pct:          4 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          150 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["TUSD-A"] = CollateralValues({
-            line:         135 * MILLION * RAD,
-            // line:         50 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001319814647332759691,
-            pct:          4.25 * 1000,
-            // duty:         1000000001243680656318820312,
-            // pct:          4 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          101 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          3 days,
-            liquidations: 0
-        });
-        afterSpell.collaterals["KNC-A"] = CollateralValues({
-            line:         5 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001319814647332759691,
-            pct:          4.25 * 1000,
-            // duty:         1000000001243680656318820312,
-            // pct:          4 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          175 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["ZRX-A"] = CollateralValues({
-            line:         5 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001319814647332759691,
-            pct:          4.25 * 1000,
-            // duty:         1000000001243680656318820312,
-            // pct:          4 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          175 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["MANA-A"] = CollateralValues({
-            line:         1 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000003664330950215446102,
-            pct:          12.25 * 1000,
-            // duty:         1000000003593629043335673582,
-            // pct:          12 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          175 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["USDT-A"] = CollateralValues({
-            line:         10 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000002513736079215619839,
-            pct:          8.25 * 1000,
-            // duty:         1000000002440418608258400030,
-            // pct:          8 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          150 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["PAXUSD-A"] = CollateralValues({
-            line:         60 * MILLION * RAD,
-            // line:         30 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001319814647332759691,
-            pct:          4.25 * 1000,
-            // duty:         1000000001243680656318820312,
-            // pct:          4 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          101 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 0
-        });
-        afterSpell.collaterals["COMP-A"] = CollateralValues({
-            line:         7 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001014175731521720677,
-            pct:          3.25 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          175 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["LRC-A"] = CollateralValues({
-            line:         3 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000001014175731521720677,
-            pct:          3.25 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          175 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
-        });
-        afterSpell.collaterals["LINK-A"] = CollateralValues({
-            line:         5 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000000705562181084137268,
-            pct:          2.25 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          175 * RAY / 100,
             beg:          103 * WAD / 100,
             ttl:          6 hours,
             tau:          6 hours,
