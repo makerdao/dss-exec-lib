@@ -146,11 +146,11 @@ contract DssExecLib {
     // @param ilk     The ilk to update (ex. bytes32("ETH-A") )
     // @param rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
     // @param drip    `true` to accumulate stability fees for the collateral
-    function setStabilityFee(address jug, bytes32 ilk, uint256 rate, bool drip) public {
+    function setStabilityFee(address jug, bytes32 ilk, uint256 rate, bool doDrip) public {
         // precision check
         require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/stability-fee-out-of-bounds");
 
-        if (drip) {
+        if (doDrip) {
              Drippable(jug).drip(ilk);
         }
 
