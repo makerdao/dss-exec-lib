@@ -24,7 +24,7 @@ contract DssLibSpellAction is DssExecLib {
         // setIlkLine(     "ETH-A", 600 * MILLION);
         // setStabilityFee("ETH-A", 1000000001243680656318820312);
     }
-    
+
     // setStabilityFee("ETH-A", 1000000001243680656318820312);
 }
 
@@ -32,7 +32,7 @@ contract DssLibSpell is DssExec(
     "A test dss exec spell",                    // Description
     now + 30 days,                              // Expiration
     true,                                       // OfficeHours enabled
-    address(new DssLibSpellAction())) {}       // Use the action above
+    address(new DssLibSpellAction())) {}        // Use the action above
 
 contract DssLibExecTest is DSTest, DSMath {
 
@@ -64,6 +64,8 @@ contract DssLibExecTest is DSTest, DSMath {
         uint256 ilk_count;
         mapping (bytes32 => CollateralValues) collaterals;
     }
+
+    event Debug(uint256);
 
     // MAINNET ADDRESSES
     PauseAbstract        pause = PauseAbstract(      0xbE286431454714F511008713973d3B053A2d38f3);
@@ -156,7 +158,7 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell = SystemValues({
             pot_dsr: 1000000000000000000000000000,
             pot_dsrPct: 0 * 1000,
-            vat_Line: 1416 * MILLION * RAD,
+            vat_Line: 1456 * MILLION * RAD,
             pause_delay: 12 * 60 * 60,
             vow_wait: 561600,
             vow_dump: 250 * WAD,
@@ -173,7 +175,7 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         540 * MILLION * RAD,
             dust:         100 * RAD,
-            duty:         1000000000705562181084137268,
+            duty:         1000000000627937192491029810,
             pct:          2.25 * 1000,
             chop:         113 * WAD / 100,
             dunk:         50 * THOUSAND * RAD,
@@ -336,7 +338,10 @@ contract DssLibExecTest is DSTest, DSMath {
         // make sure duty is less than 1000% APR
         // bc -l <<< 'scale=27; e( l(10.00)/(60 * 60 * 24 * 365) )'
         // 1000000073014496989316680335
+
         assertTrue(duty >= RAY && duty < 1000000073014496989316680335);  // gt 0 and lt 1000%
+        emit Debug(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(values.collaterals[ilk].duty)));
+        emit Debug(TOLERANCE);
         assertTrue(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(values.collaterals[ilk].duty)) <= TOLERANCE);
         assertTrue(values.collaterals[ilk].pct < THOUSAND * THOUSAND);   // check value lt 1000%
 
