@@ -1,6 +1,6 @@
 pragma solidity ^0.6.7;
 
-interface DSPauseAbstract {
+interface PauseAbstract {
     function delay() external view returns (uint256);
     function plot(address, bytes32, bytes calldata, uint256) external;
     function exec(address, bytes32, bytes calldata, uint256) external returns (bytes memory);
@@ -9,8 +9,8 @@ interface DSPauseAbstract {
 contract DssExec {
 
     // TODO: Can we use the on-chain changelog here to generalize this for mainnet or kovan
-    DSPauseAbstract public pause =
-        DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
+    PauseAbstract public pause =
+        PauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
     address         public action;
     bytes32         public tag;
     uint256         public eta;
@@ -57,7 +57,7 @@ contract DssExec {
     function schedule() public {
         require(now <= expiration, "This contract has expired");
         require(eta == 0, "This spell has already been scheduled");
-        eta = now + DSPauseAbstract(pause).delay();
+        eta = now + PauseAbstract(pause).delay();
         pause.plot(action, tag, sig, eta);
     }
 
