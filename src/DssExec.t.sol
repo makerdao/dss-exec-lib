@@ -15,24 +15,24 @@ interface Hevm {
     function store(address,bytes32,bytes32) external;
 }
 
-contract DssLibSpellAction is DssExecLib {
-    // using lib for *;
-    // uint a = 0;
+contract DssLibSpellAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
+    address public immutable lib;
 
-    function execute() external {
-        // setGlobalLine(           1500 * MILLION);
-        // setIlkLine(     "ETH-A", 600 * MILLION);
-        // setStabilityFee("ETH-A", 1000000001243680656318820312);
+    uint256 constant MILLION  = 10 ** 6;
+
+    constructor(address lib_) public {
+        lib = lib_;
     }
 
-    // setStabilityFee("ETH-A", 1000000001243680656318820312);
-}
+    function _dcall(bytes memory data) internal {
+        (bool ok,) = lib.delegatecall(data);
+        require(ok, "fail");
+    }
 
-contract DssLibSpell is DssExec(
-    "A test dss exec spell",                    // Description
-    now + 30 days,                              // Expiration
-    true,                                       // OfficeHours enabled
-    address(new DssLibSpellAction())) {}        // Use the action above
+    function execute() external {
+        _dcall(abi.encodeWithSignature("setGlobalLine(uint256)", 1500 * MILLION));
+    }
+}
 
 contract DssLibExecTest is DSTest, DSMath {
 
@@ -150,7 +150,14 @@ contract DssLibExecTest is DSTest, DSMath {
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
 
-        spell = new DssLibSpell();
+        address lib = address(new DssExecLib()); // This would be deployed only once
+
+        spell = new DssExec(
+            "A test dss exec spell",                    // Description
+            now + 30 days,                              // Expiration
+            true,                                       // OfficeHours enabled
+            address(new DssLibSpellAction(lib))
+        );
 
         //
         // Test for all system configuration changes
@@ -158,7 +165,7 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell = SystemValues({
             pot_dsr: 1000000000000000000000000000,
             pot_dsrPct: 0 * 1000,
-            vat_Line: 1456 * MILLION * RAD,
+            vat_Line: 1500 * MILLION * RAD,
             pause_delay: 12 * 60 * 60,
             vow_wait: 561600,
             vow_dump: 250 * WAD,

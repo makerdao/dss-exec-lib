@@ -29,7 +29,7 @@ interface DssVat {
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
 }
 
-contract DssExecLib {
+library DssExecLib {
 
     address constant public MCD_VAT     = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
     address constant public MCD_CAT     = 0x78F2c2AF65126834c51822F56Be0d7469D7A523E;
