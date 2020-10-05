@@ -8,6 +8,7 @@ import "ds-value/value.sol";
 import "dss-interfaces/Interfaces.sol";
 
 import "./DssExec.sol";
+import "./DssAction.sol";
 import {DssExecLib} from "./DssExecLib.sol";
 
 interface Hevm {
@@ -15,22 +16,20 @@ interface Hevm {
     function store(address,bytes32,bytes32) external;
 }
 
-contract DssLibSpellAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
-    address public immutable lib;
+contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
+
+    // This can be hardcoded away later or can use the chain-log
+    constructor(address lib) DssAction(lib) public {}
 
     uint256 constant MILLION  = 10 ** 6;
 
-    constructor(address lib_) public {
-        lib = lib_;
-    }
+    function execute() external override {
 
-    function _dcall(bytes memory data) internal {
-        (bool ok,) = lib.delegatecall(data);
-        require(ok, "fail");
-    }
+        // Option 1: Use a generic library call
+        libCall("setIlkLine(bytes32,uint256)", "ETH-A", 1000 * MILLION);
 
-    function execute() external {
-        _dcall(abi.encodeWithSignature("setGlobalLine(uint256)", 1500 * MILLION));
+        // Option 2: Custom setter for ease of use.
+        setGlobalLine(1500 * MILLION);
     }
 }
 
