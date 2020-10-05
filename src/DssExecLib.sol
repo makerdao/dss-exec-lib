@@ -46,9 +46,9 @@ library DssExecLib {
     uint256 constant public RAY      = 10 ** 27;
     uint256 constant public RAD      = 10 ** 45;
 
-    ////////////////////////
-    //// Authorizations ////
-    ////////////////////////
+    /**********************/
+    /*** Authorizations ***/
+    /**********************/
 
     function setRely(address base, address ward) public {
         Authorization(base).rely(ward);
@@ -58,9 +58,9 @@ library DssExecLib {
         Authorization(base).deny(ward);
     }
 
-    ///////////////////////
-    ////  Dripping MCD ////
-    ///////////////////////
+    /********************/
+    /*** Dripping MCD ***/
+    /********************/
 
     function drip() public {
         Drippable(MCD_POT).drip();
@@ -70,23 +70,23 @@ library DssExecLib {
         Drippable(MCD_JUG).drip(ilk);
     }
 
-    ///////////////////////
-    //// Debt Ceilings ////
-    ///////////////////////
+    /*********************/
+    /*** Debt Ceilings ***/
+    /*********************/
 
-    // Set the global debt ceiling
-    //
-    // @param amount  The amount to increase or decrease the global Line value
+    /** 
+        @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
     function setGlobalLine(uint256 amount) public {
         setGlobalLine(MCD_VAT, amount);
     }
 
-    // Set the global debt ceiling
-    //
-    // @param vat     The address of the Vat core accounting contract
-    // @param amount  The amount to increase or decrease the global Line value
-    //   Example: 10 million Dai amount will be 10000000
-    //   Amount will be converted to the correct internal precision
+    /**
+        @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
+        @param vat    The address of the Vat core accounting contract
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
     function setGlobalLine(address vat, uint256 amount) public {
         // Precision checks
         require(amount < WAD, "LibDssExec/incorrect-global-Line-precision");
@@ -94,19 +94,21 @@ library DssExecLib {
         Fileable(vat).file("Line", amount * RAD);
     }
 
-    // Set a collateral debt ceiling
-    //
-    // @param ilk     The ilk to update (ex. bytes32("ETH-A") )
-    // @param amount  The amount to set in Dai. (ex. 10m Dai amount == 10000000)
+    /**
+        @dev Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param amount The amount to set in DAI. (ex. 10m DAI amount == 10000000)
+     */
     function setIlkLine(bytes32 ilk, uint256 amount) public {
         setIlkLine(MCD_VAT, ilk, amount);
     }
 
-    // Set a collateral debt ceiling
-    //
-    // @param vat     The address of the Vat core accounting contract
-    // @param ilk     The ilk to update (ex. bytes32("ETH-A") )
-    // @param amount  The amount to set in Dai. (ex. 10m Dai amount == 10000000)
+    /**
+        @dev Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param vat    The address of the Vat core accounting contract
+        @param ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param amount The amount to set in DAI. (ex. 10m DAI amount == 10000000)
+     */
     function setIlkLine(address vat, bytes32 ilk, uint256 amount) public {
         // Precision checks
         require(amount < WAD, "LibDssExec/incorrect-ilk-line-precision");
@@ -118,40 +120,52 @@ library DssExecLib {
 
     // TODO decreaseIlkLine
 
-    ////////////////////////
-    //// Stability Fees ////
-    ////////////////////////
+    /*****************************/
+    /*** Collateral Management ***/
+    /*****************************/
 
-    // Set the stability fee for a given ilk.
-    //
-    // @param ilk     The ilk to update (ex. bytes32("ETH-A") )
-    // @param rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
+    // TODO set vault dust (ilk, dust [RAD])
+
+    // TODO set minimum vault (ilk, hump [RAD])
+    // TODO set auction size (ilk, lump [WAD])
+
+    // TODO spot liquidation ratio (ilk, mat [RAY])
+
+    // TODO poke(spot, ilk)
+
+    // TODO cage
+
+    /**
+        @dev Set the stability fee for a given ilk.
+        @param ilk     The ilk to update (ex. bytes32("ETH-A"))
+        @param rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
+     */
     function setStabilityFee(bytes32 ilk, uint256 rate) public {
         setStabilityFee(MCD_JUG, ilk, rate, true);
     }
 
-    // Set the stability fee for a given ilk.
-    //
-    // Many of the settings that change weekly rely on the rate accumulator
-    // described at https://docs.makerdao.com/smart-contract-modules/rates-module
-    // To check this yourself, use the following rate calculation (example 8%):
-    //
-    // $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
-    //
-    // A table of rates can also be found at:
-    //   https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
-    //
-    //
-    // @param jug     The address of the Jug core accounting contract
-    // @param ilk     The ilk to update (ex. bytes32("ETH-A") )
-    // @param rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
-    // @param drip    `true` to accumulate stability fees for the collateral
+    /**
+        @dev Set the stability fee for a given ilk.
+             Many of the settings that change weekly rely on the rate accumulator
+             described at https://docs.makerdao.com/smart-contract-modules/rates-module
+             To check this yourself, use the following rate calculation (example 8%):
+            
+             $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
+            
+             A table of rates can also be found at:
+             https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
+
+        @param jug    The address of the Jug core accounting contract
+        @param ilk    The ilk to update (ex. bytes32("ETH-A") )
+        @param rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
+        @param doDrip `true` to accumulate stability fees for the collateral
+     */
     function setStabilityFee(address jug, bytes32 ilk, uint256 rate, bool doDrip) public {
         // precision check
         require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/stability-fee-out-of-bounds");
 
         if (doDrip) {
-             Drippable(jug).drip(ilk);
+            Drippable(jug).drip(ilk);
         }
 
         Fileable(jug).file(ilk, "duty", rate);
@@ -219,21 +233,6 @@ library DssExecLib {
 
     // TODO change flip (oldFlip, newFlip)
     // TODO set surplus buffer (hump [RAD])
-
-    ///////////////////////////////
-    //// Collateral Management ////
-    ///////////////////////////////
-
-    // TODO set vault dust (ilk, dust [RAD])
-
-    // TODO set minimum vault (ilk, hump [RAD])
-    // TODO set auction size (ilk, lump [WAD])
-
-    // TODO spot liquidation ratio (ilk, mat [RAY])
-
-    // TODO poke(spot, ilk)
-
-    // TODO cage
 
 
     ///////////////////////////
