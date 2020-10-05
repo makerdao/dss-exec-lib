@@ -26,7 +26,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     function execute() external override {
 
         // Option 1: Use a generic library call
-        libCall("setIlkLine(bytes32,uint256)", "ETH-A", 1000 * MILLION);
+        libCall("setIlkLine(bytes32,uint256)", "ETH-A", 10 * MILLION);
 
         // Option 2: Custom setter for ease of use.
         setGlobalLine(1500 * MILLION);
@@ -179,7 +179,7 @@ contract DssLibExecTest is DSTest, DSMath {
         // Test for all collateral based changes here
         //
         afterSpell.collaterals["ETH-A"] = CollateralValues({
-            line:         540 * MILLION * RAD,
+            line:         10 * MILLION * RAD,
             dust:         100 * RAD,
             duty:         1000000000627937192491029810,
             pct:          2 * 1000,
@@ -351,6 +351,7 @@ contract DssLibExecTest is DSTest, DSMath {
 
         (,,, uint line, uint dust) = vat.ilks(ilk);
         assertEq(line, values.collaterals[ilk].line);
+
         assertTrue((line >= RAD && line < BILLION * RAD) || line == 0);  // eq 0 or gt eq 1 RAD and lt 1B
         assertEq(dust, values.collaterals[ilk].dust);
         assertTrue((dust >= RAD && dust < 10 * THOUSAND * RAD) || dust == 0); // eq 0 or gt eq 1 and lt 10k

@@ -19,7 +19,7 @@ abstract contract DssAction {
     }
 
     function libCall(string memory sig, bytes32 thing, uint256 amount) internal {
-        _dcall(abi.encodeWithSignature(sig, abi.encodePacked(thing, amount)));
+        _dcall(abi.encodeWithSignature(sig, thing, amount));
     }
 
     // TODO Optional explicit setter for usability
