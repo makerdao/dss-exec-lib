@@ -9,8 +9,8 @@
         dunk   x
         mat    x
         beg    x
-        ttl
-        tau
+        ttl    x
+        tau    x
 
         -SYS-
         pot_dsr;     x

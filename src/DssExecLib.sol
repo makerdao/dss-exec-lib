@@ -118,15 +118,15 @@ library DssExecLib {
         @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setGlobalLine(uint256 amount) public {
-        setGlobalLine(MCD_VAT, amount);
+    function setGlobalDebtCeiling(uint256 amount) public {
+        setGlobalDebtCeiling(MCD_VAT, amount);
     }
     /**
         @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param vat    The address of the Vat core accounting contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setGlobalLine(address vat, uint256 amount) public {
+    function setGlobalDebtCeiling(address vat, uint256 amount) public {
         // Precision checks
         require(amount < WAD, "LibDssExec/incorrect-global-Line-precision");
 
@@ -150,8 +150,8 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setIlkLine(bytes32 ilk, uint256 amount) public {
-        setIlkLine(MCD_VAT, ilk, amount);
+    function setIlkDebtCeiling(bytes32 ilk, uint256 amount) public {
+        setIlkDebtCeiling(MCD_VAT, ilk, amount);
     }
     /**
         @dev Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
@@ -159,7 +159,7 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setIlkLine(address vat, bytes32 ilk, uint256 amount) public {
+    function setIlkDebtCeiling(address vat, bytes32 ilk, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-ilk-line-precision");
         Fileable(vat).file(ilk, "line", amount * RAD);
     }
@@ -168,8 +168,8 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setIlkDust(bytes32 ilk, uint256 amount) public {
-        setIlkDust(MCD_VAT, ilk, amount);
+    function setIlkMinVaultAmount(bytes32 ilk, uint256 amount) public {
+        setIlkMinVaultAmount(MCD_VAT, ilk, amount);
     }
     /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
@@ -177,7 +177,7 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setIlkDust(address vat, bytes32 ilk, uint256 amount) public {
+    function setIlkMinVaultAmount(address vat, bytes32 ilk, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-ilk-dust-precision");
         Fileable(vat).file(ilk, "dust", amount * RAD);
     }
@@ -186,8 +186,8 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 10.25% = 10.25 * 1000 = 10250)
      */
-    function setIlkChop(bytes32 ilk, uint256 pct) public {
-        setIlkChop(MCD_CAT, ilk, pct);
+    function setIlkLiquidationPenalty(bytes32 ilk, uint256 pct) public {
+        setIlkLiquidationPenalty(MCD_CAT, ilk, pct);
     }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
@@ -196,7 +196,7 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 10.25% = 10.25 * 1000 = 10250)
      */
-    function setIlkChop(address cat, bytes32 ilk, uint256 pct) public {
+    function setIlkLiquidationPenalty(address cat, bytes32 ilk, uint256 pct) public {
         require(pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
         Fileable(cat).file(ilk, "chop", wdiv(add(pct, 100 * THOUSAND), 100 * THOUSAND));
     }
@@ -205,8 +205,8 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setIlkDunk(bytes32 ilk, uint256 amount) public { 
-        setIlkDunk(MCD_CAT, ilk, amount); 
+    function setIlkMaxLiquidationAmount(bytes32 ilk, uint256 amount) public { 
+        setIlkMaxLiquidationAmount(MCD_CAT, ilk, amount); 
     }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
@@ -214,7 +214,7 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setIlkDunk(address cat, bytes32 ilk, uint256 amount) public {
+    function setIlkMaxLiquidationAmount(address cat, bytes32 ilk, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
         Fileable(cat).file(ilk, "dunk", amount * RAD);
     }
@@ -223,8 +223,8 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 150% = 150 * 1000 = 150000)
      */
-    function setIlkMat(bytes32 ilk, uint256 pct) public {
-        setIlkMat(MCD_SPOT, ilk, pct);
+    function setIlkLiquidationRatio(bytes32 ilk, uint256 pct) public {
+        setIlkLiquidationRatio(MCD_SPOT, ilk, pct);
     }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
@@ -233,7 +233,7 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 150% = 150 * 1000 = 150000)
      */
-    function setIlkMat(address spot, bytes32 ilk, uint256 pct) public {
+    function setIlkLiquidationRatio(address spot, bytes32 ilk, uint256 pct) public {
         require(pct < 1 * MILLION, "LibDssExec/incorrect-ilk-mat-precision"); // Fails if pct >= 1000%
         Fileable(spot).file(ilk, "mat", rdiv(pct, 100 * THOUSAND));
     }
@@ -242,9 +242,9 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
      */
-    function setIlkBeg(bytes32 ilk, uint256 pct) public {
+    function setIlkMinAuctionBidIncrease(bytes32 ilk, uint256 pct) public {
         (,,,, address flip,,,) = RegistryLike(ILK_REG).ilkData(ilk);
-        setIlkBeg(flip, pct);
+        setIlkMinAuctionBidIncrease(flip, pct);
     }
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
@@ -252,7 +252,7 @@ library DssExecLib {
         @param flip   The address of the ilk's flip core accounting contract
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
      */
-    function setIlkBeg(address flip, uint256 pct) public {
+    function setIlkMinAuctionBidIncrease(address flip, uint256 pct) public {
         require(pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
         Fileable(flip).file("beg", wdiv(pct, 100 * THOUSAND));
     }
@@ -261,16 +261,16 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param length Amount of time for bids.
      */
-    function setIlkTtl(bytes32 ilk, uint256 length) public {
+    function setIlkBidDuration(bytes32 ilk, uint256 length) public {
         (,,,, address flip,,,) = RegistryLike(ILK_REG).ilkData(ilk);
-        setIlkTtl(flip, length); 
+        setIlkBidDuration(flip, length); 
     }
     /**
         @dev Set bid duration for a collateral type.
         @param flip   The address of the ilk's flip core accounting contract
         @param length Amount of time for bids.
      */
-    function setIlkTtl(address flip, uint256 length) public {
+    function setIlkBidDuration(address flip, uint256 length) public {
         Fileable(flip).file("ttl", length);
     }
     /**
@@ -278,16 +278,16 @@ library DssExecLib {
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param length Amount of time for auctions.
      */
-    function setIlkTau(bytes32 ilk, uint256 length) public {
+    function setIlkAuctionDuration(bytes32 ilk, uint256 length) public {
         (,,,, address flip,,,) = RegistryLike(ILK_REG).ilkData(ilk);
-        setIlkTau(flip, length);
+        setIlkAuctionDuration(flip, length);
     }
     /**
         @dev Set auction duration for a collateral type.
         @param flip   The address of the ilk's flip core accounting contract
         @param length Amount of time for auctions.
      */
-    function setIlkTau(address flip, uint256 length) public {
+    function setIlkAuctionDuration(address flip, uint256 length) public {
         Fileable(flip).file("tau", length);
     }
 
