@@ -1,0 +1,36 @@
+/**
+        TODO:
+
+        -ILK-
+        line   x 
+        dust   x
+        duty   x 
+        chop   x
+        dunk   x
+        mat    x
+        beg    x
+        ttl    x
+        tau    x
+
+        -SYS-
+        pot_dsr;     x
+        vat_Line;    x
+        pause_delay;
+        vow_wait;
+        vow_dump;
+        vow_sump;
+        vow_bump;
+        vow_hump;
+        cat_box;
+        ilk_count;
+     */
+
+
+    // TODO increaseIlkLine
+    // TODO decreaseIlkLine
+    // TODO set vault dust (ilk, dust [RAD])
+    // TODO set minimum vault (ilk, hump [RAD])
+    // TODO set auction size (ilk, lump [WAD])
+    // TODO spot liquidation ratio (ilk, mat [RAY])
+    // TODO poke(spot, ilk)
+    // TODO cage
