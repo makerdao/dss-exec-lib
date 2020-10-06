@@ -26,11 +26,16 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     function execute() external override {
 
         // Option 1: Use a generic library call
-        libCall("setIlkLine(bytes32,uint256)", "ETH-A", 10 * MILLION);
+        libCall("setIlkDebtCeiling(bytes32,uint256)", "ETH-A", 10 * MILLION);
 
         // Option 2: Custom setter for ease of use.
-        setGlobalLine(1500 * MILLION);
+        setGlobalDebtCeiling(1500 * MILLION);
     }
+}
+
+contract DssActionBase is DssAction {
+    constructor(address lib) DssAction(lib) public {}
+    function execute() external override {}
 }
 
 contract DssLibExecTest is DSTest, DSMath {
@@ -89,6 +94,7 @@ contract DssLibExecTest is DSTest, DSMath {
     Hevm hevm;
 
     DssExec spell;
+    address execlib;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -149,13 +155,13 @@ contract DssLibExecTest is DSTest, DSMath {
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
 
-        address lib = address(new DssExecLib()); // This would be deployed only once
+        execlib = address(new DssExecLib()); // This would be deployed only once
 
         spell = new DssExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
             true,                                       // OfficeHours enabled
-            address(new DssLibSpellAction(lib))
+            address(new DssLibSpellAction(execlib))
         );
 
         //
@@ -402,6 +408,17 @@ contract DssLibExecTest is DSTest, DSMath {
     //     vote();
     //     scheduleWaitAndCastFailLate();
     // }
+
+    function testLibDeployment() public {
+        // dapp test output will display approximate deployment cost
+        new DssExecLib();
+    }
+
+    function testLibBaseActionDeployment() public {
+        // dapp test output will display approximate deployment cost
+        //   of just the base contract
+        new DssActionBase(address(execlib));
+    }
 
     function testSpellIsCast() public {
         vote();
