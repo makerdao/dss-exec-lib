@@ -33,15 +33,15 @@ abstract contract DssAction {
         _dcall(abi.encodeWithSignature(sig, addr, amount));
     }
 
-    function setGlobalLine(uint256 amount) internal {
-        libCall("setGlobalLine(uint256)", amount);
+    function setGlobalDebtCeiling(uint256 amount) internal {
+        libCall("setGlobalDebtCeiling(uint256)", amount);
     }
 
-    function setIlkLine(bytes32 ilk, uint256 amount) internal {
+    function setIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
         libCall("setIlkLine(bytes32,uint256)", ilk, amount);
     }
 
-    function setDsr(uint256 rate) internal {
+    function setDSR(uint256 rate) internal {
         libCall("setDSR(uint256)", rate);
     }
 

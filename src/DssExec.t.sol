@@ -26,10 +26,10 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     function execute() external override {
 
         // Option 1: Use a generic library call
-        libCall("setIlkLine(bytes32,uint256)", "ETH-A", 10 * MILLION);
+        libCall("setIlkDebtCeiling(bytes32,uint256)", "ETH-A", 10 * MILLION);
 
         // Option 2: Custom setter for ease of use.
-        setGlobalLine(1500 * MILLION);
+        setGlobalDebtCeiling(1500 * MILLION);
     }
 }
 
