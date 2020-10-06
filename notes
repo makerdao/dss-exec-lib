@@ -34,3 +34,7 @@
     // TODO spot liquidation ratio (ilk, mat [RAY])
     // TODO poke(spot, ilk)
     // TODO cage
+    
+    // TODO Freeze oracles
+    // TODO Drop plotted plans
+    // TODO trigger ES?
