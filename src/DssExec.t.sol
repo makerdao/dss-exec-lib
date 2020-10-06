@@ -403,6 +403,11 @@ contract DssLibExecTest is DSTest, DSMath {
     //     scheduleWaitAndCastFailLate();
     // }
 
+    function testDeployment() public {
+        // dapp test output will display approximate deployment cost
+        new DssExecLib();
+    }
+
     function testSpellIsCast() public {
         vote();
         scheduleWaitAndCast();
