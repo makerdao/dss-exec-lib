@@ -68,21 +68,17 @@ library DssExecLib {
         require((z = x - y) <= x);
     }
     function mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
+        require(y == 0 || (z = x * y) / y == x);
     }
-    //rounds to zero if x*y < WAD / 2
     function wmul(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, y), WAD / 2) / WAD;
     }
-    //rounds to zero if x*y < WAD / 2
     function rmul(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, y), RAY / 2) / RAY;
     }
-    //rounds to zero if x*y < WAD / 2
     function wdiv(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, WAD), y / 2) / y;
     }
-    //rounds to zero if x*y < RAY / 2
     function rdiv(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, RAY), y / 2) / y;
     }
@@ -91,24 +87,62 @@ library DssExecLib {
     /*** Authorizations ***/
     /**********************/
 
-    function setRely(address base, address ward) public {
+    /**
+        @dev Give an address authorization to perform auth actions on the contract.
+        @param base   The address of the contract where the authorization will be set
+        @param ward   Address to be authorized
+    */
+    function authorize(address base, address ward) public {
         Authorization(base).rely(ward);
     }
-
-    function setDeny(address base, address ward) public {
+    /**
+        @dev Revoke contract authorization from an address.
+        @param base   The address of the contract where the authorization will be revoked
+        @param what   Address to be deauthorized
+    */
+    function deauthorize(address base, address ward) public {
         Authorization(base).deny(ward);
     }
 
-    /********************/
-    /*** Dripping MCD ***/
-    /********************/
+    /**************************/
+    /*** Accumulating Rates ***/
+    /**************************/
 
-    function drip() public {
+    /**
+        @dev Update rate accumulation for the Dai Savings Rate (DSR).
+    */
+    function accumulateDSR() public {
         Drippable(MCD_POT).drip();
     }
-
-    function drip(bytes32 ilk) public {
+    /**
+        @dev Update rate accumulation for the stability fees of a given collateral type.
+        @param ilk   Collateral type
+    */
+    function accumulateCollateralStabilityFees(bytes32 ilk) public {
         Drippable(MCD_JUG).drip(ilk);
+    }
+
+    /****************************/
+    /*** System Configuration ***/
+    /****************************/
+    /**
+        @dev Set a contract in another contract, defining the relationship (ex. set a new Cat contract in the Vat)
+        @param base   The address of the contract where the new contract address will be filed
+        @param what   Name of contract to file
+        @param addr   Address of contract to file
+    */
+    function setContract(address base, bytes32 what, address addr) public {
+        Fileable(base).file(what, addr);
+    }
+    /**
+        @dev Set a contract in another contract, defining the relationship (ex. set a new Cat contract in the Vat)
+        @param base   The address of the contract where the new contract address will be filed
+        @param ilk    Collateral type
+        @param what   Name of contract to file
+        @param addr   Address of contract to file
+    */
+    function setContract(address base, bytes32 ilk, bytes32 what, address addr) public {
+        Fileable(base).file(ilk, what, addr);
     }
 
     /******************************/
@@ -117,13 +151,13 @@ library DssExecLib {
     /** 
         @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setGlobalDebtCeiling(uint256 amount) public { setGlobalDebtCeiling(MCD_VAT, amount); }
     /**
         @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param vat    The address of the Vat core accounting contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setGlobalDebtCeiling(address vat, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-global-Line-precision");
         Fileable(vat).file("Line", amount * RAD);
@@ -131,7 +165,7 @@ library DssExecLib {
     /**
         @dev Set the Dai Savings Rate.
         @param rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
-     */
+    */
     function setDSR(uint256 rate) public {
         require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/dsr-out-of-bounds");
         Fileable(MCD_POT).file("dsr", rate);
@@ -139,13 +173,13 @@ library DssExecLib {
     /** 
         @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setSurplusAuctionAmount(uint256 amount) public { setSurplusAuctionAmount(MCD_VOW, amount); }
     /** 
         @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setSurplusAuctionAmount(address vow, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-bump-precision");
         Fileable(vow).file("bump", amount * RAD);
@@ -153,13 +187,13 @@ library DssExecLib {
     /** 
         @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setSurplusBuffer(uint256 amount) public { setSurplusBuffer(MCD_VOW, amount); }
     /** 
         @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setSurplusBuffer(address vow, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-hump-precision");
         Fileable(vow).file("hump", amount * RAD);
@@ -214,26 +248,26 @@ library DssExecLib {
     /** 
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
         @param length Duration in seconds
-     */
+    */
     function setDebtAuctionDelay(uint256 length) public { setDebtAuctionDelay(MCD_VOW, length); }
     /** 
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
         @param vow    The address of the Vow core contract
         @param length Duration in seconds
-     */
+    */
     function setDebtAuctionDelay(address vow, uint256 length) public {
         Fileable(vow).file("wait", length);
     }
     /** 
         @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setDebtAuctionDAIAmount(uint256 amount) public { setDebtAuctionDAIAmount(MCD_VOW, amount); }
     /** 
         @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setDebtAuctionDAIAmount(address vow, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-sump-precision");
         Fileable(vow).file("sump", amount * RAD);
@@ -241,13 +275,13 @@ library DssExecLib {
     /** 
         @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setDebtAuctionMKRAmount(uint256 amount) public { setDebtAuctionMKRAmount(MCD_VOW, amount); }
     /** 
         @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in MKR (ex. 250 MKR amount == 250)
-     */
+    */
     function setDebtAuctionMKRAmount(address vow, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
         Fileable(vow).file("dump", amount * WAD);
@@ -303,7 +337,7 @@ library DssExecLib {
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
-     */
+    */
     function setDebtAuctionMKRIncreaseRate(uint256 amount) public { setDebtAuctionMKRIncreaseRate(MCD_VOW, amount); }
     /** 
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
@@ -311,25 +345,25 @@ library DssExecLib {
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 50% to 150% WAD needed for pad)
         @param flop   The address of the Flopper core contract
         @param pct    The pct to set in integer form (x1000). (ex. 50% = 50 * 1000 = 50000)
-     */
+    */
     function setDebtAuctionMKRIncreaseRate(address vow, uint256 amount) public {
         Fileable(flop).file("pad", wdiv(add(pct, 100 * THOUSAND), 100 * THOUSAND));
     }
     /** 
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setMaxTotalDAILiquidationAmount(uint256 amount) public { setMaxTotalDAILiquidationAmount(MCD_CAT, amount); }
     /** 
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param cat    The address of the Cat core contract
         @param amount The amount to set in MKR (ex. 250 MKR amount == 250)
-     */
+    */
     function setMaxTotalDAILiquidationAmount(address cat, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
         Fileable(cat).file("box", amount * WAD);
     }
-
+    
     /*****************************/
     /*** Collateral Management ***/
     /*****************************/

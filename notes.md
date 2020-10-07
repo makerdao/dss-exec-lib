@@ -44,18 +44,18 @@
     FILE functions
 
     cat
-        vow
+        vow         x
         box         x
         ilk - chop  x
         ilk - dunk  x
-        ilk - flip
+        ilk - flip  x
     end
-        vat
-        cat
-        vow
-        pot
-        spot
-        wait
+        vat  x
+        cat  x
+        vow  x
+        pot  x
+        spot x
+        wait (RISK)
     flap
         beg   x
         ttl   x
@@ -64,7 +64,7 @@
         beg   x
         ttl   x
         tau   x
-        cat
+        cat   x
     flop
         beg   x
         pad   x
@@ -73,17 +73,17 @@
     jug
         duty  x
         base
-        vow
+        vow   x
     pot
         dsr   x
-        vow
+        vow   x
     spot
-        pip
+        pip   x
         par
         ilk - mat   x
     vat
         Line        x
-        ilk - spot
+        ilk - spot  x
         ilk - line  x
         ilk - dust  x
     vow
@@ -92,8 +92,8 @@
         sump     x
         dump     x
         hump     x
-        flapper
-        flooper
+        flapper  x
+        flooper  x
 
 
                 
