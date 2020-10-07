@@ -38,3 +38,62 @@
     // TODO Freeze oracles
     // TODO Drop plotted plans
     // TODO trigger ES?
+
+
+
+    FILE functions
+
+    cat
+        vow
+        box         x
+        ilk - chop  x
+        ilk - dunk  x
+        ilk - flip
+    end
+        vat
+        cat
+        vow
+        pot
+        spot
+        wait
+    flap
+        beg   x
+        ttl   x
+        tau   x
+    flip
+        beg   x
+        ttl   x
+        tau   x
+        cat
+    flop
+        beg   x
+        pad   x
+        ttl   x
+        tau   x
+    jug
+        duty  x
+        base
+        vow
+    pot
+        dsr   x
+        vow
+    spot
+        pip
+        par
+        ilk - mat   x
+    vat
+        Line        x
+        ilk - spot
+        ilk - line  x
+        ilk - dust  x
+    vow
+        wait     x
+        bump     x
+        sump     x
+        dump     x
+        hump     x
+        flapper
+        flooper
+
+
+                

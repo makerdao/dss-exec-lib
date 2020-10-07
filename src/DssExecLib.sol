@@ -118,28 +118,216 @@ library DssExecLib {
         @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
-    function setGlobalDebtCeiling(uint256 amount) public {
-        setGlobalDebtCeiling(MCD_VAT, amount);
-    }
+    function setGlobalDebtCeiling(uint256 amount) public { setGlobalDebtCeiling(MCD_VAT, amount); }
     /**
         @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param vat    The address of the Vat core accounting contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
      */
     function setGlobalDebtCeiling(address vat, uint256 amount) public {
-        // Precision checks
         require(amount < WAD, "LibDssExec/incorrect-global-Line-precision");
-
         Fileable(vat).file("Line", amount * RAD);
     }
     /**
         @dev Set the Dai Savings Rate.
-        @param rate The accumulated rate (ex. 4% => 1000000001243680656318820312)
+        @param rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
      */
     function setDSR(uint256 rate) public {
         require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/dsr-out-of-bounds");
-
         Fileable(MCD_POT).file("dsr", rate);
+    }
+    /** 
+        @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setSurplusAuctionAmount(uint256 amount) public { setSurplusAuctionAmount(MCD_VOW, amount); }
+    /** 
+        @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
+        @param vow    The address of the Vow core contract
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setSurplusAuctionAmount(address vow, uint256 amount) public {
+        require(amount < WAD, "LibDssExec/incorrect-vow-bump-precision");
+        Fileable(vow).file("bump", amount * RAD);
+    }
+    /** 
+        @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setSurplusBuffer(uint256 amount) public { setSurplusBuffer(MCD_VOW, amount); }
+    /** 
+        @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
+        @param vow    The address of the Vow core contract
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setSurplusBuffer(address vow, uint256 amount) public {
+        require(amount < WAD, "LibDssExec/incorrect-vow-hump-precision");
+        Fileable(vow).file("hump", amount * RAD);
+    }
+    /**
+        @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
+        @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+    */
+    function setMinSurplusAuctionBidIncrease(uint256 pct) public {
+        setMinSurplusAuctionBidIncrease(MCD_FLAP, pct);
+    }
+    /**
+        @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
+        @dev Equation used for conversion is pct * WAD / 100,000
+        @param flap   The address of the Flapper core contract
+        @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+    */
+    function setMinSurplusAuctionBidIncrease(address flap, uint256 pct) public {
+        require(pct < 100 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        Fileable(flap).file("beg", wdiv(pct, 100 * THOUSAND));
+    }
+    /**
+        @dev Set bid duration for surplus auctions.
+        @param length Amount of time for bids.
+    */
+    function setSurplusAuctionBidDuration(uint256 length) public {
+        setSurplusAuctionBidDuration(MCD_FLAP, length); 
+    }
+    /**
+        @dev Set bid duration for surplus auctions.
+        @param flap   The address of the Flapper core contract
+        @param length Amount of time for bids.
+    */
+    function setSurplusAuctionBidDuration(address flap, uint256 length) public {
+        Fileable(flap).file("ttl", length);
+    }
+    /**
+        @dev Set total auction duration for surplus auctions.
+        @param length Amount of time for auctions.
+    */
+    function setSurplusAuctionDuration(bytes32 ilk, uint256 length) public {
+        setSurplusAuctionDuration(MCD_FLAP, length);
+    }
+    /**
+        @dev Set total auction duration for surplus auctions.
+        @param flap   The address of the Flapper core contract
+        @param length Amount of time for auctions.
+    */
+    function setSurplusAuctionDuration(address flap, uint256 length) public {
+        Fileable(flap).file("tau", length);
+    }
+    /** 
+        @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
+        @param length Duration in seconds
+     */
+    function setDebtAuctionDelay(uint256 length) public { setDebtAuctionDelay(MCD_VOW, length); }
+    /** 
+        @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
+        @param vow    The address of the Vow core contract
+        @param length Duration in seconds
+     */
+    function setDebtAuctionDelay(address vow, uint256 length) public {
+        Fileable(vow).file("wait", length);
+    }
+    /** 
+        @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setDebtAuctionDAIAmount(uint256 amount) public { setDebtAuctionDAIAmount(MCD_VOW, amount); }
+    /** 
+        @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
+        @param vow    The address of the Vow core contract
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setDebtAuctionDAIAmount(address vow, uint256 amount) public {
+        require(amount < WAD, "LibDssExec/incorrect-vow-sump-precision");
+        Fileable(vow).file("sump", amount * RAD);
+    }
+    /** 
+        @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setDebtAuctionMKRAmount(uint256 amount) public { setDebtAuctionMKRAmount(MCD_VOW, amount); }
+    /** 
+        @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
+        @param vow    The address of the Vow core contract
+        @param amount The amount to set in MKR (ex. 250 MKR amount == 250)
+     */
+    function setDebtAuctionMKRAmount(address vow, uint256 amount) public {
+        require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
+        Fileable(vow).file("dump", amount * WAD);
+    }
+    /**
+        @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
+        @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+    */
+    function setMinDebtAuctionBidIncrease(uint256 pct) public {
+        setMinDebtAuctionBidIncrease(MCD_FLOP, pct);
+    }
+    /**
+        @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
+        @dev Equation used for conversion is pct * WAD / 100,000
+        @param flop   The address of the Flopper core contract
+        @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+    */
+    function setMinDebtAuctionBidIncrease(address flop, uint256 pct) public {
+        require(pct < 100 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        Fileable(flop).file("beg", wdiv(pct, 100 * THOUSAND));
+    }
+    /**
+        @dev Set bid duration for debt auctions.
+        @param length Amount of time for bids.
+    */
+    function setDebtAuctionBidDuration(uint256 length) public {
+        setDebtAuctionBidDuration(MCD_FLOP, length); 
+    }
+    /**
+        @dev Set bid duration for debt auctions.
+        @param flop   The address of the Flopper core contract
+        @param length Amount of time for bids.
+    */
+    function setDebtAuctionBidDuration(address flop, uint256 length) public {
+        Fileable(flop).file("ttl", length);
+    }
+    /**
+        @dev Set total auction duration for debt auctions.
+        @param length Amount of time for auctions.
+    */
+    function setDebtAuctionDuration(bytes32 ilk, uint256 length) public {
+        setDebtAuctionDuration(MCD_FLOP, length);
+    }
+    /**
+        @dev Set total auction duration for debt auctions.
+        @param flop   The address of the Flopper core contract
+        @param length Amount of time for auctions.
+    */
+    function setDebtAuctionDuration(address flop, uint256 length) public {
+        Fileable(flop).file("tau", length);
+    }
+    /** 
+        @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
+        @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
+        @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+     */
+    function setDebtAuctionMKRIncreaseRate(uint256 amount) public { setDebtAuctionMKRIncreaseRate(MCD_VOW, amount); }
+    /** 
+        @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
+        @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
+        @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 50% to 150% WAD needed for pad)
+        @param flop   The address of the Flopper core contract
+        @param pct    The pct to set in integer form (x1000). (ex. 50% = 50 * 1000 = 50000)
+     */
+    function setDebtAuctionMKRIncreaseRate(address vow, uint256 amount) public {
+        Fileable(flop).file("pad", wdiv(add(pct, 100 * THOUSAND), 100 * THOUSAND));
+    }
+    /** 
+        @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
+        @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
+     */
+    function setMaxTotalDAILiquidationAmount(uint256 amount) public { setMaxTotalDAILiquidationAmount(MCD_CAT, amount); }
+    /** 
+        @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
+        @param cat    The address of the Cat core contract
+        @param amount The amount to set in MKR (ex. 250 MKR amount == 250)
+     */
+    function setMaxTotalDAILiquidationAmount(address cat, uint256 amount) public {
+        require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
+        Fileable(cat).file("box", amount * WAD);
     }
 
     /*****************************/
@@ -149,14 +337,14 @@ library DssExecLib {
         @dev Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setIlkDebtCeiling(bytes32 ilk, uint256 amount) public { setIlkDebtCeiling(MCD_VAT, ilk, amount); }
     /**
         @dev Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
         @param vat    The address of the Vat core accounting contract
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setIlkDebtCeiling(address vat, bytes32 ilk, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-ilk-line-precision");
         Fileable(vat).file(ilk, "line", amount * RAD);
@@ -165,14 +353,14 @@ library DssExecLib {
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setIlkMinVaultAmount(bytes32 ilk, uint256 amount) public { setIlkMinVaultAmount(MCD_VAT, ilk, amount); }
     /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
         @param vat    The address of the Vat core accounting contract
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setIlkMinVaultAmount(address vat, bytes32 ilk, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-ilk-dust-precision");
         Fileable(vat).file(ilk, "dust", amount * RAD);
@@ -181,7 +369,7 @@ library DssExecLib {
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 10.25% = 10.25 * 1000 = 10250)
-     */
+    */
     function setIlkLiquidationPenalty(bytes32 ilk, uint256 pct) public { setIlkLiquidationPenalty(MCD_CAT, ilk, pct); }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
@@ -189,7 +377,7 @@ library DssExecLib {
         @param cat    The address of the Cat core accounting contract (will need to revisit for LIQ-2.0)
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 10.25% = 10.25 * 1000 = 10250)
-     */
+    */
     function setIlkLiquidationPenalty(address cat, bytes32 ilk, uint256 pct) public {
         require(pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
         Fileable(cat).file(ilk, "chop", wdiv(add(pct, 100 * THOUSAND), 100 * THOUSAND));
@@ -198,14 +386,14 @@ library DssExecLib {
         @dev Set max DAI amount for liquidation per vault for a collateral type. Amount will be converted to the correct internal precision.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setIlkMaxLiquidationAmount(bytes32 ilk, uint256 amount) public { setIlkMaxLiquidationAmount(MCD_CAT, ilk, amount); }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
         @param cat    The address of the Cat core accounting contract (will need to revisit for LIQ-2.0)
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
-     */
+    */
     function setIlkMaxLiquidationAmount(address cat, bytes32 ilk, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
         Fileable(cat).file(ilk, "dunk", amount * RAD);
@@ -214,7 +402,7 @@ library DssExecLib {
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 150% = 150 * 1000 = 150000)
-     */
+    */
     function setIlkLiquidationRatio(bytes32 ilk, uint256 pct) public { setIlkLiquidationRatio(MCD_SPOT, ilk, pct); }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
@@ -222,7 +410,7 @@ library DssExecLib {
         @param spot   The address of the Spot core accounting contract
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 150% = 150 * 1000 = 150000)
-     */
+    */
     function setIlkLiquidationRatio(address spot, bytes32 ilk, uint256 pct) public {
         require(pct < 1 * MILLION, "LibDssExec/incorrect-ilk-mat-precision"); // Fails if pct >= 1000%
         Fileable(spot).file(ilk, "mat", rdiv(pct, 100 * THOUSAND));
@@ -231,7 +419,7 @@ library DssExecLib {
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
-     */
+    */
     function setIlkMinAuctionBidIncrease(bytes32 ilk, uint256 pct) public {
         (,,,, address flip,,,) = RegistryLike(ILK_REG).ilkData(ilk);
         setIlkMinAuctionBidIncrease(flip, pct);
@@ -241,7 +429,7 @@ library DssExecLib {
         @dev Equation used for conversion is pct * WAD / 100,000
         @param flip   The address of the ilk's flip core accounting contract
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
-     */
+    */
     function setIlkMinAuctionBidIncrease(address flip, uint256 pct) public {
         require(pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
         Fileable(flip).file("beg", wdiv(pct, 100 * THOUSAND));
@@ -250,7 +438,7 @@ library DssExecLib {
         @dev Set bid duration for a collateral type.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param length Amount of time for bids.
-     */
+    */
     function setIlkBidDuration(bytes32 ilk, uint256 length) public {
         (,,,, address flip,,,) = RegistryLike(ILK_REG).ilkData(ilk);
         setIlkBidDuration(flip, length); 
@@ -259,7 +447,7 @@ library DssExecLib {
         @dev Set bid duration for a collateral type.
         @param flip   The address of the ilk's flip core accounting contract
         @param length Amount of time for bids.
-     */
+    */
     function setIlkBidDuration(address flip, uint256 length) public {
         Fileable(flip).file("ttl", length);
     }
@@ -267,7 +455,7 @@ library DssExecLib {
         @dev Set auction duration for a collateral type.
         @param ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param length Amount of time for auctions.
-     */
+    */
     function setIlkAuctionDuration(bytes32 ilk, uint256 length) public {
         (,,,, address flip,,,) = RegistryLike(ILK_REG).ilkData(ilk);
         setIlkAuctionDuration(flip, length);
@@ -276,47 +464,39 @@ library DssExecLib {
         @dev Set auction duration for a collateral type.
         @param flip   The address of the ilk's flip core accounting contract
         @param length Amount of time for auctions.
-     */
+    */
     function setIlkAuctionDuration(address flip, uint256 length) public {
         Fileable(flip).file("tau", length);
     }
-
-
     /**
         @dev Set the stability fee for a given ilk.
         @param ilk     The ilk to update (ex. bytes32("ETH-A"))
         @param rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
-     */
+    */
     function setStabilityFee(bytes32 ilk, uint256 rate) public { setStabilityFee(MCD_JUG, ilk, rate, true); }
     /**
         @dev Set the stability fee for a given ilk.
-             Many of the settings that change weekly rely on the rate accumulator
-             described at https://docs.makerdao.com/smart-contract-modules/rates-module
-             To check this yourself, use the following rate calculation (example 8%):
+            Many of the settings that change weekly rely on the rate accumulator
+            described at https://docs.makerdao.com/smart-contract-modules/rates-module
+            To check this yourself, use the following rate calculation (example 8%):
             
-             $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
+            $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
             
-             A table of rates can also be found at:
-             https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
+            A table of rates can also be found at:
+            https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
 
         @param jug    The address of the Jug core accounting contract
         @param ilk    The ilk to update (ex. bytes32("ETH-A") )
         @param rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
         @param doDrip `true` to accumulate stability fees for the collateral
-     */
+    */
     function setStabilityFee(address jug, bytes32 ilk, uint256 rate, bool doDrip) public {
-        // precision check
         require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/stability-fee-out-of-bounds");
-
-        if (doDrip) {
-            Drippable(jug).drip(ilk);
-        }
+        if (doDrip) Drippable(jug).drip(ilk);
 
         Fileable(jug).file(ilk, "duty", rate);
     }
-
-
-
+    
     ///////////////////////////////
     //// Collateral Onboarding ////
     ///////////////////////////////
