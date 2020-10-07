@@ -55,7 +55,7 @@
         vow  x
         pot  x
         spot x
-        wait (RISK)
+        wait x
     flap
         beg   x
         ttl   x
@@ -72,7 +72,7 @@
         tau   x
     jug
         duty  x
-        base
+        base  x
         vow   x
     pot
         dsr   x

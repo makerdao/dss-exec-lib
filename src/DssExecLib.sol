@@ -48,7 +48,10 @@ library DssExecLib {
     address constant public MCD_CAT     = 0x78F2c2AF65126834c51822F56Be0d7469D7A523E;
     address constant public MCD_JUG     = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
     address constant public MCD_POT     = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
+    address constant public MCD_VOW     = 0xA950524441892A31ebddF91d3cEEFa04Bf454466;
     address constant public MCD_SPOT    = 0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3;
+    address constant public MCD_FLAP    = 0xC4269cC7acDEdC3794b221aA4D9205F564e27f0d;
+    address constant public MCD_FLOP    = 0xA41B6EF151E06da0e34B009B86E828308986736D;
     address constant public MCD_END     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
     address constant public ILK_REG     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
 
@@ -98,7 +101,7 @@ library DssExecLib {
     /**
         @dev Revoke contract authorization from an address.
         @param base   The address of the contract where the authorization will be revoked
-        @param what   Address to be deauthorized
+        @param ward   Address to be deauthorized
     */
     function deauthorize(address base, address ward) public {
         Authorization(base).deny(ward);
@@ -338,7 +341,7 @@ library DssExecLib {
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
     */
-    function setDebtAuctionMKRIncreaseRate(uint256 amount) public { setDebtAuctionMKRIncreaseRate(MCD_VOW, amount); }
+    function setDebtAuctionMKRIncreaseRate(uint256 pct) public { setDebtAuctionMKRIncreaseRate(MCD_VOW, pct); }
     /** 
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
@@ -346,7 +349,7 @@ library DssExecLib {
         @param flop   The address of the Flopper core contract
         @param pct    The pct to set in integer form (x1000). (ex. 50% = 50 * 1000 = 50000)
     */
-    function setDebtAuctionMKRIncreaseRate(address vow, uint256 amount) public {
+    function setDebtAuctionMKRIncreaseRate(address flop, uint256 pct) public {
         Fileable(flop).file("pad", wdiv(add(pct, 100 * THOUSAND), 100 * THOUSAND));
     }
     /** 
@@ -362,6 +365,57 @@ library DssExecLib {
     function setMaxTotalDAILiquidationAmount(address cat, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
         Fileable(cat).file("box", amount * WAD);
+    }
+    /** 
+        @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
+        @param length Time in seconds to set for ES processing time
+    */
+    function setEmergencyShutdownProcessingTime(uint256 length) public { setEmergencyShutdownProcessingTime(MCD_CAT, length); }
+    /** 
+        @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
+        @param end    The address of the End core contract
+        @param length Time in seconds to set for ES processing time
+    */
+    function setEmergencyShutdownProcessingTime(address end, uint256 length) public {
+        Fileable(end).file("wait", length);
+    }
+        /**
+        @dev Set the global stability fee (is not typically used, currently is 0).
+        @param rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
+    */
+    function setGlobalStabilityFee(uint256 rate) public { setGlobalStabilityFee(MCD_JUG, rate); }
+    /**
+        @dev Set the global stability fee (is not typically used, currently is 0).
+            Many of the settings that change weekly rely on the rate accumulator
+            described at https://docs.makerdao.com/smart-contract-modules/rates-module
+            To check this yourself, use the following rate calculation (example 8%):
+            
+            $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
+            
+            A table of rates can also be found at:
+            https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
+
+        @param jug    The address of the Jug core accounting contract
+        @param rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
+    */
+    function setGlobalStabilityFee(address jug, uint256 rate) public {
+        require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/global-stability-fee-out-of-bounds");
+        Fileable(jug).file("base", rate);
+    }
+    /**
+        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
+        @param amount The amount to set as integer (x1000) (ex. $1.025 == 1025)
+    */
+    function setDAIReferenceValue(uint256 amount) public { setDAIReferenceValue(MCD_SPOT, amount); }
+    /**
+        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
+        @dev Equation used for conversion is amount * RAY / 1000
+        @param spot   The address of the Spot core contract 
+        @param amount The amount to set as integer (x1000) (ex. $1.025 == 1025)
+    */
+    function setDAIReferenceValue(address spot, uint256 amount) public {
+        require(amount < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
+        Fileable(spot).file("par", rdiv(amount, 1000));
     }
     
     /*****************************/
@@ -507,7 +561,7 @@ library DssExecLib {
         @param ilk     The ilk to update (ex. bytes32("ETH-A"))
         @param rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
-    function setStabilityFee(bytes32 ilk, uint256 rate) public { setStabilityFee(MCD_JUG, ilk, rate, true); }
+    function setIlkStabilityFee(bytes32 ilk, uint256 rate) public { setIlkStabilityFee(MCD_JUG, ilk, rate, true); }
     /**
         @dev Set the stability fee for a given ilk.
             Many of the settings that change weekly rely on the rate accumulator
@@ -524,12 +578,13 @@ library DssExecLib {
         @param rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
         @param doDrip `true` to accumulate stability fees for the collateral
     */
-    function setStabilityFee(address jug, bytes32 ilk, uint256 rate, bool doDrip) public {
-        require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/stability-fee-out-of-bounds");
+    function setIlkStabilityFee(address jug, bytes32 ilk, uint256 rate, bool doDrip) public {
+        require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/ilk-stability-fee-out-of-bounds");
         if (doDrip) Drippable(jug).drip(ilk);
 
         Fileable(jug).file(ilk, "duty", rate);
     }
+
     
     ///////////////////////////////
     //// Collateral Onboarding ////
@@ -547,14 +602,14 @@ library DssExecLib {
         Initialization(MCD_VAT).init(ilk);
         Initialization(MCD_JUG).init(ilk);
 
-        setRely(MCD_VAT, join);
+        authorize(MCD_VAT, join);
 
         Fileable(MCD_SPOT).file(ilk, "pip", pip);
         Fileable(MCD_CAT).file(ilk, "flip", flip);
 
-        setRely(flip, MCD_CAT);
-        setRely(flip, MCD_END);
-        setRely(flip, FLIPPER_MOM);
+        authorize(flip, MCD_CAT);
+        authorize(flip, MCD_END);
+        authorize(flip, FLIPPER_MOM);
 
         // set line
         // set dust
@@ -569,7 +624,7 @@ library DssExecLib {
         Pricing(MCD_SPOT).poke(ilk);
 
         if (!liquidations) {
-            setDeny(FLIPPER_MOM, flip);
+            deauthorize(FLIPPER_MOM, flip);
         }
     }
 
