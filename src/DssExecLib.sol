@@ -1,10 +1,10 @@
 pragma solidity ^0.6.7;
 
-interface Initialization {
+interface Initializable {
     function init(bytes32) external;
 }
 
-interface Authorization {
+interface Authorizable {
     function rely(address) external;
     function deny(address) external;
 }
@@ -29,7 +29,27 @@ interface DssVat {
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
 }
 
+// TODO: Is there a better way to set up these interfaces?
+interface AuctionLike {
+    function vat() external returns (address);
+    function cat() external returns (address); // Only flip
+    function beg() external returns (uint256);
+    function pad() external returns (uint256); // Only flop
+    function ttl() external returns (uint256);
+    function tau() external returns (uint256);
+    function ilk() external returns (bytes32); // Only flip
+    function gem() external returns (bytes32); // Only flap/flop
+}
+
+interface JoinLike {
+    function vat() external returns (address);
+    function ilk() external returns (bytes32);
+    function gem() external returns (address);
+    function dec() external returns (uint256);
+}
+
 interface RegistryLike {
+    function add(address) external;
     function ilkData(bytes32) external returns (
         uint256       pos,   
         address       gem,   
@@ -54,7 +74,7 @@ library DssExecLib {
     address constant public MCD_FLOP    = 0xA41B6EF151E06da0e34B009B86E828308986736D;
     address constant public MCD_END     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
     address constant public ILK_REG     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
-
+    address constant public GOV_GUARD   = 0x6eEB68B2C7A918f36B78E2DB80dcF279236DDFb8;
     address constant public FLIPPER_MOM = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
     uint256 constant public THOUSAND = 10 ** 3;
@@ -89,14 +109,13 @@ library DssExecLib {
     /**********************/
     /*** Authorizations ***/
     /**********************/
-
     /**
         @dev Give an address authorization to perform auth actions on the contract.
         @param base   The address of the contract where the authorization will be set
         @param ward   Address to be authorized
     */
     function authorize(address base, address ward) public {
-        Authorization(base).rely(ward);
+        Authorizable(base).rely(ward);
     }
     /**
         @dev Revoke contract authorization from an address.
@@ -104,13 +123,12 @@ library DssExecLib {
         @param ward   Address to be deauthorized
     */
     function deauthorize(address base, address ward) public {
-        Authorization(base).deny(ward);
+        Authorizable(base).deny(ward);
     }
 
     /**************************/
     /*** Accumulating Rates ***/
     /**************************/
-
     /**
         @dev Update rate accumulation for the Dai Savings Rate (DSR).
     */
@@ -125,6 +143,13 @@ library DssExecLib {
         Drippable(MCD_JUG).drip(ilk);
     }
 
+    /*********************/
+    /*** Price Updates ***/
+    /*********************/
+
+    function updateCollateralPrice(bytes32 ilk) public {
+        Pricing(MCD_SPOT).poke(ilk);
+    }
     /****************************/
     /*** System Configuration ***/
     /****************************/
@@ -585,60 +610,141 @@ library DssExecLib {
         Fileable(jug).file(ilk, "duty", rate);
     }
 
-    
-    ///////////////////////////////
-    //// Collateral Onboarding ////
-    ///////////////////////////////
 
-    // TODO addCollateral
-    // FIXME in progress
-    function addNewCollateral(
-        bytes32 ilk,
-        address join,
-        address pip,
-        address flip,
-        bool    liquidations
-        ) public {
-        Initialization(MCD_VAT).init(ilk);
-        Initialization(MCD_JUG).init(ilk);
+    /***********************/
+    /*** Core Management ***/
+    /***********************/
+    /**
+        @dev Update collateral auction contracts.
+        @param ilk     The collateral's auction contract to update
+        @param newFlip New auction contract address
+        @param oldFlip Old auction contract address
+    */
+    function updateCollateralAuctionContract(bytes32 ilk, address newFlip, address oldFlip) public {
+        updateCollateralAuctionContract(MCD_VAT, MCD_CAT, MCD_END, FLIPPER_MOM, ilk, newFlip, oldFlip);
+    }
+    /**
+        @dev Update collateral auction contracts.
+        @param vat        Vat core contract address
+        @param cat        Cat core contract address
+        @param end        End core contract address
+        @param flipperMom Flipper Mom core contract address
+        @param ilk        The collateral's auction contract to update
+        @param newFlip    New auction contract address
+        @param oldFlip    Old auction contract address
+    */
+    function updateCollateralAuctionContract(
+        address vat,
+        address cat, 
+        address end,
+        address flipperMom,
+        bytes32 ilk, 
+        address newFlip, 
+        address oldFlip
+    ) public {
+        // Add new flip address to Cat
+        setContract(cat, ilk, "flip", newFlip);
 
-        authorize(MCD_VAT, join);
+        // Authorize MCD contracts from new flip
+        authorize(newFlip, cat);
+        authorize(newFlip, end);
+        authorize(newFlip, flipperMom);
 
-        Fileable(MCD_SPOT).file(ilk, "pip", pip);
-        Fileable(MCD_CAT).file(ilk, "flip", flip);
+        // Authorize MCD contracts from old flip
+        deauthorize(oldFlip, cat);
+        deauthorize(oldFlip, end);
+        deauthorize(oldFlip, flipperMom);
 
-        authorize(flip, MCD_CAT);
-        authorize(flip, MCD_END);
-        authorize(flip, FLIPPER_MOM);
+        // Transfer auction params from old flip to new flip
+        Fileable(newFlip).file("beg", AuctionLike(oldFlip).beg());
+        Fileable(newFlip).file("ttl", AuctionLike(oldFlip).ttl());
+        Fileable(newFlip).file("tau", AuctionLike(oldFlip).tau());
 
-        // set line
-        // set dust
-        // set lump
-        // set chop
-        // set duty
-        // set beg
-        // set ttl
-        // set tau
-        // set mat
+        // Sanity checks
+        require(AuctionLike(newFlip).ilk() == ilk, "non-matching-ilk");
+        require(AuctionLike(newFlip).vat() == vat, "non-matching-vat");
+    }
+    /**
+        @dev Update surplus auction contracts.
+        @param ilk     The surplus's auction contract to update
+        @param newFlap New surplus auction contract address
+        @param oldFlap Old surplus auction contract address
+    */
+    function updateSurplusAuctionContract(bytes32 ilk, address newFlap, address oldFlap) public {
+        updateSurplusAuctionContract(MCD_VAT, MCD_VOW, newFlap, oldFlap);
+    }
+    /**
+        @dev Update surplus auction contracts.
+        @param vat     Vat core contract address
+        @param vow     Vow core contract address
+        @param newFlap New surplus auction contract address
+        @param oldFlap Old surplus auction contract address
+    */
+    function updateSurplusAuctionContract(address vat, address vow, address newFlap, address oldFlap) public {
+        // Add new flap address to Vow
+        setContract(vow, "flapper", newFlap);
 
-        Pricing(MCD_SPOT).poke(ilk);
+        // Authorize MCD contracts from new flap
+        authorize(newFlap, vow);
 
-        if (!liquidations) {
-            deauthorize(FLIPPER_MOM, flip);
-        }
+        // Authorize MCD contracts from old flap
+        deauthorize(oldFlap, vow);
+
+        // Transfer auction params from old flap to new flap
+        Fileable(newFlap).file("beg", AuctionLike(oldFlap).beg());
+        Fileable(newFlap).file("ttl", AuctionLike(oldFlap).ttl());
+        Fileable(newFlap).file("tau", AuctionLike(oldFlap).tau());
+
+        // Sanity checks
+        require(AuctionLike(newFlap).gem() == AuctionLike(oldFlap).gem(), "non-matching-gem");
+        require(AuctionLike(newFlap).vat() == vat,                        "non-matching-vat");
+    }
+    /**
+        @dev Update debt auction contracts.
+        @param newFlop New debt auction contract address
+        @param oldFlop Old debt auction contract address
+    */
+    function updateDebtAuctionContract(bytes32 ilk, address newFlop, address oldFlop) public {
+        updateDebtAuctionContract(MCD_VAT, MCD_VOW, GOV_GUARD, newFlop, oldFlop);
+    }
+    /**
+        @dev Update debt auction contracts.
+        @param vat          Vat core contract address
+        @param vow          Vow core contract address
+        @param mkrAuthority MKRAuthority core contract address
+        @param newFlop      New debt auction contract address
+        @param oldFlop      Old debt auction contract address
+    */
+    function updateDebtAuctionContract(address vat, address vow, address mkrAuthority, address newFlop, address oldFlop) public {
+        // Add new flop address to Vow
+        setContract(vow, "flopper", newFlop);
+
+        // Authorize MCD contracts for new flop
+        authorize(newFlop, vow);
+        authorize(vat, newFlop);
+        authorize(mkrAuthority, newFlop);
+
+        // Deauthorize MCD contracts for old flop
+        deauthorize(oldFlop, vow);
+        deauthorize(vat, oldFlop);
+        deauthorize(mkrAuthority, oldFlop);
+
+        // Transfer auction params from old flop to new flop
+        Fileable(newFlop).file("beg", AuctionLike(oldFlop).beg());
+        Fileable(newFlop).file("pad", AuctionLike(oldFlop).pad());
+        Fileable(newFlop).file("ttl", AuctionLike(oldFlop).ttl());
+        Fileable(newFlop).file("tau", AuctionLike(oldFlop).tau());
+
+        // Sanity checks
+        require(AuctionLike(newFlop).gem() == AuctionLike(oldFlop).gem(), "non-matching-gem");
+        require(AuctionLike(newFlop).vat() == vat,                        "non-matching-vat");
     }
 
-    /////////////////////////
-    //// Core Management ////
-    /////////////////////////
+    /*************************/
+    /*** Oracle Management ***/
+    /*************************/
 
-    // TODO change flip (oldFlip, newFlip)
-    // TODO set surplus buffer (hump [RAD])
-
-
-    ///////////////////////////
-    //// Oracle Management ////
-    ///////////////////////////
+    
 
     // TODO
 
@@ -648,4 +754,106 @@ library DssExecLib {
     // median kiss
 
     // osm kiss
+
+    /*****************************/
+    /*** Collateral Onboarding ***/
+    /*****************************/
+    // TODO: Stack too deep error when using MCD contract params
+    function addNewCollateral(
+        bytes32 ilk,
+        address tokenAddress, 
+        address join,
+        address flip,
+        address pip,
+        bool    liquidatable,
+        bool    isOsm,
+        // uint256 globalDebtCeiling, // Removing becuase we don't need, and stack too deep
+        uint256 ilkDebtCeiling,
+        uint256 minVaultAmount,
+        uint256 maxLiquidationAmount,
+        uint256 liquidationPenalty,
+        uint256 ilkStabilityFee,
+        uint256 bidIncrease,
+        uint256 bidDuration,
+        uint256 auctionDuration,
+        uint256 liquidationRatio
+    ) public {
+        // Sanity checks
+        require(JoinLike(join).vat() == MCD_VAT, "join-vat-not-match");
+        require(JoinLike(join).ilk() == ilk,     "join-ilk-not-match");
+        require(JoinLike(join).gem() == tokenAddress,   "join-gem-not-match");
+        require(JoinLike(join).dec() == 18,      "join-dec-not-match");
+        require(AuctionLike(flip).vat() == MCD_VAT,    "flip-vat-not-match");
+		require(AuctionLike(flip).cat() == MCD_CAT,    "flip-cat-not-match");
+        require(AuctionLike(flip).ilk() == ilk,        "flip-ilk-not-match");
+
+        // Set the token PIP in the Spotter
+        setContract(MCD_SPOT, ilk, "pip", pip);
+
+        // Set the ilk Flipper in the Cat
+        setContract(MCD_CAT, ilk, "flip", flip);
+
+        // Init ilk in Vat & Jug
+        Initializable(MCD_VAT).init(ilk);
+        Initializable(MCD_JUG).init(ilk);
+
+        // Allow ilk Join to modify Vat registry
+        authorize(MCD_VAT, join);
+		// Allow the ilk Flipper to reduce the Cat litterbox on deal()
+        authorize(MCD_CAT, flip);
+        // Allow Cat to kick auctions in ilk Flipper
+        authorize(flip, MCD_CAT);
+        // Allow End to yank auctions in ilk Flipper
+        authorize(flip, MCD_END);
+        // Allow FlipperMom to access to the ilk Flipper
+        authorize(flip, FLIPPER_MOM);
+        // Disallow Cat to kick auctions in ilk Flipper
+        if(!liquidatable) deauthorize(FLIPPER_MOM, flip);
+
+        // TODO: Revisit this after oracle management is complete
+        if(isOsm) {
+            // // Allow OsmMom to access to the TOKEN Osm
+            // // !!!!!!!! Only if PIP_TOKEN = Osm and hasn't been already relied due a previous deployed ilk 
+            // OsmAbstract(PIP_TOKEN).rely(OSM_MOM);
+            // // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
+            // // !!!!!!!! Only if PIP_TOKEN = Osm, its src is a Median and hasn't been already whitelisted due a previous deployed ilk 
+            // MedianAbstract(OsmAbstract(PIP_TOKEN).src()).kiss(PIP_TOKEN);
+            // // Whitelist Spotter to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
+            // // !!!!!!!! Only if PIP_TOKEN = Osm or PIP_TOKEN = Median and hasn't been already whitelisted due a previous deployed ilk 
+            // OsmAbstract(PIP_TOKEN).kiss(MCD_SPOT);
+            // // Whitelist End to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
+            // // !!!!!!!! Only if PIP_TOKEN = Osm or PIP_TOKEN = Median and hasn't been already whitelisted due a previous deployed ilk 
+            // OsmAbstract(PIP_TOKEN).kiss(MCD_END);
+            // // Set TOKEN Osm in the OsmMom for new ilk
+            // // !!!!!!!! Only if PIP_TOKEN = Osm
+            // OsmMomAbstract(OSM_MOM).setOsm(ilk, PIP_TOKEN);
+        }
+
+        // Set the global debt ceiling
+        // setGlobalDebtCeiling(globalDebtCeiling); // TODO: Do we need this?
+        // Set the ilk debt ceiling
+        setIlkDebtCeiling(ilk, ilkDebtCeiling);
+        // Set the ilk dust
+        setIlkMinVaultAmount(ilk, minVaultAmount);
+        // Set the Lot size
+        setIlkMaxLiquidationAmount(ilk, maxLiquidationAmount);
+        // Set the ilk liquidation penalty
+        setIlkLiquidationPenalty(MCD_CAT, ilk, liquidationPenalty);
+        // Set the ilk stability fee
+        setIlkStabilityFee(ilk, ilkStabilityFee);
+        // Set the ilk percentage between bids
+        setIlkMinAuctionBidIncrease(ilk, bidIncrease);
+        // Set the ilk time max time between bids
+        setIlkBidDuration(ilk, bidDuration);
+        // Set the ilk max auction duration to
+        setIlkAuctionDuration(ilk, auctionDuration);
+        // Set the ilk min collateralization ratio (e.g. 150% => X = 150)
+        setIlkLiquidationRatio(ilk, liquidationRatio);
+
+        // Update ilk spot value in Vat
+        updateCollateralPrice(ilk);
+
+        // Add new ilk to the IlkRegistry
+        RegistryLike(ILK_REG).add(join);
+    }
 }
