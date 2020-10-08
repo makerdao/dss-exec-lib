@@ -48,6 +48,22 @@ interface JoinLike {
     function dec() external returns (uint256);
 }
 
+// Includes Median and OSM functions
+interface OracleLike {
+    function src() external view returns (address);
+    function lift(address[] calldata) external;
+    function drop(address[] calldata) external;
+    function setBar(uint256) external;
+    function kiss(address) external;
+    function diss(address) external;
+    function kiss(address[] calldata) external;
+    function diss(address[] calldata) external;
+}
+
+interface MomLike {
+    function setOsm(bytes32, address) external;
+}
+
 interface RegistryLike {
     function add(address) external;
     function ilkData(bytes32) external returns (
@@ -62,6 +78,7 @@ interface RegistryLike {
     );
 }
 
+
 library DssExecLib {
 
     address constant public MCD_VAT     = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
@@ -74,6 +91,7 @@ library DssExecLib {
     address constant public MCD_FLOP    = 0xA41B6EF151E06da0e34B009B86E828308986736D;
     address constant public MCD_END     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
     address constant public ILK_REG     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
+    address constant public OSM_MOM     = 0x76416A4d5190d071bfed309861527431304aA14f;
     address constant public GOV_GUARD   = 0x6eEB68B2C7A918f36B78E2DB80dcF279236DDFb8;
     address constant public FLIPPER_MOM = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
@@ -743,17 +761,97 @@ library DssExecLib {
     /*************************/
     /*** Oracle Management ***/
     /*************************/
+    /**
+        @dev Adds oracle feeds to the medianizer's writer whitelist, allowing the feeds to write prices.
+        @param medianizer Medianizer core contract address
+        @param feeds      Array of oracle feed addresses to add to whitelist
+    */
+    function addWritersToMedianWhitelist(address medianizer, address[] memory feeds) public {
+        OracleLike(medianizer).lift(feeds);
+    }
+    /**
+        @dev Removes oracle feeds to the medianizer's writer whitelist, disallowing the feeds to write prices.
+        @param medianizer Medianizer core contract address
+        @param feeds      Array of oracle feed addresses to remove from whitelist
+    */
+    function removeWritersFromMedianWhitelist(address medianizer, address[] memory feeds) public {
+        OracleLike(medianizer).drop(feeds);
+    }
+    /**
+        @dev Adds addresses to the medianizer's reader whitelist, allowing the addresses to read prices from the medianizer.
+        @param medianizer Medianizer core contract address
+        @param readers    Array of addresses to add to whitelist
+    */
+    function addReadersToMedianWhitelist(address medianizer, address[] memory readers) public {
+        OracleLike(medianizer).kiss(readers);
+    }
+    /**
+        @dev Adds an address to the medianizer's reader whitelist, allowing the address to read prices from the medianizer.
+        @param medianizer Medianizer core contract address
+        @param reader     Address to add to whitelist
+    */
+    function addReaderToMedianWhitelist(address medianizer, address reader) public {
+        OracleLike(medianizer).kiss(reader);
+    }
+    /**
+        @dev Removes addresses from the medianizer's reader whitelist, disallowing the addresses to read prices from the medianizer.
+        @param medianizer Medianizer core contract address
+        @param readers    Array of addresses to remove from whitelist
+    */
+    function removeReadersFromMedianWhitelist(address medianizer, address[] memory readers) public {
+        OracleLike(medianizer).diss(readers);
+    }
+    /**
+        @dev Removes an address to the medianizer's reader whitelist, disallowing the address to read prices from the medianizer.
+        @param medianizer Medianizer core contract address
+        @param reader     Address to remove from whitelist
+    */
+    function removeReaderFromMedianWhitelist(address medianizer, address reader) public {
+        OracleLike(medianizer).diss(reader);
+    }
+    /**
+        @dev Sets the minimum number of valid messages from whitelisted oracle feeds needed to update medianizer price.
+        @param medianizer Medianizer core contract address
+        @param minQuorum  Minimum number of valid messages from whitelisted oracle feeds needed to update medianizer price (NOTE: MUST BE ODD NUMBER)
+    */
+    function setMedianWritersQuorum(address medianizer, uint256 minQuorum) public {
+        OracleLike(medianizer).setBar(minQuorum);
+    }
+    /**
+        @dev Adds an address to the medianizer's reader whitelist, allowing the address to read prices from the OSM.
+        @param osm        Oracle Security Module (OSM) core contract address
+        @param reader     Address to add to whitelist
+    */
+    function addReaderToOSMWhitelist(address osm, address reader) public {
+        OracleLike(osm).kiss(reader);
+    }
+    /**
+        @dev Removes an address to the medianizer's reader whitelist, disallowing the address to read prices from the OSM.
+        @param osm        Oracle Security Module (OSM) core contract address
+        @param reader     Address to remove from whitelist
+    */
+    function removeReaderFromOSMWhitelist(address osm, address reader) public {
+        OracleLike(osm).diss(reader);
+    }
+    /**
+        @dev Add OSM address to OSM mom, allowing it to be frozen by governance.
+        @param osm        Oracle Security Module (OSM) core contract address
+        @param ilk        Collateral type using OSM
+    */
+    function allowOSMFreeze(address osm, bytes32 ilk) public {
+        allowOSMFreeze(OSM_MOM, osm, ilk);
+    }
+    /**
+        @dev Add OSM address to OSM mom, allowing it to be frozen by governance.
+        @param osmMom     OSM Mom core contract address
+        @param osm        Oracle Security Module (OSM) core contract address
+        @param ilk        Collateral type using OSM
+    */
+    function allowOSMFreeze(address osmMom, address osm, bytes32 ilk) public {
+        MomLike(osmMom).setOsm(ilk, osm);
+    }
 
-    
 
-    // TODO
-
-    // median lift
-    // median drop
-
-    // median kiss
-
-    // osm kiss
 
     /*****************************/
     /*** Collateral Onboarding ***/
@@ -810,23 +908,17 @@ library DssExecLib {
         // Disallow Cat to kick auctions in ilk Flipper
         if(!liquidatable) deauthorize(FLIPPER_MOM, flip);
 
-        // TODO: Revisit this after oracle management is complete
         if(isOsm) {
-            // // Allow OsmMom to access to the TOKEN Osm
-            // // !!!!!!!! Only if PIP_TOKEN = Osm and hasn't been already relied due a previous deployed ilk 
-            // OsmAbstract(PIP_TOKEN).rely(OSM_MOM);
-            // // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-            // // !!!!!!!! Only if PIP_TOKEN = Osm, its src is a Median and hasn't been already whitelisted due a previous deployed ilk 
-            // MedianAbstract(OsmAbstract(PIP_TOKEN).src()).kiss(PIP_TOKEN);
-            // // Whitelist Spotter to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
-            // // !!!!!!!! Only if PIP_TOKEN = Osm or PIP_TOKEN = Median and hasn't been already whitelisted due a previous deployed ilk 
-            // OsmAbstract(PIP_TOKEN).kiss(MCD_SPOT);
-            // // Whitelist End to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
-            // // !!!!!!!! Only if PIP_TOKEN = Osm or PIP_TOKEN = Median and hasn't been already whitelisted due a previous deployed ilk 
-            // OsmAbstract(PIP_TOKEN).kiss(MCD_END);
-            // // Set TOKEN Osm in the OsmMom for new ilk
-            // // !!!!!!!! Only if PIP_TOKEN = Osm
-            // OsmMomAbstract(OSM_MOM).setOsm(ilk, PIP_TOKEN);
+            // Allow OsmMom to access to the TOKEN Osm
+            authorize(pip, OSM_MOM);
+            // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToMedianWhitelist(address(OracleLike(pip).src()), pip);
+            // Whitelist Spotter to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(pip, MCD_SPOT);
+            // Whitelist End to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(pip, MCD_END);
+            // Set TOKEN Osm in the OsmMom for new ilk
+            allowOSMFreeze(pip, ilk);
         }
 
         // Set the global debt ceiling

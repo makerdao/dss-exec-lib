@@ -79,7 +79,7 @@
         vow   x
     spot
         pip   x
-        par
+        par   x
         ilk - mat   x
     vat
         Line        x
