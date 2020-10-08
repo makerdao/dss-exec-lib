@@ -856,16 +856,27 @@ library DssExecLib {
     /*****************************/
     /*** Collateral Onboarding ***/
     /*****************************/
-    // TODO: Stack too deep error when using MCD contract params
+    /**
+        @dev Adds new collateral to MCD following standard collateral onboarding procedure.
+        @param ilk                  Collateral type
+        @param addresses            Array of contract addresses: [tokenAddress, join, flip, pip]
+        @param liquidatable         Boolean indicating whether liquidations are enabled for collateral
+        @param isOsm                Boolean indicating whether pip address used is an OSM contract
+        @param ilkDebtCeiling       Debt ceiling for new collateral
+        @param minVaultAmount       Minimum DAI vault amount required for new collateral
+        @param maxLiquidationAmount Max DAI amount per vault for liquidation for new collateral
+        @param liquidationPenalty   Percent liquidation penalty for new collateral [ex. 13.5% == 13500]
+        @param ilkStabilityFee      Percent stability fee for new collateral       [ex. 4% == 1000000001243680656318820312]
+        @param bidIncrease          Percent bid increase for new collateral        [ex. 13.5% == 13500]
+        @param bidDuration          Bid period duration for new collateral  
+        @param auctionDuration      Total auction duration for new collateral
+        @param liquidationRatio     Percent liquidation ratio for new collateral   [ex. 150% == 150000] 
+    */
     function addNewCollateral(
         bytes32 ilk,
-        address tokenAddress, 
-        address join,
-        address flip,
-        address pip,
+        address[] memory addresses,
         bool    liquidatable,
         bool    isOsm,
-        // uint256 globalDebtCeiling, // Removing becuase we don't need, and stack too deep
         uint256 ilkDebtCeiling,
         uint256 minVaultAmount,
         uint256 maxLiquidationAmount,
@@ -877,52 +888,50 @@ library DssExecLib {
         uint256 liquidationRatio
     ) public {
         // Sanity checks
-        require(JoinLike(join).vat() == MCD_VAT, "join-vat-not-match");
-        require(JoinLike(join).ilk() == ilk,     "join-ilk-not-match");
-        require(JoinLike(join).gem() == tokenAddress,   "join-gem-not-match");
-        require(JoinLike(join).dec() == 18,      "join-dec-not-match");
-        require(AuctionLike(flip).vat() == MCD_VAT,    "flip-vat-not-match");
-		require(AuctionLike(flip).cat() == MCD_CAT,    "flip-cat-not-match");
-        require(AuctionLike(flip).ilk() == ilk,        "flip-ilk-not-match");
+        require(JoinLike(addresses[1]).vat() == MCD_VAT,       "join-vat-not-match");
+        require(JoinLike(addresses[1]).ilk() == ilk,           "join-ilk-not-match");
+        require(JoinLike(addresses[1]).gem() == addresses[0],  "join-gem-not-match");
+        require(JoinLike(addresses[1]).dec() == 18,            "join-dec-not-match");
+        require(AuctionLike(addresses[2]).vat() == MCD_VAT,    "flip-vat-not-match");
+		require(AuctionLike(addresses[2]).cat() == MCD_CAT,    "flip-cat-not-match");
+        require(AuctionLike(addresses[2]).ilk() == ilk,        "flip-ilk-not-match");
 
         // Set the token PIP in the Spotter
-        setContract(MCD_SPOT, ilk, "pip", pip);
+        setContract(MCD_SPOT, ilk, "pip", addresses[3]);
 
         // Set the ilk Flipper in the Cat
-        setContract(MCD_CAT, ilk, "flip", flip);
+        setContract(MCD_CAT, ilk, "flip", addresses[2]);
 
         // Init ilk in Vat & Jug
         Initializable(MCD_VAT).init(ilk);
         Initializable(MCD_JUG).init(ilk);
 
         // Allow ilk Join to modify Vat registry
-        authorize(MCD_VAT, join);
+        authorize(MCD_VAT, addresses[1]);
 		// Allow the ilk Flipper to reduce the Cat litterbox on deal()
-        authorize(MCD_CAT, flip);
+        authorize(MCD_CAT, addresses[2]);
         // Allow Cat to kick auctions in ilk Flipper
-        authorize(flip, MCD_CAT);
+        authorize(addresses[2], MCD_CAT);
         // Allow End to yank auctions in ilk Flipper
-        authorize(flip, MCD_END);
+        authorize(addresses[2], MCD_END);
         // Allow FlipperMom to access to the ilk Flipper
-        authorize(flip, FLIPPER_MOM);
+        authorize(addresses[2], FLIPPER_MOM);
         // Disallow Cat to kick auctions in ilk Flipper
-        if(!liquidatable) deauthorize(FLIPPER_MOM, flip);
+        if(!liquidatable) deauthorize(FLIPPER_MOM, addresses[2]);
 
         if(isOsm) {
             // Allow OsmMom to access to the TOKEN Osm
-            authorize(pip, OSM_MOM);
+            authorize(addresses[3], OSM_MOM);
             // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToMedianWhitelist(address(OracleLike(pip).src()), pip);
+            addReaderToMedianWhitelist(address(OracleLike(addresses[3]).src()), addresses[3]);
             // Whitelist Spotter to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(pip, MCD_SPOT);
+            addReaderToOSMWhitelist(addresses[3], MCD_SPOT);
             // Whitelist End to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(pip, MCD_END);
+            addReaderToOSMWhitelist(addresses[3], MCD_END);
             // Set TOKEN Osm in the OsmMom for new ilk
-            allowOSMFreeze(pip, ilk);
+            allowOSMFreeze(addresses[3], ilk);
         }
 
-        // Set the global debt ceiling
-        // setGlobalDebtCeiling(globalDebtCeiling); // TODO: Do we need this?
         // Set the ilk debt ceiling
         setIlkDebtCeiling(ilk, ilkDebtCeiling);
         // Set the ilk dust
@@ -939,13 +948,13 @@ library DssExecLib {
         setIlkBidDuration(ilk, bidDuration);
         // Set the ilk max auction duration to
         setIlkAuctionDuration(ilk, auctionDuration);
-        // Set the ilk min collateralization ratio (e.g. 150% => X = 150)
+        // Set the ilk min collateralization ratio 
         setIlkLiquidationRatio(ilk, liquidationRatio);
 
         // Update ilk spot value in Vat
         updateCollateralPrice(ilk);
 
         // Add new ilk to the IlkRegistry
-        RegistryLike(ILK_REG).add(join);
+        RegistryLike(ILK_REG).add(addresses[1]);
     }
 }
