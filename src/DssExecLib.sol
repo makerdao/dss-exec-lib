@@ -280,7 +280,7 @@ library DssExecLib {
         @dev Set total auction duration for surplus auctions.
         @param length Amount of time for auctions.
     */
-    function setSurplusAuctionDuration(bytes32 ilk, uint256 length) public {
+    function setSurplusAuctionDuration(uint256 length) public {
         setSurplusAuctionDuration(MCD_FLAP, length);
     }
     /**
@@ -368,7 +368,7 @@ library DssExecLib {
         @dev Set total auction duration for debt auctions.
         @param length Amount of time for auctions.
     */
-    function setDebtAuctionDuration(bytes32 ilk, uint256 length) public {
+    function setDebtAuctionDuration(uint256 length) public {
         setDebtAuctionDuration(MCD_FLOP, length);
     }
     /**
