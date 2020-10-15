@@ -32,6 +32,10 @@ contract EndTest is DSTest {
     Jug   jug;
     Cat   cat;
 
+    IlkRegistry  reg;
+    OsmMom       osmMom;
+    MkrAuthority govGuard;
+
     Spotter spot;
 
     ChainLog log;
@@ -170,7 +174,10 @@ contract EndTest is DSTest {
         flap.rely(address(vow));
         flop.rely(address(vow));
 
-        jug = new Jug(address(vat));
+        jug      = new Jug(address(vat));
+        reg      = new IlkRegistry(address(vat), address(cat), address(spot));
+        osmMom   = new OsmMom();
+        govGuard = new MkrAuthority();
 
         log = new ChainLog();
 
