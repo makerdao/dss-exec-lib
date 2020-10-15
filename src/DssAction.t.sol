@@ -5,6 +5,9 @@ import "ds-token/token.sol";
 import "ds-value/value.sol";
 
 import "dss-chain-log/ChainLog.sol";
+// import "osm-mom/OsmMom.sol";
+// import "mkr-authority/MkrAuthority.sol";
+import "ilk-registry/IlkRegistry.sol";
 
 import {Vat}  from 'dss/vat.sol';
 import {Cat}  from 'dss/cat.sol';
@@ -33,8 +36,8 @@ contract EndTest is DSTest {
     Cat   cat;
 
     IlkRegistry  reg;
-    OsmMom       osmMom;
-    MkrAuthority govGuard;
+    // OsmMom       osmMom;
+    // MkrAuthority govGuard;
 
     Spotter spot;
 
@@ -176,8 +179,8 @@ contract EndTest is DSTest {
 
         jug      = new Jug(address(vat));
         reg      = new IlkRegistry(address(vat), address(cat), address(spot));
-        osmMom   = new OsmMom();
-        govGuard = new MkrAuthority();
+        // osmMom   = new OsmMom();
+        // govGuard = new MkrAuthority();
 
         log = new ChainLog();
 
@@ -191,8 +194,8 @@ contract EndTest is DSTest {
         log.setAddress("MCD_FLOP",    address(flop));
         log.setAddress("MCD_END",     address(end));
         log.setAddress("ILK_REG",     address(reg));
-        log.setAddress("OSM_MOM",     address(osmMom));
-        log.setAddress("GOV_GUARD",   address(govGuard));
+        // log.setAddress("OSM_MOM",     address(osmMom));
+        // log.setAddress("GOV_GUARD",   address(govGuard));
         log.setAddress("FLIPPER_MOM", address(vat));
     }
 
