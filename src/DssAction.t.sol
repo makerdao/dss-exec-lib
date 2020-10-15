@@ -4,10 +4,13 @@ import "ds-test/test.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
 
+import "dss-chain-log/ChainLog.sol";
+
 import {Vat}  from 'dss/vat.sol';
 import {Cat}  from 'dss/cat.sol';
 import {Vow}  from 'dss/vow.sol';
 import {Pot}  from 'dss/pot.sol';
+import {Jug}  from 'dss/jug.sol';
 import {Flipper} from 'dss/flip.sol';
 import {Flapper} from 'dss/flap.sol';
 import {Flopper} from 'dss/flop.sol';
@@ -26,9 +29,12 @@ contract EndTest is DSTest {
     End   end;
     Vow   vow;
     Pot   pot;
+    Jug   jug;
     Cat   cat;
 
     Spotter spot;
+
+    ChainLog log;
 
     struct Ilk {
         DSValue pip;
@@ -163,6 +169,24 @@ contract EndTest is DSTest {
         cat.rely(address(end));
         flap.rely(address(vow));
         flop.rely(address(vow));
+
+        jug = new Jug(address(vat));
+
+        log = new ChainLog();
+
+        log.setAddress("MCD_VAT",     address(vat));
+        log.setAddress("MCD_CAT",     address(cat));
+        log.setAddress("MCD_JUG",     address(jug));
+        log.setAddress("MCD_POT",     address(pot));
+        log.setAddress("MCD_VOW",     address(vow));
+        log.setAddress("MCD_SPOT",    address(spot));
+        log.setAddress("MCD_FLAP",    address(flap));
+        log.setAddress("MCD_FLOP",    address(flop));
+        log.setAddress("MCD_END",     address(end));
+        log.setAddress("ILK_REG",     address(reg));
+        log.setAddress("OSM_MOM",     address(osmMom));
+        log.setAddress("GOV_GUARD",   address(govGuard));
+        log.setAddress("FLIPPER_MOM", address(vat));
     }
 
     function testFail_basic_sanity() public {
@@ -171,5 +195,10 @@ contract EndTest is DSTest {
 
     function test_basic_sanity_mainnet() public {
         assertTrue(true);
+    }
+
+    function test_chainlog() public {
+        address vatTest = log.getAddress("MCD_VAT");
+        assertEq(address(vat), vatTest);
     }
 }
