@@ -8,6 +8,8 @@ import "dss-chain-log/ChainLog.sol";
 // import "osm-mom/OsmMom.sol";
 // import "mkr-authority/MkrAuthority.sol";
 import "ilk-registry/IlkRegistry.sol";
+// import "flipper-mom/FlipperMom.sol";
+import {ChainlogAbstract} from "dss-interfaces/src/Interfaces.sol";
 
 import {Vat}  from 'dss/vat.sol';
 import {Cat}  from 'dss/cat.sol';
@@ -38,6 +40,7 @@ contract EndTest is DSTest {
     IlkRegistry  reg;
     // OsmMom       osmMom;
     // MkrAuthority govGuard;
+    // FlipperMom flipperMom;
 
     Spotter spot;
 
@@ -177,12 +180,13 @@ contract EndTest is DSTest {
         flap.rely(address(vow));
         flop.rely(address(vow));
 
-        jug      = new Jug(address(vat));
-        reg      = new IlkRegistry(address(vat), address(cat), address(spot));
-        // osmMom   = new OsmMom();
-        // govGuard = new MkrAuthority();
+        jug        = new Jug(address(vat));
+        reg        = new IlkRegistry(address(vat), address(cat), address(spot));
+        // osmMom     = new OsmMom();
+        // govGuard   = new MkrAuthority();
+        // flipperMom = new FlipperMom(address(cat));
 
-        log = new ChainLog();
+        log = ChainLog();
 
         log.setAddress("MCD_VAT",     address(vat));
         log.setAddress("MCD_CAT",     address(cat));
@@ -196,7 +200,7 @@ contract EndTest is DSTest {
         log.setAddress("ILK_REG",     address(reg));
         // log.setAddress("OSM_MOM",     address(osmMom));
         // log.setAddress("GOV_GUARD",   address(govGuard));
-        log.setAddress("FLIPPER_MOM", address(vat));
+        // log.setAddress("FLIPPER_MOM", address(flipperMom));
     }
 
     function testFail_basic_sanity() public {
