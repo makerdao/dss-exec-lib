@@ -409,18 +409,18 @@ contract DssLibExecTest is DSTest, DSMath {
     //     scheduleWaitAndCastFailLate();
     // }
 
-    function testLibDeployment() public {
-        // dapp test output will display approximate deployment cost
-        new DssExecLib();
-    }
+    // function testLibDeployment() public {
+    //     // dapp test output will display approximate deployment cost
+    //     new DssExecLib();
+    // }
 
-    function testLibBaseActionDeployment() public {
-        // dapp test output will display approximate deployment cost
-        //   of just the base contract
-        new DssActionBase(address(execlib));
-    }
+    // function testLibBaseActionDeployment() public {
+    //     // dapp test output will display approximate deployment cost
+    //     //   of just the base contract
+    //     new DssActionBase(address(execlib));
+    // }
 
-    function testSpellIsCast() public {
+    function testSpellIsCast_mainnet() public {
         vote();
         scheduleWaitAndCast();
         assertTrue(spell.done());
