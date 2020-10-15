@@ -22,3 +22,6 @@
 [submodule "lib/ilk-registry"]
 	path = lib/ilk-registry
 	url = https://github.com/makerdao/ilk-registry
+[submodule "lib/flipper-mom"]
+	path = lib/flipper-mom
+	url = https://github.com/makerdao/flipper-mom
