@@ -13,3 +13,6 @@
 [submodule "lib/dss-chain-log"]
 	path = lib/dss-chain-log
 	url = https://github.com/makerdao/dss-chain-log
+[submodule "lib/mkr-authority"]
+	path = lib/mkr-authority
+	url = https://github.com/makerdao/mkr-authority
