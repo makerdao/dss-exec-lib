@@ -19,3 +19,6 @@
 [submodule "lib/osm-mom"]
 	path = lib/osm-mom
 	url = https://github.com/makerdao/osm-mom
+[submodule "lib/ilk-registry"]
+	path = lib/ilk-registry
+	url = https://github.com/makerdao/ilk-registry
