@@ -28,6 +28,3 @@
 [submodule "lib/median"]
 	path = lib/median
 	url = https://github.com/makerdao/median
-[submodule "lib/ds-token"]
-	path = lib/ds-token
-	url = https://github.com/dapphub/ds-token
