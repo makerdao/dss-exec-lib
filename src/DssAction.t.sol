@@ -5,10 +5,10 @@ import "ds-token/token.sol";
 import "ds-value/value.sol";
 
 import {ChainLog} from "dss-chain-log/ChainLog.sol";
-import "osm-mom/OsmMom.sol";
-import "mkr-authority/MkrAuthority.sol";
+import {OsmMom} from "osm-mom/OsmMom.sol";
+import {MkrAuthority} from "mkr-authority/MkrAuthority.sol";
 import {IlkRegistry} from "ilk-registry/IlkRegistry.sol";
-import "flipper-mom/FlipperMom.sol";
+import {FlipperMom} from "flipper-mom/FlipperMom.sol";
 import {Median} from "median/median.sol";
 import {OsmAbstract} from "dss-interfaces/Interfaces.sol";
 
@@ -55,7 +55,7 @@ contract EndTest is DSTest {
     Flopper flop;
 
     DssAction action;
-    DssExecLib lib;
+    // DssExecLib lib;
 
     struct Ilk {
         DSValue pip;
