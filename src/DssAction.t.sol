@@ -9,7 +9,7 @@ import "dss-chain-log/ChainLog.sol";
 // import "mkr-authority/MkrAuthority.sol";
 import "ilk-registry/IlkRegistry.sol";
 // import "flipper-mom/FlipperMom.sol";
-import {ChainlogAbstract} from "dss-interfaces/src/Interfaces.sol";
+import {ChainlogAbstract} from "dss-interfaces/Interfaces.sol";
 
 import {Vat}  from 'dss/vat.sol';
 import {Cat}  from 'dss/cat.sol';
@@ -23,8 +23,12 @@ import {GemJoin} from 'dss/join.sol';
 import {End}  from 'dss/end.sol';
 import {Spotter} from 'dss/spot.sol';
 
+import {DssAction} from './DssAction.sol';
+import {DssExecLib} from './DssExecLib.sol';
+
 interface Hevm {
     function warp(uint256) external;
+    function store(address,bytes32,bytes32) external;
 }
 
 contract EndTest is DSTest {
@@ -42,9 +46,15 @@ contract EndTest is DSTest {
     // MkrAuthority govGuard;
     // FlipperMom flipperMom;
 
-    Spotter spot;
-
     ChainLog log;
+
+    Spotter spot;
+    Flipper flip; // Only one used for "gold" ilk
+    Flapper flap;
+    Flopper flop;
+
+    DssAction action;
+    DssExecLib lib;
 
     struct Ilk {
         DSValue pip;
@@ -55,12 +65,13 @@ contract EndTest is DSTest {
 
     mapping (bytes32 => Ilk) ilks;
 
-    Flapper flap;
-    Flopper flop;
+    address constant public LOG = 0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F;
 
     uint constant WAD = 10 ** 18;
     uint constant RAY = 10 ** 27;
     uint constant MLN = 10 ** 6;
+
+    uint256 constant START_TIME = 604411200;
 
     function ray(uint wad) internal pure returns (uint) {
         return wad * 10 ** 9;
@@ -121,7 +132,7 @@ contract EndTest is DSTest {
 
         vat.rely(address(gemA));
 
-        Flipper flip = new Flipper(address(vat), address(cat), name);
+        flip = new Flipper(address(vat), address(cat), name);
         vat.hope(address(flip));
         flip.rely(address(end));
         flip.rely(address(cat));
@@ -141,7 +152,7 @@ contract EndTest is DSTest {
 
     function setUp() public {
         hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
-        hevm.warp(604411200);
+        hevm.warp(START_TIME);
 
         vat = new Vat();
         DSToken gov = new DSToken('GOV');
@@ -186,7 +197,13 @@ contract EndTest is DSTest {
         // govGuard   = new MkrAuthority();
         // flipperMom = new FlipperMom(address(cat));
 
-        log = ChainLog();
+        hevm.store(
+            LOG,
+            keccak256(abi.encode(address(this), uint256(0))), // Grant auth to test contract
+            bytes32(uint256(1))
+        );
+
+        log = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
 
         log.setAddress("MCD_VAT",     address(vat));
         log.setAddress("MCD_CAT",     address(cat));
@@ -201,6 +218,10 @@ contract EndTest is DSTest {
         // log.setAddress("OSM_MOM",     address(osmMom));
         // log.setAddress("GOV_GUARD",   address(govGuard));
         // log.setAddress("FLIPPER_MOM", address(flipperMom));
+
+        lib = new DssExecLib();
+
+        action = new DssAction(address(lib));
     }
 
     function testFail_basic_sanity() public {
@@ -211,8 +232,286 @@ contract EndTest is DSTest {
         assertTrue(true);
     }
 
-    function test_chainlog() public {
-        address vatTest = log.getAddress("MCD_VAT");
-        assertEq(address(vat), vatTest);
+    /**********************/
+    /*** Authorizations ***/
+    /**********************/
+
+    function test_authorize() public {
+        assertEq(vat.wards(address(1)), 0);
+        action.authorize(address(vat), address(1));
+        assertEq(vat.wards(address(1)), 1);
+    }
+
+    function test_deauthorize() public {
+        assertEq(vat.wards(address(1)), 0);
+        action.authorize(address(vat), address(1));
+        assertEq(vat.wards(address(1)), 1);
+
+        action.deauthorize(address(vat), address(1));
+        assertEq(vat.wards(address(1)), 0);
+    }
+
+    /**************************/
+    /*** Accumulating Rates ***/
+    /**************************/
+
+    function test_accumulateDSR() public {
+        uint256 beforeChai = pot.chai();
+        hevm.warp(START_TIME + 1 days);
+        action.accumulateDSR();
+        uint256 afterChai = pot.chai();
+
+        assertTrue(afterChai - beforeChai > 0);
+    }
+
+    function test_accumulateCollateralStabilityFees() public {
+        (, uint256 beforeRate,,,) = vat.ilks("gold");
+        hevm.warp(START_TIME + 1 days);
+        action.accumulateCollateralStabilityFees("gold");
+        (, uint256 afterRate,,,) = vat.ilks("gold");
+
+        assertTrue(afterRate - beforeRate > 0);
+    }
+
+    /*********************/
+    /*** Price Updates ***/
+    /*********************/
+
+    function test_updateCollateralPrice() public {
+        // TODO
+    }
+
+    /****************************/
+    /*** System Configuration ***/
+    /****************************/
+
+    function test_setContract() public {
+        action.setContract(address(jug), "vow", address(1));
+        assertEq(jug.vow(), address(1));
+
+        // TODO per ilk?
+    }
+
+    /******************************/
+    /*** System Risk Parameters ***/
+    /******************************/
+
+    function test_setGlobalDebtCeiling() public {
+        action.setGlobalDebtCeiling(100 * MILLION); // $100,000,000
+        assertEq(vat.Line(), 100 * MILLION * RAD);  // Fixes precision
+    }
+
+    function test_setDSR() public {
+        uint256 rate = 1000000001243680656318820312;
+        action.setDSR(rate);
+        assertEq(pot.dsr(), rate);
+    }
+
+    function test_setSuruplusAuctionAmount() public {
+        action.setSurplusAuctionAmount(100 * THOUSAND);
+        assertEq(vow.bump(), 100 * THOUSAND * RAD);
+    }
+
+    function test_setSurplusBuffer() public {
+        action.setSurplusBuffer(1 * MILLION);
+        assertEq(vow.hump(), 1 * MILLION * RAD);
+    }
+
+    function test_setMinSurplusAuctionBidIncrease() public {
+        action.setMinSurplusAuctionBidIncrease(5250); // 5.25%
+        assertEq(flap.beg(), 5.25 ether); // WAD pct
+    }
+
+    function test_setSurplusAuctionBidDuration() public {
+        action.setSurplusAuctionBidDuration(12 hours); 
+        assertEq(flap.ttl(), 12 hours);
+    }
+
+    function test_setSurplusAuctionDuration() public {
+        action.setSurplusAuctionDuration(12 hours); 
+        assertEq(flap.tau(), 12 hours);
+    }
+
+    function test_setDebtAuctionDelay() public {
+        action.setDebtAuctionDelay(12 hours); 
+        assertEq(vow.wait(), 12 hours);
+    }
+
+    function test_setDebtAuctionDAIAmount() public {
+        action.setDebtAuctionDAIAmount(100 * THOUSAND); 
+        assertEq(vow.sump(), 100 * THOUSAND * RAD);
+    }
+
+    function test_setDebtAuctionMKRAmount() public {
+        action.setDebtAuctionMKRAmount(100); 
+        assertEq(vow.dump(), 100 * RAD);
+    }
+
+    function test_setMinDebtAuctionBidIncrease() public {
+        action.setMinDebtAuctionBidIncrease(5250); // 5.25%
+        assertEq(flop.beg(), 5.25 ether / 100); // WAD pct
+    }
+
+    function test_setDebtAuctionBidDuration() public {
+        action.setDebtAuctionBidDuration(12 hours); 
+        assertEq(flop.ttl(), 12 hours);
+    }
+
+    function test_setDebtAuctionDuration() public {
+        action.setDebtAuctionDuration(12 hours); 
+        assertEq(flop.tau(), 12 hours);
+    }
+
+    function test_setDebtAuctionBidIncreaseRate() public {
+        action.setDebtAuctionBidIncreaseRate(5250); 
+        assertEq(flop.pct(), 105.25 ether / 100); // WAD pct
+    }
+
+    function test_setMaxTotalDAILiquidationAmount() public {
+        action.setMaxTotalDAILiquidationAmount(50 * MILLION); 
+        assertEq(cat.box(), 50 * MILLION * RAD); // WAD pct
+    }
+
+    function test_setEmergencyShutdownProcessingTime() public {
+        action.setEmergencyShutdownProcessingTime(12 hours); 
+        assertEq(end.wait(), 12 hours); 
+    }
+
+    function test_setGlobalStabilityFee() public {
+        uint256 rate = 1000000001243680656318820312;
+        action.setGlobalStabilityFee(rate); 
+        assertEq(jug.base(), rate); 
+    }
+
+    function test_setDAIReferenceValue() public {
+        action.setDAIReferenceValue(1005); // $1.005
+        assertEq(spot.par(), ray(1.005 ether)); 
+    }
+
+    /*****************************/
+    /*** Collateral Management ***/
+    /*****************************/
+    
+    function test_setIlkDebtCeiling() public {
+        action.setIlkDebtCeiling("gold", 100 * MILLION);
+        (,,, uint256 line,) = vat.ilks("gold"); 
+        assertEq(line, 100 * MILLION * RAD); 
+    }
+
+    function test_setMinVaultAmount() public {
+        action.setMinVaultAmount("gold", 100);
+        (,,,, uint256 dust) = vat.ilks("gold"); 
+        assertEq(dust, 100 * RAD); 
+    }
+
+    function test_setIlkLiquidationPenalty() public {
+        action.setIlkLiquidationPenalty("gold", 13250); // 13.25%
+        (, uint256 chop,) = cat.ilks("gold"); 
+        assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
+    }
+
+    function test_setIlkMaxLiquidationAmount() public {
+        action.setIlkMaxLiquidationAmount("gold", 50 * THOUSAND);
+        (,, uint256 dunk) = cat.ilks("gold"); 
+        assertEq(dunk, 50 * THOUSAND * RAD); 
+    }
+
+    function test_setIlkLiquidationRatio() public {
+        action.setIlkLiquidationRatio("gold", 150000); // 150%
+        (, uint256 mat) = spot.ilks("gold"); 
+        assertEq(mat, ray(150 ether / 100)); // RAY pct
+    }
+
+    function test_setIlkMinAuctionBidIncrease() public {
+        action.setIlkMinAuctionBidIncrease("gold", 5000); // 5%
+        assertEq(flip.beg(), 5 ether / 100); // WAD pct
+    }
+
+    function test_setIlkBidDuration() public {
+        action.setIlkBidDuration("gold", 6 hours); 
+        assertEq(flip.ttl(), 6 hours);
+    }
+
+    function test_setIlkAuctionDuration() public {
+        action.setIlkAuctionDuration("gold", 6 hours); 
+        assertEq(flip.tau(), 6 hours);
+    }
+
+    function test_setIlkStabilityFee() public {
+        hevm.warp(START_TIME + 1 days);
+        action.setIlkStabilityFee("gold", 1000000001243680656318820312); 
+        (uint256 duty, uint256 rho) = jug.ilks("gold");
+        assertEq(duty, 1000000001243680656318820312);
+        assertEq(rho, START_TIME + 1 days);
+    }
+
+    /***********************/
+    /*** Core Management ***/
+    /***********************/
+
+    function test_updateCollateralActionContract() public {
+        flip = new Flipper(address(vat), address(cat), "gold");
+        action.updateCollateralActionContract("gold", address(flip), address(1)); 
+
+        (address catFlip,,) = cat.ilks("gold");
+        assertEq(catFlip, address(1));
+
+        assertEq(newFlip.wards(address(cat)),        1);
+        assertEq(newFlip.wards(address(end)),        1);
+        assertEq(newFlip.wards(address(flipperMom)), 1);
+
+        assertEq(flip.wards(address(cat)),        0);
+        assertEq(flip.wards(address(end)),        0);
+        assertEq(flip.wards(address(flipperMom)), 0);
+
+        assertEq(newFlip.beg(), flip.beg());
+        assertEq(newFlip.ttl(), flip.ttl());
+        assertEq(newFlip.tau(), flip.tau());
+    }
+
+    function test_updateSurplusAuctionContract() public {
+        Flapper newFlap = new Flapper(address(vat), address(gov));
+        action.updateSurplusAuctionContract("gold", address(flip), address(1)); 
+        
+        assertq(vow.flapper(), address(newFlap));
+
+        assertEq(newFlap.wards(address(vow)), 1);
+        assertEq(flap.wards(address(vow)),    0);
+
+        assertEq(newFlap.beg(), flap.beg());
+        assertEq(newFlap.ttl(), flap.ttl());
+        assertEq(newFlap.tau(), flap.tau());
+    }
+
+    function test_updateSurplusAuctionContract() public {
+        Flopper newFlop = new Flopper(address(vat), address(gov));
+        action.updateSurplusAuctionContract("gold", address(flip), address(1)); 
+        
+        assertq(vow.flopper(), address(newFlop));
+
+        assertEq(newFlop.wards(address(vow)),          1);
+        assertEq(vat.wards(address(newFlop)),          1);
+        assertEq(mkrAuthority.wards(address(newFlop)), 1);
+
+        assertEq(flop.wards(address(vow)),          0);
+        assertEq(vat.wards(address(flop)),          0);
+        assertEq(mkrAuthority.wards(address(flop)), 0);
+
+        assertEq(newFlop.beg(), flop.beg());
+        assertEq(newFlop.ttl(), flop.ttl());
+        assertEq(newFlop.tau(), flop.tau());
+        assertEq(newFlop.pad(), flop.pad());
+    }
+
+    /*************************/
+    /*** Oracle Management ***/
+    /*************************/
+
+    function test_addWritersToMedianWhitelist() public {
+        address[] memory feeds = new address[](2);
+        feeds[0] = address(1);
+        feeds[1] = address(2);
+
+        action
     }
 }

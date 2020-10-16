@@ -416,7 +416,7 @@ library DssExecLib {
     /** 
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param cat    The address of the Cat core contract
-        @param amount The amount to set in MKR (ex. 250 MKR amount == 250)
+        @param amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
     */
     function setMaxTotalDAILiquidationAmount(address cat, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
@@ -775,63 +775,63 @@ library DssExecLib {
     /*** Oracle Management ***/
     /*************************/
     /**
-        @dev Adds oracle feeds to the medianizer's writer whitelist, allowing the feeds to write prices.
-        @param medianizer Medianizer core contract address
+        @dev Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
+        @param median Median core contract address
         @param feeds      Array of oracle feed addresses to add to whitelist
     */
-    function addWritersToMedianWhitelist(address medianizer, address[] memory feeds) public {
-        OracleLike(medianizer).lift(feeds);
+    function addWritersToMedianWhitelist(address median, address[] memory feeds) public {
+        OracleLike(median).lift(feeds);
     }
     /**
-        @dev Removes oracle feeds to the medianizer's writer whitelist, disallowing the feeds to write prices.
-        @param medianizer Medianizer core contract address
+        @dev Removes oracle feeds to the Median's writer whitelist, disallowing the feeds to write prices.
+        @param median Median core contract address
         @param feeds      Array of oracle feed addresses to remove from whitelist
     */
-    function removeWritersFromMedianWhitelist(address medianizer, address[] memory feeds) public {
-        OracleLike(medianizer).drop(feeds);
+    function removeWritersFromMedianWhitelist(address median, address[] memory feeds) public {
+        OracleLike(median).drop(feeds);
     }
     /**
-        @dev Adds addresses to the medianizer's reader whitelist, allowing the addresses to read prices from the medianizer.
-        @param medianizer Medianizer core contract address
+        @dev Adds addresses to the Median's reader whitelist, allowing the addresses to read prices from the median.
+        @param median Median core contract address
         @param readers    Array of addresses to add to whitelist
     */
-    function addReadersToMedianWhitelist(address medianizer, address[] memory readers) public {
-        OracleLike(medianizer).kiss(readers);
+    function addReadersToMedianWhitelist(address median, address[] memory readers) public {
+        OracleLike(median).kiss(readers);
     }
     /**
-        @dev Adds an address to the medianizer's reader whitelist, allowing the address to read prices from the medianizer.
-        @param medianizer Medianizer core contract address
+        @dev Adds an address to the Median's reader whitelist, allowing the address to read prices from the median.
+        @param median Median core contract address
         @param reader     Address to add to whitelist
     */
-    function addReaderToMedianWhitelist(address medianizer, address reader) public {
-        OracleLike(medianizer).kiss(reader);
+    function addReaderToMedianWhitelist(address median, address reader) public {
+        OracleLike(median).kiss(reader);
     }
     /**
-        @dev Removes addresses from the medianizer's reader whitelist, disallowing the addresses to read prices from the medianizer.
-        @param medianizer Medianizer core contract address
+        @dev Removes addresses from the Median's reader whitelist, disallowing the addresses to read prices from the median.
+        @param median Median core contract address
         @param readers    Array of addresses to remove from whitelist
     */
-    function removeReadersFromMedianWhitelist(address medianizer, address[] memory readers) public {
-        OracleLike(medianizer).diss(readers);
+    function removeReadersFromMedianWhitelist(address median, address[] memory readers) public {
+        OracleLike(median).diss(readers);
     }
     /**
-        @dev Removes an address to the medianizer's reader whitelist, disallowing the address to read prices from the medianizer.
-        @param medianizer Medianizer core contract address
+        @dev Removes an address to the Median's reader whitelist, disallowing the address to read prices from the median.
+        @param median Median core contract address
         @param reader     Address to remove from whitelist
     */
-    function removeReaderFromMedianWhitelist(address medianizer, address reader) public {
-        OracleLike(medianizer).diss(reader);
+    function removeReaderFromMedianWhitelist(address median, address reader) public {
+        OracleLike(median).diss(reader);
     }
     /**
-        @dev Sets the minimum number of valid messages from whitelisted oracle feeds needed to update medianizer price.
-        @param medianizer Medianizer core contract address
-        @param minQuorum  Minimum number of valid messages from whitelisted oracle feeds needed to update medianizer price (NOTE: MUST BE ODD NUMBER)
+        @dev Sets the minimum number of valid messages from whitelisted oracle feeds needed to update median price.
+        @param median Median core contract address
+        @param minQuorum  Minimum number of valid messages from whitelisted oracle feeds needed to update median price (NOTE: MUST BE ODD NUMBER)
     */
-    function setMedianWritersQuorum(address medianizer, uint256 minQuorum) public {
-        OracleLike(medianizer).setBar(minQuorum);
+    function setMedianWritersQuorum(address median, uint256 minQuorum) public {
+        OracleLike(median).setBar(minQuorum);
     }
     /**
-        @dev Adds an address to the medianizer's reader whitelist, allowing the address to read prices from the OSM.
+        @dev Adds an address to the Median's reader whitelist, allowing the address to read prices from the OSM.
         @param osm        Oracle Security Module (OSM) core contract address
         @param reader     Address to add to whitelist
     */
@@ -839,7 +839,7 @@ library DssExecLib {
         OracleLike(osm).kiss(reader);
     }
     /**
-        @dev Removes an address to the medianizer's reader whitelist, disallowing the address to read prices from the OSM.
+        @dev Removes an address to the Median's reader whitelist, disallowing the address to read prices from the OSM.
         @param osm        Oracle Security Module (OSM) core contract address
         @param reader     Address to remove from whitelist
     */
