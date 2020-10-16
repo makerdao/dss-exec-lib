@@ -1,10 +1,10 @@
 pragma solidity ^0.6.7;
 
-abstract contract DssAction {
+contract DssAction {
 
-    address public immutable lib;
+    address public lib;
 
-    constructor(address lib_) public {
+    function setLib(address lib_) public {
         lib = lib_;
     }
 
@@ -79,7 +79,7 @@ abstract contract DssAction {
     /**********************/
     /*** Authorizations ***/
     /**********************/
-    function authorize(address base, address ward) internal {
+    function authorize(address base, address ward) internal virtual {
         libCall("authorize(address,address)", base, ward);
     }
 
@@ -237,8 +237,8 @@ abstract contract DssAction {
         libCall("updateCollateralAuctionContract(bytes32,address,address)", ilk, newFlip, oldFlip);
     }
 
-    function updateSurplusAuctionCOntract(bytes32 ilk, address newFlap, address oldFlap) internal {
-        libCall("updateSurplusAuctionCOntract(bytes32,address,address)", ilk, newFlap, oldFlap);
+    function updateSurplusAuctionContract(bytes32 ilk, address newFlap, address oldFlap) internal {
+        libCall("updateSurplusAuctionContract(bytes32,address,address)", ilk, newFlap, oldFlap);
     }
 
     function updateDebtAuctionContract(bytes32 ilk, address newFlop, address oldFlop) internal {
@@ -325,5 +325,5 @@ abstract contract DssAction {
     }
 
     // Abstract enforcement of required execute() function
-    function execute() external virtual;
+    // function execute() external virtual;
 }
