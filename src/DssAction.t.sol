@@ -4,12 +4,13 @@ import "ds-test/test.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
 
-import "dss-chain-log/ChainLog.sol";
+import {ChainLog} from "dss-chain-log/ChainLog.sol";
 // import "osm-mom/OsmMom.sol";
 // import "mkr-authority/MkrAuthority.sol";
-import "ilk-registry/IlkRegistry.sol";
+import {IlkRegistry} from "ilk-registry/IlkRegistry.sol";
 // import "flipper-mom/FlipperMom.sol";
-import {ChainlogAbstract} from "dss-interfaces/Interfaces.sol";
+import {Median} from "median/median.sol";
+import {OsmAbstract} from "dss-interfaces/Interfaces.sol";
 
 import {Vat}  from 'dss/vat.sol';
 import {Cat}  from 'dss/cat.sol';
@@ -49,7 +50,6 @@ contract EndTest is DSTest {
     ChainLog log;
 
     Spotter spot;
-    Flipper flip; // Only one used for "gold" ilk
     Flapper flap;
     Flopper flop;
 
@@ -196,6 +196,8 @@ contract EndTest is DSTest {
         // osmMom     = new OsmMom();
         // govGuard   = new MkrAuthority();
         // flipperMom = new FlipperMom(address(cat));
+
+        median = new Median();
 
         hevm.store(
             LOG,
@@ -450,7 +452,8 @@ contract EndTest is DSTest {
     /***********************/
 
     function test_updateCollateralActionContract() public {
-        flip = new Flipper(address(vat), address(cat), "gold");
+        (,,, Flipper flip) = ilks("gold");
+        Flipper newFlip = new Flipper(address(vat), address(cat), "gold");
         action.updateCollateralActionContract("gold", address(flip), address(1)); 
 
         (address catFlip,,) = cat.ilks("gold");
@@ -512,6 +515,101 @@ contract EndTest is DSTest {
         feeds[0] = address(1);
         feeds[1] = address(2);
 
-        action
+        assertEq(median.orcl(address(1)), 0);
+        assertEq(median.orcl(address(2)), 0);
+        action.addWritersToMedianWhitelist(address(median), feeds);
+        assertEq(median.orcl(address(1)), 1);
+        assertEq(median.orcl(address(2)), 1);
+    }
+
+    function test_removeWritersFromMedianWhitelist() public {
+        address[] memory feeds = new address[](2);
+        feeds[0] = address(1);
+        feeds[1] = address(2);
+
+        assertEq(median.orcl(address(1)), 0);
+        assertEq(median.orcl(address(2)), 0);
+        action.addWritersToMedianWhitelist(address(median), feeds);
+        assertEq(median.orcl(address(1)), 1);
+        assertEq(median.orcl(address(2)), 1);
+        action.removeWritersFromMedianWhitelist(address(median), feeds);
+        assertEq(median.orcl(address(1)), 0);
+        assertEq(median.orcl(address(2)), 0);
+    }
+
+    function test_addReadersToMedianWhitelist() public {
+        address[] memory readers = new address[](2);
+        readers[0] = address(1);
+        readers[1] = address(2);
+
+        assertEq(median.bud(address(1)), 0);
+        assertEq(median.bud(address(2)), 0);
+        action.addReadersToMedianWhitelist(address(median), readers);
+        assertEq(median.bud(address(1)), 1);
+        assertEq(median.bud(address(2)), 1);
+    }
+
+    function test_removeReadersFromMedianWhitelist() public {
+        address[] memory readers = new address[](2);
+        readers[0] = address(1);
+        readers[1] = address(2);
+
+        assertEq(median.bud(address(1)), 0);
+        assertEq(median.bud(address(2)), 0);
+        action.addReadersToMedianWhitelist(address(median), readers);
+        assertEq(median.bud(address(1)), 1);
+        assertEq(median.bud(address(2)), 1);
+        action.removeReadersFromMedianWhitelist(address(median), readers);
+        assertEq(median.bud(address(1)), 0);
+        assertEq(median.bud(address(2)), 0);
+    }
+
+    function test_addReaderToMedianWhitelist() public {
+        address reader = address(1);
+
+        assertEq(median.bud(address(1)), 0);
+        action.addReaderToMedianWhitelist(address(median), feeds);
+        assertEq(median.bud(address(1)), 1);
+    }
+
+    function test_removeReaderFromMedianWhitelist() public {
+        address reader = address(1);
+
+        assertEq(median.bud(address(1)), 0);
+        action.addReaderToMedianWhitelist(address(median), feeds);
+        assertEq(median.bud(address(1)), 1);
+        action.removeReaderFromMedianWhitelist(address(median), feeds);
+        assertEq(median.bud(address(1)), 0);
+    }
+
+    function test_setMedianWritersQuorum() public {
+        action.setMedianWritersQuorum(address(median), 11);
+        assertEq(median.bar(), 11);
+    }
+
+    function test_addReaderToOSMWhitelist() public {
+        (DSValue pip,,,) = ilks("gold");
+        address reader = address(1);
+
+        assertEq(OsmAbstract(address(pip)).bud(address(1)), 0);
+        action.addReaderToOSMWhitelist(address(pip), feeds);
+        assertEq(OsmAbstract(address(pip)).bud(address(1)), 1);
+    }
+
+    function test_removeReaderFromOSMWhitelist() public {
+        (DSValue pip,,,) = ilks("gold");
+        address reader = address(1);
+
+        assertEq(OsmAbstract(address(pip)).bud(address(1)), 0);
+        action.addReaderToOSMWhitelist(address(pip), feeds);
+        assertEq(OsmAbstract(address(pip)).bud(address(1)), 1);
+        action.removeReaderFromOSMWhitelist(address(pip), feeds);
+        assertEq(OsmAbstract(address(pip)).bud(address(1)), 0);
+    }
+
+     function test_allowOSMFreeze() public {
+        (DSValue pip,,,) = ilks("gold");
+        action.allowOSMFreeze(address(pip), "gold");
+        assertEq(osmMom.osms("gold"), address(pip));
     }
 }
