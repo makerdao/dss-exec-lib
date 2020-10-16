@@ -25,3 +25,6 @@
 [submodule "lib/flipper-mom"]
 	path = lib/flipper-mom
 	url = https://github.com/makerdao/flipper-mom
+[submodule "lib/median"]
+	path = lib/median
+	url = https://github.com/makerdao/median
