@@ -67,20 +67,23 @@ interface MomLike {
 interface RegistryLike {
     function add(address) external;
     function ilkData(bytes32) external returns (
-        uint256       pos,   
-        address       gem,   
-        address       pip,   
-        address       join,  
-        address       flip,  
-        uint256       dec,   
-        string memory name,   
+        uint256       pos,
+        address       gem,
+        address       pip,
+        address       join,
+        address       flip,
+        uint256       dec,
+        string memory name,
         string memory symbol
     );
 }
 
 // https://github.com/makerdao/dss-chain-log
 interface ChainlogAbstract {
+    function setVersion(string calldata) external;
+    function setAddress(bytes32, address) external);
     function getAddress(bytes32) external view returns (address);
+    function removeAddress(bytes32) external;
 }
 
 
@@ -118,21 +121,36 @@ contract DssExecLib {
     }
 
     /*******************************/
+    /***   Core address Helpers    */
+    /*******************************/
+    function vat()        public returns (address) { return getChainLogAddress("MCD_VAT"); }
+    function cat()        public returns (address) { return getChainLogAddress("MCD_CAT"); }
+    function jug()        public returns (address) { return getChainLogAddress("MCD_JUG"); }
+    function pot()        public returns (address) { return getChainLogAddress("MCD_POT"); }
+    function vow()        public returns (address) { return getChainLogAddress("MCD_VOW"); }
+    function end()        public returns (address) { return getChainLogAddress("MCD_END"); }
+    function reg()        public returns (address) { return getChainLogAddress("ILK_REG"); }
+    function spot()       public returns (address) { return getChainLogAddress("MCD_SPOT"); }
+    function flap()       public returns (address) { return getChainLogAddress("MCD_FLAP"); }
+    function flop()       public returns (address) { return getChainLogAddress("MCD_FLOP"); }
+    function osmMom()     public returns (address) { return getChainLogAddress("OSM_MOM"); }
+    function govGuard()   public returns (address) { return getChainLogAddress("GOV_GUARD"); }
+    function flipperMom() public returns (address) { return getChainLogAddress("FLIPPER_MOM"); }
+
+    /*******************************/
     /*** ChainLog Helper Functions */
     /*******************************/
-    function vat()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_VAT"); }
-    function cat()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_CAT"); }
-    function jug()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_JUG"); }
-    function pot()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_POT"); }
-    function vow()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_VOW"); }
-    function end()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_END"); }
-    function reg()        public returns (address) { return ChainlogAbstract(LOG).getAddress("ILK_REG"); }
-    function spot()       public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_SPOT"); }
-    function flap()       public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_FLAP"); }
-    function flop()       public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_FLOP"); }
-    function osmMom()     public returns (address) { return ChainlogAbstract(LOG).getAddress("OSM_MOM"); }
-    function govGuard()   public returns (address) { return ChainlogAbstract(LOG).getAddress("GOV_GUARD"); }
-    function flipperMom() public returns (address) { return ChainlogAbstract(LOG).getAddress("FLIPPER_MOM"); }
+    function setChainLogAddress(bytes32 _key, address _val) public {
+        return ChainlogAbstract(LOG).setAddress(_key, _val);
+    }
+
+    function setChainLogVersion(bytes32 memory _version) public {
+        return ChainlogAbstract(LOG).setVersion(_version);
+    }
+
+    function getChainLogAddress(bytes32 _key) public returns (address) {
+        return ChainlogAbstract(LOG).getAddress(_key);
+    }
 
     /**********************/
     /*** Authorizations ***/
@@ -207,7 +225,7 @@ contract DssExecLib {
     /******************************/
     /*** System Risk Parameters ***/
     /******************************/
-    /** 
+    /**
         @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
@@ -229,12 +247,12 @@ contract DssExecLib {
         require((rate >= RAY) && (rate < 2 * RAY), "LibDssExec/dsr-out-of-bounds");
         Fileable(pot()).file("dsr", rate);
     }
-    /** 
+    /**
         @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setSurplusAuctionAmount(uint256 amount) public { setSurplusAuctionAmount(vow(), amount); }
-    /** 
+    /**
         @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
@@ -243,12 +261,12 @@ contract DssExecLib {
         require(amount < WAD, "LibDssExec/incorrect-vow-bump-precision");
         Fileable(vow).file("bump", amount * RAD);
     }
-    /** 
+    /**
         @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setSurplusBuffer(uint256 amount) public { setSurplusBuffer(vow(), amount); }
-    /** 
+    /**
         @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
@@ -279,7 +297,7 @@ contract DssExecLib {
         @param length Amount of time for bids.
     */
     function setSurplusAuctionBidDuration(uint256 length) public {
-        setSurplusAuctionBidDuration(flap(), length); 
+        setSurplusAuctionBidDuration(flap(), length);
     }
     /**
         @dev Set bid duration for surplus auctions.
@@ -304,12 +322,12 @@ contract DssExecLib {
     function setSurplusAuctionDuration(address flap, uint256 length) public {
         Fileable(flap).file("tau", length);
     }
-    /** 
+    /**
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
         @param length Duration in seconds
     */
     function setDebtAuctionDelay(uint256 length) public { setDebtAuctionDelay(vow(), length); }
-    /** 
+    /**
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
         @param vow    The address of the Vow core contract
         @param length Duration in seconds
@@ -317,12 +335,12 @@ contract DssExecLib {
     function setDebtAuctionDelay(address vow, uint256 length) public {
         Fileable(vow).file("wait", length);
     }
-    /** 
+    /**
         @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setDebtAuctionDAIAmount(uint256 amount) public { setDebtAuctionDAIAmount(vow(), amount); }
-    /** 
+    /**
         @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
@@ -331,12 +349,12 @@ contract DssExecLib {
         require(amount < WAD, "LibDssExec/incorrect-vow-sump-precision");
         Fileable(vow).file("sump", amount * RAD);
     }
-    /** 
+    /**
         @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setDebtAuctionMKRAmount(uint256 amount) public { setDebtAuctionMKRAmount(vow(), amount); }
-    /** 
+    /**
         @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
         @param vow    The address of the Vow core contract
         @param amount The amount to set in MKR (ex. 250 MKR amount == 250)
@@ -367,7 +385,7 @@ contract DssExecLib {
         @param length Amount of time for bids.
     */
     function setDebtAuctionBidDuration(uint256 length) public {
-        setDebtAuctionBidDuration(flop(), length); 
+        setDebtAuctionBidDuration(flop(), length);
     }
     /**
         @dev Set bid duration for debt auctions.
@@ -392,13 +410,13 @@ contract DssExecLib {
     function setDebtAuctionDuration(address flop, uint256 length) public {
         Fileable(flop).file("tau", length);
     }
-    /** 
+    /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
     */
     function setDebtAuctionMKRIncreaseRate(uint256 pct) public { setDebtAuctionMKRIncreaseRate(flop(), pct); }
-    /** 
+    /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 50% to 150% WAD needed for pad)
@@ -408,12 +426,12 @@ contract DssExecLib {
     function setDebtAuctionMKRIncreaseRate(address flop, uint256 pct) public {
         Fileable(flop).file("pad", wdiv(add(pct, 100 * THOUSAND), 100 * THOUSAND));
     }
-    /** 
+    /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setMaxTotalDAILiquidationAmount(uint256 amount) public { setMaxTotalDAILiquidationAmount(cat(), amount); }
-    /** 
+    /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param cat    The address of the Cat core contract
         @param amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
@@ -422,12 +440,12 @@ contract DssExecLib {
         require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
         Fileable(cat).file("box", amount * RAD);
     }
-    /** 
+    /**
         @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param length Time in seconds to set for ES processing time
     */
     function setEmergencyShutdownProcessingTime(uint256 length) public { setEmergencyShutdownProcessingTime(end(), length); }
-    /** 
+    /**
         @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param end    The address of the End core contract
         @param length Time in seconds to set for ES processing time
@@ -445,9 +463,9 @@ contract DssExecLib {
             Many of the settings that change weekly rely on the rate accumulator
             described at https://docs.makerdao.com/smart-contract-modules/rates-module
             To check this yourself, use the following rate calculation (example 8%):
-            
+
             $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
-            
+
             A table of rates can also be found at:
             https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
 
@@ -466,14 +484,14 @@ contract DssExecLib {
     /**
         @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is amount * RAY / 1000
-        @param spot   The address of the Spot core contract 
+        @param spot   The address of the Spot core contract
         @param amount The amount to set as integer (x1000) (ex. $1.025 == 1025)
     */
     function setDAIReferenceValue(address spot, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
         Fileable(spot).file("par", rdiv(amount, 1000));
     }
-    
+
     /*****************************/
     /*** Collateral Management ***/
     /*****************************/
@@ -585,7 +603,7 @@ contract DssExecLib {
     */
     function setIlkBidDuration(bytes32 ilk, uint256 length) public {
         (,,,, address flip,,,) = RegistryLike(reg()).ilkData(ilk);
-        setIlkBidDuration(flip, length); 
+        setIlkBidDuration(flip, length);
     }
     /**
         @dev Set bid duration for a collateral type.
@@ -623,9 +641,9 @@ contract DssExecLib {
             Many of the settings that change weekly rely on the rate accumulator
             described at https://docs.makerdao.com/smart-contract-modules/rates-module
             To check this yourself, use the following rate calculation (example 8%):
-            
+
             $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
-            
+
             A table of rates can also be found at:
             https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
 
@@ -666,11 +684,11 @@ contract DssExecLib {
     */
     function updateCollateralAuctionContract(
         address vat,
-        address cat, 
+        address cat,
         address end,
         address flipperMom,
-        bytes32 ilk, 
-        address newFlip, 
+        bytes32 ilk,
+        address newFlip,
         address oldFlip
     ) public {
         // Add new flip address to Cat
@@ -880,9 +898,9 @@ contract DssExecLib {
         @param liquidationPenalty   Percent liquidation penalty for new collateral [ex. 13.5% == 13500]
         @param ilkStabilityFee      Percent stability fee for new collateral       [ex. 4% == 1000000001243680656318820312]
         @param bidIncrease          Percent bid increase for new collateral        [ex. 13.5% == 13500]
-        @param bidDuration          Bid period duration for new collateral  
+        @param bidDuration          Bid period duration for new collateral
         @param auctionDuration      Total auction duration for new collateral
-        @param liquidationRatio     Percent liquidation ratio for new collateral   [ex. 150% == 150000] 
+        @param liquidationRatio     Percent liquidation ratio for new collateral   [ex. 150% == 150000]
     */
     function addNewCollateral(
         bytes32 ilk,
@@ -960,7 +978,7 @@ contract DssExecLib {
         setIlkBidDuration(ilk, bidDuration);
         // Set the ilk max auction duration to
         setIlkAuctionDuration(ilk, auctionDuration);
-        // Set the ilk min collateralization ratio 
+        // Set the ilk min collateralization ratio
         setIlkLiquidationRatio(ilk, liquidationRatio);
 
         // Update ilk spot value in Vat
