@@ -4,29 +4,30 @@ import "ds-test/test.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
 
-import {ChainLog}                from "dss-chain-log/ChainLog.sol";
-import {OsmMom}                  from "osm-mom/OsmMom.sol";
-import {MkrAuthority}            from "mkr-authority/MkrAuthority.sol";
-import {IlkRegistry}             from "ilk-registry/IlkRegistry.sol";
-import {FlipperMom}              from "flipper-mom/FlipperMom.sol";
-import {Median}                  from "median/median.sol";
-import {OsmAbstract}             from "dss-interfaces/Interfaces.sol";
-import {DSProxyFactory, DSProxy} from "ds-proxy/proxy.sol";
+import {ChainLog}         from "dss-chain-log/ChainLog.sol";
+import {OsmMom}           from "osm-mom/OsmMom.sol";
+import {MkrAuthority}     from "mkr-authority/MkrAuthority.sol";
+import {IlkRegistry}      from "ilk-registry/IlkRegistry.sol";
+import {FlipperMom}       from "flipper-mom/FlipperMom.sol";
+import {Median}           from "median/median.sol";
+import {OsmAbstract}      from "dss-interfaces/Interfaces.sol";
+import {DSProxyFactory,
+        DSProxy}          from "ds-proxy/proxy.sol";
 
-import {Vat}                     from 'dss/vat.sol';
-import {Cat}                     from 'dss/cat.sol';
-import {Vow}                     from 'dss/vow.sol';
-import {Pot}                     from 'dss/pot.sol';
-import {Jug}                     from 'dss/jug.sol';
-import {Flipper}                 from 'dss/flip.sol';
-import {Flapper}                 from 'dss/flap.sol';
-import {Flopper}                 from 'dss/flop.sol';
-import {GemJoin}                 from 'dss/join.sol';
-import {End}                     from 'dss/end.sol';
-import {Spotter}                 from 'dss/spot.sol';
+import {Vat}              from 'dss/vat.sol';
+import {Cat}              from 'dss/cat.sol';
+import {Vow}              from 'dss/vow.sol';
+import {Pot}              from 'dss/pot.sol';
+import {Jug}              from 'dss/jug.sol';
+import {Flipper}          from 'dss/flip.sol';
+import {Flapper}          from 'dss/flap.sol';
+import {Flopper}          from 'dss/flop.sol';
+import {GemJoin}          from 'dss/join.sol';
+import {End}              from 'dss/end.sol';
+import {Spotter}          from 'dss/spot.sol';
 
-import {DssTestAction}           from './DssTestAction.sol';
-import {DssExecLib}              from './DssExecLib.sol';
+import {DssTestAction}    from './DssTestAction.sol';
+import {DssExecLib}       from './DssExecLib.sol';
 
 interface Hevm {
     function warp(uint256) external;
