@@ -81,7 +81,7 @@ interface RegistryLike {
 // https://github.com/makerdao/dss-chain-log
 interface ChainlogAbstract {
     function setVersion(string calldata) external;
-    function setAddress(bytes32, address) external);
+    function setAddress(bytes32, address) external;
     function getAddress(bytes32) external view returns (address);
     function removeAddress(bytes32) external;
 }

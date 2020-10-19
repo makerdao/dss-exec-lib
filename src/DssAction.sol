@@ -58,7 +58,7 @@ contract DssAction {
     }
 
     function libCall(
-        string memory sig, 
+        string memory sig,
         bytes32 what,
         address[] memory arr,
         bool    bool1,
@@ -85,6 +85,17 @@ contract DssAction {
 
     function deauthorize(address base, address ward) internal {
         libCall("deauthorize(address,address)", base, ward);
+    }
+
+    /**********************/
+    /***    ChangeLog   ***/
+    /**********************/
+    function setChainLogAddress(bytes32 key, address value) internal {
+        libCall("setChainLogAddress(bytes32,address)", key, value);
+    }
+
+    function setChainLogVersion(string calldata version) internal {
+        libCall("setChainLogVersion(bytes32,address)", key, value);
     }
 
     /**************************/
@@ -127,67 +138,67 @@ contract DssAction {
         libCall("setDSR(uint256)", rate);
     }
 
-    function setSurplusAuctionAmount(uint256 amount) internal { 
+    function setSurplusAuctionAmount(uint256 amount) internal {
         libCall("setSurplusAuctionAmount(uint256)", amount);
     }
 
-    function setSurplusBuffer(uint256 amount) internal { 
+    function setSurplusBuffer(uint256 amount) internal {
         libCall("setSurplusBuffer(uint256)", amount);
     }
 
-    function setMinSurplusAuctionBidIncrease(uint256 pct) internal { 
+    function setMinSurplusAuctionBidIncrease(uint256 pct) internal {
         libCall("setMinSurplusAuctionBidIncrease(uint256)", pct);
     }
 
-    function setSurplusAuctionBidDuration(uint256 length) internal { 
+    function setSurplusAuctionBidDuration(uint256 length) internal {
         libCall("setSurplusAuctionBidDuration(uint256)", length);
     }
 
-    function setSurplusAuctionDuration(uint256 length) internal { 
+    function setSurplusAuctionDuration(uint256 length) internal {
         libCall("setSurplusAuctionDuration(uint256)", length);
     }
 
-    function setDebtAuctionDelay(uint256 length) internal { 
+    function setDebtAuctionDelay(uint256 length) internal {
         libCall("setDebtAuctionDelay(uint256)", length);
     }
 
-    function setDebtAuctionDAIAmount(uint256 amount) internal { 
+    function setDebtAuctionDAIAmount(uint256 amount) internal {
         libCall("setDebtAuctionDAIAmount(uint256)", amount);
     }
 
-    function setDebtAuctionMKRAmount(uint256 amount) internal { 
+    function setDebtAuctionMKRAmount(uint256 amount) internal {
         libCall("setDebtAuctionMKRAmount(uint256)", amount);
     }
 
-    function setMinDebtAuctionBidIncrease(uint256 pct) internal { 
+    function setMinDebtAuctionBidIncrease(uint256 pct) internal {
         libCall("setMinDebtAuctionBidIncrease(uint256)", pct);
     }
 
-    function setDebtAuctionBidDuration(uint256 length) internal { 
+    function setDebtAuctionBidDuration(uint256 length) internal {
         libCall("setDebtAuctionBidDuration(uint256)", length);
     }
 
-    function setDebtAuctionDuration(uint256 length) internal { 
+    function setDebtAuctionDuration(uint256 length) internal {
         libCall("setDebtAuctionDuration(uint256)", length);
     }
 
-    function setDebtAuctionMKRIncreaseRate(uint256 pct) internal { 
+    function setDebtAuctionMKRIncreaseRate(uint256 pct) internal {
         libCall("setDebtAuctionMKRIncreaseRate(uint256)", pct);
     }
 
-    function setMaxTotalDAILiquidationAmount(uint256 amount) internal { 
+    function setMaxTotalDAILiquidationAmount(uint256 amount) internal {
         libCall("setMaxTotalDAILiquidationAmount(uint256)", amount);
     }
 
-    function setEmergencyShutdownProcessingTime(uint256 length) internal { 
+    function setEmergencyShutdownProcessingTime(uint256 length) internal {
         libCall("setEmergencyShutdownProcessingTime(uint256)", length);
     }
 
-    function setGlobalStabilityFee(uint256 rate) internal { 
+    function setGlobalStabilityFee(uint256 rate) internal {
         libCall("setGlobalStabilityFee(uint256)", rate);
     }
 
-    function setDAIReferenceValue(uint256 amount) internal { 
+    function setDAIReferenceValue(uint256 amount) internal {
         libCall("setDAIReferenceValue(uint256)", amount);
     }
 
@@ -308,15 +319,15 @@ contract DssAction {
     ) internal {
         libCall(
             "addNewCollateral(bytes32,address[],bool,bool,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
-            ilk, 
-            addresses, 
-            liquidatable, 
-            isOsm, 
-            ilkDebtCeiling, 
-            minVaultAmount, 
-            maxLiquidationAmount, 
-            liquidationPenalty, 
-            ilkStabilityFee, 
+            ilk,
+            addresses,
+            liquidatable,
+            isOsm,
+            ilkDebtCeiling,
+            minVaultAmount,
+            maxLiquidationAmount,
+            liquidationPenalty,
+            ilkStabilityFee,
             bidIncrease,
             bidDuration,
             auctionDuration,
