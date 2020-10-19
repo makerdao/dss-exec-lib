@@ -397,7 +397,7 @@ contract DssExecLib {
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
         @param pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
     */
-    function setDebtAuctionMKRIncreaseRate(uint256 pct) public { setDebtAuctionMKRIncreaseRate(vow(), pct); }
+    function setDebtAuctionMKRIncreaseRate(uint256 pct) public { setDebtAuctionMKRIncreaseRate(flop(), pct); }
     /** 
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
@@ -420,13 +420,13 @@ contract DssExecLib {
     */
     function setMaxTotalDAILiquidationAmount(address cat, uint256 amount) public {
         require(amount < WAD, "LibDssExec/incorrect-vow-dump-precision");
-        Fileable(cat).file("box", amount * WAD);
+        Fileable(cat).file("box", amount * RAD);
     }
     /** 
         @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param length Time in seconds to set for ES processing time
     */
-    function setEmergencyShutdownProcessingTime(uint256 length) public { setEmergencyShutdownProcessingTime(cat(), length); }
+    function setEmergencyShutdownProcessingTime(uint256 length) public { setEmergencyShutdownProcessingTime(end(), length); }
     /** 
         @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param end    The address of the End core contract
