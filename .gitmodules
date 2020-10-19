@@ -28,3 +28,6 @@
 [submodule "lib/median"]
 	path = lib/median
 	url = https://github.com/makerdao/median
+[submodule "lib/ds-proxy"]
+	path = lib/ds-proxy
+	url = https://github.com/brianmcmichael/ds-proxy
