@@ -4,28 +4,29 @@ import "ds-test/test.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
 
-import {ChainLog} from "dss-chain-log/ChainLog.sol";
-import {OsmMom} from "osm-mom/OsmMom.sol";
-import {MkrAuthority} from "mkr-authority/MkrAuthority.sol";
-import {IlkRegistry} from "ilk-registry/IlkRegistry.sol";
-import {FlipperMom} from "flipper-mom/FlipperMom.sol";
-import {Median} from "median/median.sol";
-import {OsmAbstract} from "dss-interfaces/Interfaces.sol";
+import {ChainLog}                from "dss-chain-log/ChainLog.sol";
+import {OsmMom}                  from "osm-mom/OsmMom.sol";
+import {MkrAuthority}            from "mkr-authority/MkrAuthority.sol";
+import {IlkRegistry}             from "ilk-registry/IlkRegistry.sol";
+import {FlipperMom}              from "flipper-mom/FlipperMom.sol";
+import {Median}                  from "median/median.sol";
+import {OsmAbstract}             from "dss-interfaces/Interfaces.sol";
+import {DSProxyFactory, DSProxy} from "ds-proxy/proxy.sol";
 
-import {Vat}  from 'dss/vat.sol';
-import {Cat}  from 'dss/cat.sol';
-import {Vow}  from 'dss/vow.sol';
-import {Pot}  from 'dss/pot.sol';
-import {Jug}  from 'dss/jug.sol';
-import {Flipper} from 'dss/flip.sol';
-import {Flapper} from 'dss/flap.sol';
-import {Flopper} from 'dss/flop.sol';
-import {GemJoin} from 'dss/join.sol';
-import {End}  from 'dss/end.sol';
-import {Spotter} from 'dss/spot.sol';
+import {Vat}                     from 'dss/vat.sol';
+import {Cat}                     from 'dss/cat.sol';
+import {Vow}                     from 'dss/vow.sol';
+import {Pot}                     from 'dss/pot.sol';
+import {Jug}                     from 'dss/jug.sol';
+import {Flipper}                 from 'dss/flip.sol';
+import {Flapper}                 from 'dss/flap.sol';
+import {Flopper}                 from 'dss/flop.sol';
+import {GemJoin}                 from 'dss/join.sol';
+import {End}                     from 'dss/end.sol';
+import {Spotter}                 from 'dss/spot.sol';
 
-import {DssTestAction} from './DssTestAction.sol';
-import {DssExecLib} from './DssExecLib.sol';
+import {DssTestAction}           from './DssTestAction.sol';
+import {DssExecLib}              from './DssExecLib.sol';
 
 interface Hevm {
     function warp(uint256) external;
@@ -360,27 +361,27 @@ contract EndTest is DSTest {
     }
 
     function test_setSurplusAuctionBidDuration() public {
-        action.setSurplusAuctionBidDuration_test(12 hours); 
+        action.setSurplusAuctionBidDuration_test(12 hours);
         assertEq(uint256(flap.ttl()), 12 hours);
     }
 
     function test_setSurplusAuctionDuration() public {
-        action.setSurplusAuctionDuration_test(12 hours); 
+        action.setSurplusAuctionDuration_test(12 hours);
         assertEq(uint256(flap.tau()), 12 hours);
     }
 
     function test_setDebtAuctionDelay() public {
-        action.setDebtAuctionDelay_test(12 hours); 
+        action.setDebtAuctionDelay_test(12 hours);
         assertEq(vow.wait(), 12 hours);
     }
 
     function test_setDebtAuctionDAIAmount() public {
-        action.setDebtAuctionDAIAmount_test(100 * THOUSAND); 
+        action.setDebtAuctionDAIAmount_test(100 * THOUSAND);
         assertEq(vow.sump(), 100 * THOUSAND * RAD);
     }
 
     function test_setDebtAuctionMKRAmount_fail() public {
-        action.setDebtAuctionMKRAmount_test(100); 
+        action.setDebtAuctionMKRAmount_test(100);
         assertEq(vow.dump(), 100 * WAD);
     }
 
@@ -390,72 +391,72 @@ contract EndTest is DSTest {
     }
 
     function test_setDebtAuctionBidDuration() public {
-        action.setDebtAuctionBidDuration_test(12 hours); 
+        action.setDebtAuctionBidDuration_test(12 hours);
         assertEq(uint256(flop.ttl()), 12 hours);
     }
 
     function test_setDebtAuctionDuration() public {
-        action.setDebtAuctionDuration_test(12 hours); 
+        action.setDebtAuctionDuration_test(12 hours);
         assertEq(uint256(flop.tau()), 12 hours);
     }
 
     function test_setDebtAuctionMKRIncreaseRate_fail() public {
-        action.setDebtAuctionMKRIncreaseRate_test(5250); 
+        action.setDebtAuctionMKRIncreaseRate_test(5250);
         assertEq(flop.pad(), 105.25 ether / 100); // WAD pct
     }
 
     function test_setMaxTotalDAILiquidationAmount_fail() public {
-        action.setMaxTotalDAILiquidationAmount_test(50 * MILLION); 
+        action.setMaxTotalDAILiquidationAmount_test(50 * MILLION);
         assertEq(cat.box(), 50 * MILLION * RAD); // WAD pct
     }
 
     function test_setEmergencyShutdownProcessingTime_fail() public {
-        action.setEmergencyShutdownProcessingTime_test(12 hours); 
-        assertEq(end.wait(), 12 hours); 
+        action.setEmergencyShutdownProcessingTime_test(12 hours);
+        assertEq(end.wait(), 12 hours);
     }
 
     function test_setGlobalStabilityFee() public {
         uint256 rate = 1000000001243680656318820312;
-        action.setGlobalStabilityFee_test(rate); 
-        assertEq(jug.base(), rate); 
+        action.setGlobalStabilityFee_test(rate);
+        assertEq(jug.base(), rate);
     }
 
     function test_setDAIReferenceValue_fail() public {
         action.setDAIReferenceValue_test(1005); // $1.005
-        assertEq(spot.par(), ray(1.005 ether)); 
+        assertEq(spot.par(), ray(1.005 ether));
     }
 
     /*****************************/
     /*** Collateral Management ***/
     /*****************************/
-    
+
     function test_setIlkDebtCeiling_fail() public {
         action.setIlkDebtCeiling_test("gold", 100 * MILLION);
-        (,,, uint256 line,) = vat.ilks("gold"); 
-        assertEq(line, 100 * MILLION * RAD); 
+        (,,, uint256 line,) = vat.ilks("gold");
+        assertEq(line, 100 * MILLION * RAD);
     }
 
     function test_setIlkMinVaultAmount() public {
         action.setIlkMinVaultAmount_test("gold", 100);
-        (,,,, uint256 dust) = vat.ilks("gold"); 
-        assertEq(dust, 100 * RAD); 
+        (,,,, uint256 dust) = vat.ilks("gold");
+        assertEq(dust, 100 * RAD);
     }
 
     function test_setIlkLiquidationPenalty() public {
         action.setIlkLiquidationPenalty_test("gold", 13250); // 13.25%
-        (, uint256 chop,) = cat.ilks("gold"); 
+        (, uint256 chop,) = cat.ilks("gold");
         assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
     }
 
     function test_setIlkMaxLiquidationAmount() public {
         action.setIlkMaxLiquidationAmount_test("gold", 50 * THOUSAND);
-        (,, uint256 dunk) = cat.ilks("gold"); 
-        assertEq(dunk, 50 * THOUSAND * RAD); 
+        (,, uint256 dunk) = cat.ilks("gold");
+        assertEq(dunk, 50 * THOUSAND * RAD);
     }
 
     function test_setIlkLiquidationRatio_fail() public {
         action.setIlkLiquidationRatio_test("gold", 150000); // 150%
-        (, uint256 mat) = spot.ilks("gold"); 
+        (, uint256 mat) = spot.ilks("gold");
         assertEq(mat, ray(150 ether / 100)); // RAY pct
     }
 
@@ -465,18 +466,18 @@ contract EndTest is DSTest {
     }
 
     function test_setIlkBidDuration_fails() public {
-        action.setIlkBidDuration_test("gold", 6 hours); 
+        action.setIlkBidDuration_test("gold", 6 hours);
         assertEq(uint256(ilks["gold"].flip.ttl()), 6 hours);
     }
 
     function test_setIlkAuctionDuration_fail() public {
-        action.setIlkAuctionDuration_test("gold", 6 hours); 
+        action.setIlkAuctionDuration_test("gold", 6 hours);
         assertEq(uint256(ilks["gold"].flip.tau()), 6 hours);
     }
 
     function test_setIlkStabilityFee() public {
         hevm.warp(START_TIME + 1 days);
-        action.setIlkStabilityFee_test("gold", 1000000001243680656318820312); 
+        action.setIlkStabilityFee_test("gold", 1000000001243680656318820312);
         (uint256 duty, uint256 rho) = jug.ilks("gold");
         assertEq(duty, 1000000001243680656318820312);
         assertEq(rho, START_TIME + 1 days);
@@ -489,7 +490,7 @@ contract EndTest is DSTest {
     function test_updateCollateralAuctionContract_fail() public {
         Flipper flip = ilks["gold"].flip;
         Flipper newFlip = new Flipper(address(vat), address(cat), "gold");
-        action.updateCollateralAuctionContract_test("gold", address(flip), address(1)); 
+        action.updateCollateralAuctionContract_test("gold", address(flip), address(1));
 
         (address catFlip,,) = cat.ilks("gold");
         assertEq(catFlip, address(1));
@@ -510,8 +511,8 @@ contract EndTest is DSTest {
     function test_updateSurplusAuctionContract_fail() public {
         Flipper flip = ilks["gold"].flip;
         Flapper newFlap = new Flapper(address(vat), address(gov));
-        action.updateSurplusAuctionContract_test("gold", address(flip), address(1)); 
-        
+        action.updateSurplusAuctionContract_test("gold", address(flip), address(1));
+
         assertEq(address(vow.flapper()), address(newFlap));
 
         assertEq(newFlap.wards(address(vow)), 1);
@@ -525,8 +526,8 @@ contract EndTest is DSTest {
     function test_updateDebtAuctionContract_fail() public {
         Flipper flip = ilks["gold"].flip;
         Flopper newFlop = new Flopper(address(vat), address(gov));
-        action.updateDebtAuctionContract_test("gold", address(flip), address(1)); 
-        
+        action.updateDebtAuctionContract_test("gold", address(flip), address(1));
+
         assertEq(address(vow.flopper()), address(newFlop));
 
         assertEq(newFlop.wards(address(vow)),          1);
@@ -693,9 +694,9 @@ contract EndTest is DSTest {
 
     //     (, uint256 rate,, uint256 line, uint256 dust) = vat.ilks(ilk);
     //     (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
-    //     assertEq(line, 100 * MILLION * RAD); 
-    //     assertEq(dust, 100 * RAD); 
-    //     assertEq(dunk, 50 * THOUSAND * RAD); 
+    //     assertEq(line, 100 * MILLION * RAD);
+    //     assertEq(dust, 100 * RAD);
+    //     assertEq(dunk, 50 * THOUSAND * RAD);
     //     assertEq(chop, 113 ether / 100);  // WAD pct 113%
 
     //     (uint256 duty, uint256 rho) = jug.ilks("gold");
@@ -753,9 +754,9 @@ contract EndTest is DSTest {
 
     //     (, uint256 rate,, uint256 line, uint256 dust) = vat.ilks(ilk);
     //     (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
-    //     assertEq(line, 100 * MILLION * RAD); 
-    //     assertEq(dust, 100 * RAD); 
-    //     assertEq(dunk, 50 * THOUSAND * RAD); 
+    //     assertEq(line, 100 * MILLION * RAD);
+    //     assertEq(dust, 100 * RAD);
+    //     assertEq(dunk, 50 * THOUSAND * RAD);
     //     assertEq(chop, 113 ether / 100);  // WAD pct 113%
 
     //     (uint256 duty, uint256 rho) = jug.ilks("gold");
@@ -815,9 +816,9 @@ contract EndTest is DSTest {
 
     //     (, uint256 rate,, uint256 line, uint256 dust) = vat.ilks(ilk);
     //     (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
-    //     assertEq(line, 100 * MILLION * RAD); 
-    //     assertEq(dust, 100 * RAD); 
-    //     assertEq(dunk, 50 * THOUSAND * RAD); 
+    //     assertEq(line, 100 * MILLION * RAD);
+    //     assertEq(dust, 100 * RAD);
+    //     assertEq(dunk, 50 * THOUSAND * RAD);
     //     assertEq(chop, 113 ether / 100);  // WAD pct 113%
 
     //     (uint256 duty, uint256 rho) = jug.ilks("gold");
