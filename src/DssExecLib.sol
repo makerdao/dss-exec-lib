@@ -121,21 +121,21 @@ contract DssExecLib {
     }
 
     /*******************************/
-    /***   Core address Helpers    */
+    /***   Core Address Helpers    */
     /*******************************/
-    function vat()        public returns (address) { return getChainLogAddress("MCD_VAT"); }
-    function cat()        public returns (address) { return getChainLogAddress("MCD_CAT"); }
-    function jug()        public returns (address) { return getChainLogAddress("MCD_JUG"); }
-    function pot()        public returns (address) { return getChainLogAddress("MCD_POT"); }
-    function vow()        public returns (address) { return getChainLogAddress("MCD_VOW"); }
-    function end()        public returns (address) { return getChainLogAddress("MCD_END"); }
-    function reg()        public returns (address) { return getChainLogAddress("ILK_REGISTRY"); }
-    function spot()       public returns (address) { return getChainLogAddress("MCD_SPOT"); }
-    function flap()       public returns (address) { return getChainLogAddress("MCD_FLAP"); }
-    function flop()       public returns (address) { return getChainLogAddress("MCD_FLOP"); }
-    function osmMom()     public returns (address) { return getChainLogAddress("OSM_MOM"); }
-    function govGuard()   public returns (address) { return getChainLogAddress("GOV_GUARD"); }
-    function flipperMom() public returns (address) { return getChainLogAddress("FLIPPER_MOM"); }
+    function vat()        public view returns (address) { return getChainLogAddress("MCD_VAT"); }
+    function cat()        public view returns (address) { return getChainLogAddress("MCD_CAT"); }
+    function jug()        public view returns (address) { return getChainLogAddress("MCD_JUG"); }
+    function pot()        public view returns (address) { return getChainLogAddress("MCD_POT"); }
+    function vow()        public view returns (address) { return getChainLogAddress("MCD_VOW"); }
+    function end()        public view returns (address) { return getChainLogAddress("MCD_END"); }
+    function reg()        public view returns (address) { return getChainLogAddress("ILK_REGISTRY"); }
+    function spot()       public view returns (address) { return getChainLogAddress("MCD_SPOT"); }
+    function flap()       public view returns (address) { return getChainLogAddress("MCD_FLAP"); }
+    function flop()       public view returns (address) { return getChainLogAddress("MCD_FLOP"); }
+    function osmMom()     public view returns (address) { return getChainLogAddress("OSM_MOM"); }
+    function govGuard()   public view returns (address) { return getChainLogAddress("GOV_GUARD"); }
+    function flipperMom() public view returns (address) { return getChainLogAddress("FLIPPER_MOM"); }
 
     /*******************************/
     /*** ChainLog Helper Functions */
