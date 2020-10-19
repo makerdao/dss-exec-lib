@@ -62,7 +62,7 @@ contract DssAction {
         bytes32 what,
         address[] memory arr,
         bool    bool1,
-        bool    bool2,
+        bool[] memory bools,
         uint256 num1,
         uint256 num2,
         uint256 num3,
@@ -73,7 +73,7 @@ contract DssAction {
         uint256 num8,
         uint256 num9
     ) internal {
-        _dcall(abi.encodeWithSignature(sig, what, arr, bool1, bool2, num1, num2, num3, num4, num5, num6, num7, num8, num9));
+        _dcall(abi.encodeWithSignature(sig, what, arr, bool1, bools, num1, num2, num3, num4, num5, num6, num7, num8, num9));
     }
 
     /**********************/
@@ -195,7 +195,7 @@ contract DssAction {
     /*** Collateral Management ***/
     /*****************************/
     function setIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libCall("setIlkLine(bytes32,uint256)", ilk, amount);
+        libCall("setIlkDebtCeiling(bytes32,uint256)", ilk, amount);
     }
 
     function setIlkMinVaultAmount(bytes32 ilk, uint256 amount) internal {
@@ -292,26 +292,26 @@ contract DssAction {
     /*** Collateral Onboarding ***/
     /*****************************/
     function addNewCollateral(
-        bytes32 ilk,
+        bytes32          ilk,
         address[] memory addresses,
-        bool    liquidatable,
-        bool    isOsm,
-        uint256 ilkDebtCeiling,
-        uint256 minVaultAmount,
-        uint256 maxLiquidationAmount,
-        uint256 liquidationPenalty,
-        uint256 ilkStabilityFee,
-        uint256 bidIncrease,
-        uint256 bidDuration,
-        uint256 auctionDuration,
-        uint256 liquidationRatio
+        bool             liquidatable,
+        bool[] memory    oracleSettings,
+        uint256          ilkDebtCeiling,
+        uint256          minVaultAmount,
+        uint256          maxLiquidationAmount,
+        uint256          liquidationPenalty,
+        uint256          ilkStabilityFee,
+        uint256          bidIncrease,
+        uint256          bidDuration,
+        uint256          auctionDuration,
+        uint256          liquidationRatio
     ) internal {
         libCall(
-            "addNewCollateral(bytes32,address[],bool,bool,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+            "addNewCollateral(bytes32,address[],bool,bool[],uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
             ilk, 
             addresses, 
             liquidatable, 
-            isOsm, 
+            oracleSettings,
             ilkDebtCeiling, 
             minVaultAmount, 
             maxLiquidationAmount, 

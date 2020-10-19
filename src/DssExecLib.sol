@@ -126,7 +126,7 @@ contract DssExecLib {
     function pot()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_POT"); }
     function vow()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_VOW"); }
     function end()        public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_END"); }
-    function reg()        public returns (address) { return ChainlogAbstract(LOG).getAddress("ILK_REG"); }
+    function reg()        public returns (address) { return ChainlogAbstract(LOG).getAddress("ILK_REGISTRY"); }
     function spot()       public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_SPOT"); }
     function flap()       public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_FLAP"); }
     function flop()       public returns (address) { return ChainlogAbstract(LOG).getAddress("MCD_FLOP"); }
@@ -873,7 +873,7 @@ contract DssExecLib {
         @param ilk                  Collateral type
         @param addresses            Array of contract addresses: [tokenAddress, join, flip, pip]
         @param liquidatable         Boolean indicating whether liquidations are enabled for collateral
-        @param isOsm                Boolean indicating whether pip address used is an OSM contract
+        @param oracleSettings       Boolean array indicating whether: [pip address used is an OSM contract, median is src in osm]
         @param ilkDebtCeiling       Debt ceiling for new collateral
         @param minVaultAmount       Minimum DAI vault amount required for new collateral
         @param maxLiquidationAmount Max DAI amount per vault for liquidation for new collateral
@@ -885,19 +885,19 @@ contract DssExecLib {
         @param liquidationRatio     Percent liquidation ratio for new collateral   [ex. 150% == 150000] 
     */
     function addNewCollateral(
-        bytes32 ilk,
+        bytes32          ilk,
         address[] memory addresses,
-        bool    liquidatable,
-        bool    isOsm,
-        uint256 ilkDebtCeiling,
-        uint256 minVaultAmount,
-        uint256 maxLiquidationAmount,
-        uint256 liquidationPenalty,
-        uint256 ilkStabilityFee,
-        uint256 bidIncrease,
-        uint256 bidDuration,
-        uint256 auctionDuration,
-        uint256 liquidationRatio
+        bool             liquidatable,
+        bool[] memory    oracleSettings,
+        uint256          ilkDebtCeiling,
+        uint256          minVaultAmount,
+        uint256          maxLiquidationAmount,
+        uint256          liquidationPenalty,
+        uint256          ilkStabilityFee,
+        uint256          bidIncrease,
+        uint256          bidDuration,
+        uint256          auctionDuration,
+        uint256          liquidationRatio
     ) public {
         // Sanity checks
         require(JoinLike(addresses[1]).vat() == vat(),       "join-vat-not-match");
@@ -931,11 +931,13 @@ contract DssExecLib {
         // Disallow Cat to kick auctions in ilk Flipper
         if(!liquidatable) deauthorize(flipperMom(), addresses[2]);
 
-        if(isOsm) {
+        if(oracleSettings[0]) {
             // Allow OsmMom to access to the TOKEN Osm
             authorize(addresses[3], osmMom());
-            // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToMedianWhitelist(address(OracleLike(addresses[3]).src()), addresses[3]);
+            if (oracleSettings[1]) {
+                // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
+                addReaderToMedianWhitelist(address(OracleLike(addresses[3]).src()), addresses[3]);
+            }
             // Whitelist Spotter to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(addresses[3], spot());
             // Whitelist End to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
@@ -943,6 +945,9 @@ contract DssExecLib {
             // Set TOKEN Osm in the OsmMom for new ilk
             allowOSMFreeze(addresses[3], ilk);
         }
+
+        // Add new ilk to the IlkRegistry
+        RegistryLike(reg()).add(addresses[1]);
 
         // Set the ilk debt ceiling
         setIlkDebtCeiling(ilk, ilkDebtCeiling);
@@ -965,8 +970,5 @@ contract DssExecLib {
 
         // Update ilk spot value in Vat
         updateCollateralPrice(ilk);
-
-        // Add new ilk to the IlkRegistry
-        RegistryLike(reg()).add(addresses[1]);
     }
 }
