@@ -28,3 +28,6 @@
 [submodule "lib/median"]
 	path = lib/median
 	url = https://github.com/makerdao/median
+[submodule "lib/osm"]
+	path = lib/osm
+	url = https://github.com/makerdao/osm
