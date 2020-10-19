@@ -31,3 +31,6 @@
 [submodule "lib/ds-proxy"]
 	path = lib/ds-proxy
 	url = https://github.com/brianmcmichael/ds-proxy
+[submodule "lib/osm"]
+	path = lib/osm
+	url = https://github.com/makerdao/osm

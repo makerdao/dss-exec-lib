@@ -224,25 +224,25 @@ contract DssTestAction is DssAction {
     /*** Collateral Onboarding ***/
     /*****************************/
     function addNewCollateral_test(
-        bytes32 ilk,
+        bytes32          ilk,
         address[] memory addresses,
-        bool    liquidatable,
-        bool    isOsm,
-        uint256 ilkDebtCeiling,
-        uint256 minVaultAmount,
-        uint256 maxLiquidationAmount,
-        uint256 liquidationPenalty,
-        uint256 ilkStabilityFee,
-        uint256 bidIncrease,
-        uint256 bidDuration,
-        uint256 auctionDuration,
-        uint256 liquidationRatio
+        bool             liquidatable,
+        bool[] memory    oracleSettings,
+        uint256          ilkDebtCeiling,
+        uint256          minVaultAmount,
+        uint256          maxLiquidationAmount,
+        uint256          liquidationPenalty,
+        uint256          ilkStabilityFee,
+        uint256          bidIncrease,
+        uint256          bidDuration,
+        uint256          auctionDuration,
+        uint256          liquidationRatio
     ) public {
         addNewCollateral(
             ilk, 
             addresses, 
             liquidatable, 
-            isOsm, 
+            oracleSettings,
             ilkDebtCeiling, 
             minVaultAmount, 
             maxLiquidationAmount, 
