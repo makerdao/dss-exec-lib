@@ -25,8 +25,16 @@ contract DssAction {
         _dcall(abi.encodeWithSignature(sig, what));
     }
 
+    function libCall(string memory sig, string memory what) internal {
+        _dcall(abi.encodeWithSignature(sig, what));
+    }
+
     function libCall(string memory sig, bytes32 what, uint256 num) internal {
         _dcall(abi.encodeWithSignature(sig, what, num));
+    }
+
+    function libCall(string memory sig, bytes32 what, address addr) internal {
+        _dcall(abi.encodeWithSignature(sig, what, addr));
     }
 
     function libCall(string memory sig, address addr, uint256 num) internal {
@@ -94,8 +102,8 @@ contract DssAction {
         libCall("setChainLogAddress(bytes32,address)", key, value);
     }
 
-    function setChainLogVersion(string calldata version) internal {
-        libCall("setChainLogVersion(bytes32,address)", key, value);
+    function setChainLogVersion(string memory version) internal {
+        libCall("setChainLogVersion(string)", version);
     }
 
     /**************************/

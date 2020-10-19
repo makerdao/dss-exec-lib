@@ -79,7 +79,7 @@ interface RegistryLike {
 }
 
 // https://github.com/makerdao/dss-chain-log
-interface ChainlogAbstract {
+interface ChainlogLike {
     function setVersion(string calldata) external;
     function setAddress(bytes32, address) external;
     function getAddress(bytes32) external view returns (address);
@@ -141,15 +141,15 @@ contract DssExecLib {
     /*** ChainLog Helper Functions */
     /*******************************/
     function setChainLogAddress(bytes32 _key, address _val) public {
-        return ChainlogAbstract(LOG).setAddress(_key, _val);
+        return ChainlogLike(LOG).setAddress(_key, _val);
     }
 
-    function setChainLogVersion(bytes32 memory _version) public {
-        return ChainlogAbstract(LOG).setVersion(_version);
+    function setChainLogVersion(string memory _version) public {
+        return ChainlogLike(LOG).setVersion(_version);
     }
 
     function getChainLogAddress(bytes32 _key) public returns (address) {
-        return ChainlogAbstract(LOG).getAddress(_key);
+        return ChainlogLike(LOG).getAddress(_key);
     }
 
     /**********************/
