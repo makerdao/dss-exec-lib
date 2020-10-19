@@ -129,7 +129,7 @@ contract DssExecLib {
     function pot()        public returns (address) { return getChainLogAddress("MCD_POT"); }
     function vow()        public returns (address) { return getChainLogAddress("MCD_VOW"); }
     function end()        public returns (address) { return getChainLogAddress("MCD_END"); }
-    function reg()        public returns (address) { return getChainLogAddress("ILK_REG"); }
+    function reg()        public returns (address) { return getChainLogAddress("ILK_REGISTRY"); }
     function spot()       public returns (address) { return getChainLogAddress("MCD_SPOT"); }
     function flap()       public returns (address) { return getChainLogAddress("MCD_FLAP"); }
     function flop()       public returns (address) { return getChainLogAddress("MCD_FLOP"); }
@@ -148,7 +148,7 @@ contract DssExecLib {
         return ChainlogLike(LOG).setVersion(_version);
     }
 
-    function getChainLogAddress(bytes32 _key) public returns (address) {
+    function getChainLogAddress(bytes32 _key) public view returns (address) {
         return ChainlogLike(LOG).getAddress(_key);
     }
 
