@@ -10,6 +10,7 @@ import {MkrAuthority}     from "mkr-authority/MkrAuthority.sol";
 import {IlkRegistry}      from "ilk-registry/IlkRegistry.sol";
 import {FlipperMom}       from "flipper-mom/FlipperMom.sol";
 import {Median}           from "median/median.sol";
+import {OSM}              from 'osm/osm.sol';
 import {OsmAbstract}      from "dss-interfaces/Interfaces.sol";
 import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
