@@ -23,7 +23,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
 
     uint256 constant MILLION  = 10 ** 6;
 
-    function execute() external override {
+    function execute() external {
 
         // Option 1: Use a generic library call
         libCall("setIlkDebtCeiling(bytes32,uint256)", "ETH-A", 10 * MILLION);
@@ -31,11 +31,6 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         // Option 2: Custom setter for ease of use.
         setGlobalDebtCeiling(1500 * MILLION);
     }
-}
-
-contract DssActionBase is DssAction {
-    constructor(address lib) DssAction(lib) public {}
-    function execute() external override {}
 }
 
 contract DssLibExecTest is DSTest, DSMath {
@@ -178,7 +173,7 @@ contract DssLibExecTest is DSTest, DSMath {
             vow_bump: 10000 * RAD,
             vow_hump: 2 * MILLION * RAD,
             cat_box: 15 * MILLION * RAD,
-            ilk_count: 14
+            ilk_count: 15
         });
 
         //
@@ -385,40 +380,6 @@ contract DssLibExecTest is DSTest, DSMath {
 
         assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);  // liquidations == 1 => on
     }
-
-    // function testFail_basic_sanity() public {
-    //     assertTrue(false);
-    // }
-
-    // function test_basic_sanity() public {
-    //     assertTrue(true);
-    // }
-
-    // function testFailWrongDay() public {
-    //     vote();
-    //     scheduleWaitAndCastFailDay();
-    // }
-
-    // function testFailTooEarly() public {
-    //     vote();
-    //     scheduleWaitAndCastFailEarly();
-    // }
-
-    // function testFailTooLate() public {
-    //     vote();
-    //     scheduleWaitAndCastFailLate();
-    // }
-
-    // function testLibDeployment() public {
-    //     // dapp test output will display approximate deployment cost
-    //     new DssExecLib();
-    // }
-
-    // function testLibBaseActionDeployment() public {
-    //     // dapp test output will display approximate deployment cost
-    //     //   of just the base contract
-    //     new DssActionBase(address(execlib));
-    // }
 
     function testSpellIsCast_mainnet() public {
         vote();

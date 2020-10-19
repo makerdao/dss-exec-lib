@@ -4,9 +4,7 @@ import "./DssAction.sol";
 
 contract DssTestAction is DssAction {
 
-    constructor(address _lib) public {
-        setLib(_lib);
-    }
+    constructor(address lib) DssAction(lib) public {}
 
     /**********************/
     /*** Authorizations ***/
