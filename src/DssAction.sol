@@ -1,10 +1,10 @@
 pragma solidity ^0.6.7;
 
-abstract contract DssAction {
+contract DssAction {
 
-    address public immutable lib;
+    address public lib;
 
-    constructor(address lib_) public {
+    function setLib(address lib_) public {
         lib = lib_;
     }
 
@@ -25,8 +25,16 @@ abstract contract DssAction {
         _dcall(abi.encodeWithSignature(sig, what));
     }
 
+    function libCall(string memory sig, string memory what) internal {
+        _dcall(abi.encodeWithSignature(sig, what));
+    }
+
     function libCall(string memory sig, bytes32 what, uint256 num) internal {
         _dcall(abi.encodeWithSignature(sig, what, num));
+    }
+
+    function libCall(string memory sig, bytes32 what, address addr) internal {
+        _dcall(abi.encodeWithSignature(sig, what, addr));
     }
 
     function libCall(string memory sig, address addr, uint256 num) internal {
@@ -58,11 +66,11 @@ abstract contract DssAction {
     }
 
     function libCall(
-        string memory sig, 
+        string memory sig,
         bytes32 what,
         address[] memory arr,
         bool    bool1,
-        bool    bool2,
+        bool[] memory bools,
         uint256 num1,
         uint256 num2,
         uint256 num3,
@@ -73,18 +81,29 @@ abstract contract DssAction {
         uint256 num8,
         uint256 num9
     ) internal {
-        _dcall(abi.encodeWithSignature(sig, what, arr, bool1, bool2, num1, num2, num3, num4, num5, num6, num7, num8, num9));
+        _dcall(abi.encodeWithSignature(sig, what, arr, bool1, bools, num1, num2, num3, num4, num5, num6, num7, num8, num9));
     }
 
     /**********************/
     /*** Authorizations ***/
     /**********************/
-    function authorize(address base, address ward) internal {
+    function authorize(address base, address ward) internal virtual {
         libCall("authorize(address,address)", base, ward);
     }
 
     function deauthorize(address base, address ward) internal {
         libCall("deauthorize(address,address)", base, ward);
+    }
+
+    /**********************/
+    /***    ChangeLog   ***/
+    /**********************/
+    function setChainLogAddress(bytes32 key, address value) internal {
+        libCall("setChainLogAddress(bytes32,address)", key, value);
+    }
+
+    function setChainLogVersion(string memory version) internal {
+        libCall("setChainLogVersion(string)", version);
     }
 
     /**************************/
@@ -127,67 +146,67 @@ abstract contract DssAction {
         libCall("setDSR(uint256)", rate);
     }
 
-    function setSurplusAuctionAmount(uint256 amount) internal { 
+    function setSurplusAuctionAmount(uint256 amount) internal {
         libCall("setSurplusAuctionAmount(uint256)", amount);
     }
 
-    function setSurplusBuffer(uint256 amount) internal { 
+    function setSurplusBuffer(uint256 amount) internal {
         libCall("setSurplusBuffer(uint256)", amount);
     }
 
-    function setMinSurplusAuctionBidIncrease(uint256 pct) internal { 
+    function setMinSurplusAuctionBidIncrease(uint256 pct) internal {
         libCall("setMinSurplusAuctionBidIncrease(uint256)", pct);
     }
 
-    function setSurplusAuctionBidDuration(uint256 length) internal { 
+    function setSurplusAuctionBidDuration(uint256 length) internal {
         libCall("setSurplusAuctionBidDuration(uint256)", length);
     }
 
-    function setSurplusAuctionDuration(uint256 length) internal { 
+    function setSurplusAuctionDuration(uint256 length) internal {
         libCall("setSurplusAuctionDuration(uint256)", length);
     }
 
-    function setDebtAuctionDelay(uint256 length) internal { 
+    function setDebtAuctionDelay(uint256 length) internal {
         libCall("setDebtAuctionDelay(uint256)", length);
     }
 
-    function setDebtAuctionDAIAmount(uint256 amount) internal { 
+    function setDebtAuctionDAIAmount(uint256 amount) internal {
         libCall("setDebtAuctionDAIAmount(uint256)", amount);
     }
 
-    function setDebtAuctionMKRAmount(uint256 amount) internal { 
+    function setDebtAuctionMKRAmount(uint256 amount) internal {
         libCall("setDebtAuctionMKRAmount(uint256)", amount);
     }
 
-    function setMinDebtAuctionBidIncrease(uint256 pct) internal { 
+    function setMinDebtAuctionBidIncrease(uint256 pct) internal {
         libCall("setMinDebtAuctionBidIncrease(uint256)", pct);
     }
 
-    function setDebtAuctionBidDuration(uint256 length) internal { 
+    function setDebtAuctionBidDuration(uint256 length) internal {
         libCall("setDebtAuctionBidDuration(uint256)", length);
     }
 
-    function setDebtAuctionDuration(uint256 length) internal { 
+    function setDebtAuctionDuration(uint256 length) internal {
         libCall("setDebtAuctionDuration(uint256)", length);
     }
 
-    function setDebtAuctionMKRIncreaseRate(uint256 pct) internal { 
+    function setDebtAuctionMKRIncreaseRate(uint256 pct) internal {
         libCall("setDebtAuctionMKRIncreaseRate(uint256)", pct);
     }
 
-    function setMaxTotalDAILiquidationAmount(uint256 amount) internal { 
+    function setMaxTotalDAILiquidationAmount(uint256 amount) internal {
         libCall("setMaxTotalDAILiquidationAmount(uint256)", amount);
     }
 
-    function setEmergencyShutdownProcessingTime(uint256 length) internal { 
+    function setEmergencyShutdownProcessingTime(uint256 length) internal {
         libCall("setEmergencyShutdownProcessingTime(uint256)", length);
     }
 
-    function setGlobalStabilityFee(uint256 rate) internal { 
+    function setGlobalStabilityFee(uint256 rate) internal {
         libCall("setGlobalStabilityFee(uint256)", rate);
     }
 
-    function setDAIReferenceValue(uint256 amount) internal { 
+    function setDAIReferenceValue(uint256 amount) internal {
         libCall("setDAIReferenceValue(uint256)", amount);
     }
 
@@ -195,7 +214,7 @@ abstract contract DssAction {
     /*** Collateral Management ***/
     /*****************************/
     function setIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libCall("setIlkLine(bytes32,uint256)", ilk, amount);
+        libCall("setIlkDebtCeiling(bytes32,uint256)", ilk, amount);
     }
 
     function setIlkMinVaultAmount(bytes32 ilk, uint256 amount) internal {
@@ -237,8 +256,8 @@ abstract contract DssAction {
         libCall("updateCollateralAuctionContract(bytes32,address,address)", ilk, newFlip, oldFlip);
     }
 
-    function updateSurplusAuctionCOntract(bytes32 ilk, address newFlap, address oldFlap) internal {
-        libCall("updateSurplusAuctionCOntract(bytes32,address,address)", ilk, newFlap, oldFlap);
+    function updateSurplusAuctionContract(bytes32 ilk, address newFlap, address oldFlap) internal {
+        libCall("updateSurplusAuctionContract(bytes32,address,address)", ilk, newFlap, oldFlap);
     }
 
     function updateDebtAuctionContract(bytes32 ilk, address newFlop, address oldFlop) internal {
@@ -292,31 +311,31 @@ abstract contract DssAction {
     /*** Collateral Onboarding ***/
     /*****************************/
     function addNewCollateral(
-        bytes32 ilk,
+        bytes32          ilk,
         address[] memory addresses,
-        bool    liquidatable,
-        bool    isOsm,
-        uint256 ilkDebtCeiling,
-        uint256 minVaultAmount,
-        uint256 maxLiquidationAmount,
-        uint256 liquidationPenalty,
-        uint256 ilkStabilityFee,
-        uint256 bidIncrease,
-        uint256 bidDuration,
-        uint256 auctionDuration,
-        uint256 liquidationRatio
+        bool             liquidatable,
+        bool[] memory    oracleSettings,
+        uint256          ilkDebtCeiling,
+        uint256          minVaultAmount,
+        uint256          maxLiquidationAmount,
+        uint256          liquidationPenalty,
+        uint256          ilkStabilityFee,
+        uint256          bidIncrease,
+        uint256          bidDuration,
+        uint256          auctionDuration,
+        uint256          liquidationRatio
     ) internal {
         libCall(
-            "addNewCollateral(bytes32,address[],bool,bool,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
-            ilk, 
-            addresses, 
-            liquidatable, 
-            isOsm, 
-            ilkDebtCeiling, 
-            minVaultAmount, 
-            maxLiquidationAmount, 
-            liquidationPenalty, 
-            ilkStabilityFee, 
+            "addNewCollateral(bytes32,address[],bool,bool[],uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+            ilk,
+            addresses,
+            liquidatable,
+            oracleSettings,
+            ilkDebtCeiling,
+            minVaultAmount,
+            maxLiquidationAmount,
+            liquidationPenalty,
+            ilkStabilityFee,
             bidIncrease,
             bidDuration,
             auctionDuration,
@@ -325,5 +344,5 @@ abstract contract DssAction {
     }
 
     // Abstract enforcement of required execute() function
-    function execute() external virtual;
+    // function execute() external virtual;
 }

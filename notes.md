@@ -97,3 +97,9 @@
 
 
                 
+Tests
+
+Fix init collateral (flipper auth)
+Change DSValue to OSM
+OSMMom owner
+signer exists
