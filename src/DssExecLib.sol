@@ -375,7 +375,7 @@ contract DssExecLib {
     }
     /**
         @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
-        @param _pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinDebtAuctionBidIncrease(uint256 _pct) public {
         setMinDebtAuctionBidIncrease(flop(), _pct);
@@ -384,11 +384,11 @@ contract DssExecLib {
         @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * WAD / 100,000
         @param _flop   The address of the Flopper core contract
-        @param _pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinDebtAuctionBidIncrease(address _flop, uint256 _pct) public {
-        require(_pct < 100 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
-        Fileable(_flop).file("beg", wdiv(_pct, 100 * THOUSAND));
+        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        Fileable(_flop).file("beg", wdiv(_pct, 10 * THOUSAND));
     }
     /**
         @dev Set bid duration for debt auctions.

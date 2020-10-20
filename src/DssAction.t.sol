@@ -430,7 +430,7 @@ contract ActionTest is DSTest {
     }
 
     function test_setMinDebtAuctionBidIncrease() public {
-        action.setMinDebtAuctionBidIncrease_test(5250); // 5.25%
+        action.setMinDebtAuctionBidIncrease_test(525); // 5.25%
         assertEq(flop.beg(), 5.25 ether / 100); // WAD pct
     }
 
