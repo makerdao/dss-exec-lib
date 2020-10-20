@@ -739,6 +739,7 @@ contract EndTest is DSTest {
 
         {
             (, uint256 rate,, uint256 line, uint256 dust) = vat.ilks(ilk);
+            rate; // TODO: Test rate?
             (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
             assertEq(line, 100 * MILLION * RAD);
             assertEq(dust, 100 * RAD);

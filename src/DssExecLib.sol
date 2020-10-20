@@ -715,12 +715,10 @@ contract DssExecLib {
     }
     /**
         @dev Update surplus auction contracts.
-        @param ilk     The surplus's auction contract to update
         @param newFlap New surplus auction contract address
         @param oldFlap Old surplus auction contract address
     */
-    function updateSurplusAuctionContract(bytes32 ilk, address newFlap, address oldFlap) public {
-        // FIXME: Unnecessary ilk param
+    function updateSurplusAuctionContract(address newFlap, address oldFlap) public {
         updateSurplusAuctionContract(vat(), vow(), newFlap, oldFlap);
     }
     /**
@@ -755,7 +753,7 @@ contract DssExecLib {
         @param newFlop New debt auction contract address
         @param oldFlop Old debt auction contract address
     */
-    function updateDebtAuctionContract(bytes32 ilk, address newFlop, address oldFlop) public {
+    function updateDebtAuctionContract(address newFlop, address oldFlop) public {
         updateDebtAuctionContract(vat(), vow(), govGuard(), newFlop, oldFlop);
     }
     /**
