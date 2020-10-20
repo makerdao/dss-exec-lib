@@ -489,7 +489,7 @@ contract ActionTest is DSTest {
     function test_setIlkLiquidationPenalty() public {
         action.setIlkLiquidationPenalty_test("gold", 13250); // 13.25%
         (, uint256 chop,) = cat.ilks("gold");
-        assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
+        assertEq(chop, 113.25 * WAD / 100);  // WAD pct 113.25%
     }
 
     function test_setIlkMaxLiquidationAmount() public {
@@ -499,7 +499,7 @@ contract ActionTest is DSTest {
     }
 
     function test_setIlkLiquidationRatio() public {
-        action.setIlkLiquidationRatio_test("gold", 150000); // 150%
+        action.setIlkLiquidationRatio_test("gold", 15000); // 150% in bp
         (, uint256 mat) = spot.ilks("gold");
         assertEq(mat, ray(150 ether / 100)); // RAY pct
     }
@@ -743,7 +743,7 @@ contract ActionTest is DSTest {
                 5000,
                 6 hours,
                 6 hours,
-                150000
+                15000
             );
         }
 

@@ -573,7 +573,7 @@ contract DssExecLib {
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct to set in integer form (x1000). (ex. 150% = 150 * 1000 = 150000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
     function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct) public { setIlkLiquidationRatio(spot(), _ilk, _pct); }
     /**
@@ -581,11 +581,11 @@ contract DssExecLib {
         @dev Equation used for conversion is pct * RAY / 100,000
         @param _spot   The address of the Spot core accounting contract
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct to set in integer form (x1000). (ex. 150% = 150 * 1000 = 150000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
     function setIlkLiquidationRatio(address _spot, bytes32 _ilk, uint256 _pct) public {
-        require(_pct < 1 * MILLION, "LibDssExec/incorrect-ilk-mat-precision"); // Fails if pct >= 1000%
-        Fileable(_spot).file(_ilk, "mat", rdiv(_pct, 100 * THOUSAND));
+        require(_pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-mat-precision"); // Fails if pct >= 1000%
+        Fileable(_spot).file(_ilk, "mat", rdiv(_pct, 10 * THOUSAND));
     }
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
