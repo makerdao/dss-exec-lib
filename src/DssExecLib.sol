@@ -540,7 +540,7 @@ contract DssExecLib {
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct to set in integer form (x1000). (ex. 10.25% = 10.25 * 1000 = 10250)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
     function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct) public { setIlkLiquidationPenalty(cat(), _ilk, _pct); }
     /**
@@ -548,11 +548,11 @@ contract DssExecLib {
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 13% to 113% WAD needed for chop)
         @param _cat    The address of the Cat core accounting contract (will need to revisit for LIQ-2.0)
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct to set in integer form (x1000). (ex. 10.25% = 10.25 * 1000 = 10250)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
     function setIlkLiquidationPenalty(address _cat, bytes32 _ilk, uint256 _pct) public {
-        require(_pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
-        Fileable(_cat).file(_ilk, "chop", wdiv(add(_pct, 100 * THOUSAND), 100 * THOUSAND));
+        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
+        Fileable(_cat).file(_ilk, "chop", wdiv(add(_pct, 10 * THOUSAND), 10 * THOUSAND));
     }
     /**
         @dev Set max DAI amount for liquidation per vault for a collateral type. Amount will be converted to the correct internal precision.

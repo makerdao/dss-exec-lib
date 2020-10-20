@@ -487,7 +487,7 @@ contract ActionTest is DSTest {
     }
 
     function test_setIlkLiquidationPenalty() public {
-        action.setIlkLiquidationPenalty_test("gold", 13250); // 13.25%
+        action.setIlkLiquidationPenalty_test("gold", 1325); // 13.25%
         (, uint256 chop,) = cat.ilks("gold");
         assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
     }
@@ -738,7 +738,7 @@ contract ActionTest is DSTest {
                 100 * MILLION,
                 100,
                 50 * THOUSAND,
-                13000,
+                1300,
                 1000000001243680656318820312,
                 5000,
                 6 hours,
