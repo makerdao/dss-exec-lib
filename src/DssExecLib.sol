@@ -423,7 +423,7 @@ contract DssExecLib {
     /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
-        @param _pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setDebtAuctionMKRIncreaseRate(uint256 _pct) public { setDebtAuctionMKRIncreaseRate(flop(), _pct); }
     /**
@@ -431,10 +431,10 @@ contract DssExecLib {
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 50% to 150% WAD needed for pad)
         @param _flop   The address of the Flopper core contract
-        @param _pct    The pct to set in integer form (x1000). (ex. 50% = 50 * 1000 = 50000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setDebtAuctionMKRIncreaseRate(address _flop, uint256 _pct) public {
-        Fileable(_flop).file("pad", wdiv(add(_pct, 100 * THOUSAND), 100 * THOUSAND));
+        Fileable(_flop).file("pad", wdiv(add(_pct, 10 * THOUSAND), 10 * THOUSAND));
     }
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
