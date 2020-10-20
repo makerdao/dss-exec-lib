@@ -121,9 +121,9 @@ contract DssExecLib {
         z = add(mul(x, RAY), y / 2) / y;
     }
 
-    /*******************************/
-    /***   Core Address Helpers    */
-    /*******************************/
+    /****************************/
+    /*** Core Address Helpers ***/
+    /****************************/
     function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
     function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
     function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
@@ -138,9 +138,9 @@ contract DssExecLib {
     function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
     function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
 
-    /*******************************/
-    /*** ChainLog Helper Functions */
-    /*******************************/
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
     function setChangelogAddress(bytes32 _key, address _val) public {
         ChainlogLike(LOG).setAddress(_key, _val);
     }

@@ -28,9 +28,9 @@ contract DssTestAction is DssAction {
         accumulateCollateralStabilityFees(ilk);
     }
 
-    /**************************/
-    /***     Changelog      ***/
-    /**************************/
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
 
     function setChangelogAddress_test(bytes32 key, address value) public {
         setChangelogAddress(key, value);
