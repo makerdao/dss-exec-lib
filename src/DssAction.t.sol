@@ -39,7 +39,7 @@ interface PipLike {
     function peek() external returns (bytes32, bool);
 }
 
-contract EndTest is DSTest {
+contract ActionTest is DSTest {
     Hevm hevm;
 
     Vat   vat;
@@ -123,7 +123,7 @@ contract EndTest is DSTest {
         return ilks[ilk].gem.balanceOf(usr);
     }
 
-    function init_collateral(bytes32 name, address action) internal returns (Ilk memory) {
+    function init_collateral(bytes32 name, address _action) internal returns (Ilk memory) {
         DSToken coin = new DSToken(name);
         coin.mint(20 ether);
 
@@ -158,9 +158,9 @@ contract EndTest is DSTest {
 
         reg.add(address(gemA));
 
-        flip.rely(action);
-        gemA.rely(action);
-        osm.rely(action);
+        flip.rely(_action);
+        gemA.rely(_action);
+        osm.rely(_action);
 
         ilks[name].pip = pip;
         ilks[name].osm = osm;
@@ -261,6 +261,7 @@ contract EndTest is DSTest {
         flap.rely(address(action));
         flop.rely(address(action));
         median.rely(address(action));
+        log.rely(address(action));
 
         flipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
@@ -295,6 +296,34 @@ contract EndTest is DSTest {
         assertEq(vat.wards(address(1)), 0);
     }
 
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
+
+    function test_setAddress() public {
+        bytes32 ilk = "silver";
+        action.setChangelogAddress_test(ilk, address(this));
+        assertEq(log.getAddress(ilk), address(this));
+    }
+
+    function test_setVersion() public {
+        string memory version = "9001.0.0";
+        action.setChangelogVersion_test(version);
+        assertEq(log.version(), version);
+    }
+
+    function test_setIPFS() public {
+        string memory ipfs = "QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW";
+        action.setChangelogIPFS_test(ipfs);
+        assertEq(log.ipfs(), ipfs);
+    }
+
+    function test_setSHA256() public {
+        string memory SHA256 = "e42dc9d043a57705f3f097099e6b2de4230bca9a020c797508da079f9079e35b";
+        action.setChangelogSHA256_test(SHA256);
+        assertEq(log.sha256sum(), SHA256);
+    }
+
     /**************************/
     /*** Accumulating Rates ***/
     /**************************/
@@ -324,16 +353,16 @@ contract EndTest is DSTest {
     /*********************/
 
     function test_updateCollateralPrice() public {
-        uint256 spot;
+        uint256 _spot;
 
-        (,, spot,,) = vat.ilks("gold");
-        assertEq(spot, ray(3 ether));
+        (,, _spot,,) = vat.ilks("gold");
+        assertEq(_spot, ray(3 ether));
         ilks["gold"].pip.poke(bytes32(10 * WAD));
 
         action.updateCollateralPrice_test("gold");
 
-        (,, spot,,) = vat.ilks("gold");
-        assertEq(spot, ray(5 ether)); // $5 at 200%
+        (,, _spot,,) = vat.ilks("gold");
+        assertEq(_spot, ray(5 ether)); // $5 at 200%
     }
 
     /****************************/
@@ -371,7 +400,7 @@ contract EndTest is DSTest {
     }
 
     function test_setMinSurplusAuctionBidIncrease() public {
-        action.setMinSurplusAuctionBidIncrease_test(5250); // 5.25%
+        action.setMinSurplusAuctionBidIncrease_test(525); // 5.25%
         assertEq(flap.beg(), 5.25 ether / 100); // WAD pct
     }
 
@@ -401,7 +430,7 @@ contract EndTest is DSTest {
     }
 
     function test_setMinDebtAuctionBidIncrease() public {
-        action.setMinDebtAuctionBidIncrease_test(5250); // 5.25%
+        action.setMinDebtAuctionBidIncrease_test(525); // 5.25%
         assertEq(flop.beg(), 5.25 ether / 100); // WAD pct
     }
 
@@ -416,7 +445,7 @@ contract EndTest is DSTest {
     }
 
     function test_setDebtAuctionMKRIncreaseRate() public {
-        action.setDebtAuctionMKRIncreaseRate_test(5250);
+        action.setDebtAuctionMKRIncreaseRate_test(525);
         assertEq(flop.pad(), 105.25 ether / 100); // WAD pct
     }
 
@@ -458,7 +487,7 @@ contract EndTest is DSTest {
     }
 
     function test_setIlkLiquidationPenalty() public {
-        action.setIlkLiquidationPenalty_test("gold", 13250); // 13.25%
+        action.setIlkLiquidationPenalty_test("gold", 1325); // 13.25%
         (, uint256 chop,) = cat.ilks("gold");
         assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
     }
@@ -470,14 +499,14 @@ contract EndTest is DSTest {
     }
 
     function test_setIlkLiquidationRatio() public {
-        action.setIlkLiquidationRatio_test("gold", 150000); // 150%
+        action.setIlkLiquidationRatio_test("gold", 15000); // 150% in bp
         (, uint256 mat) = spot.ilks("gold");
         assertEq(mat, ray(150 ether / 100)); // RAY pct
     }
 
     function test_setIlkMinAuctionBidIncrease() public {
-        action.setIlkMinAuctionBidIncrease_test("gold", 5000); // 5%
-        assertEq(ilks["gold"].flip.beg(), 5 ether / 100); // WAD pct
+        action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
+        assertEq(ilks["gold"].flip.beg(), 5 * WAD / 100); // WAD pct
     }
 
     function test_setIlkBidDuration() public {
@@ -527,7 +556,7 @@ contract EndTest is DSTest {
     function test_updateSurplusAuctionContract() public {
         Flapper newFlap = new Flapper(address(vat), address(gov));
         newFlap.rely(address(action));
-        action.updateSurplusAuctionContract_test("gold", address(newFlap), address(flap));
+        action.updateSurplusAuctionContract_test(address(newFlap), address(flap));
 
         assertEq(address(vow.flapper()), address(newFlap));
 
@@ -542,7 +571,7 @@ contract EndTest is DSTest {
     function test_updateDebtAuctionContract() public {
         Flopper newFlop = new Flopper(address(vat), address(gov));
         newFlop.rely(address(action));
-        action.updateDebtAuctionContract_test("gold", address(newFlop), address(flop));
+        action.updateDebtAuctionContract_test(address(newFlop), address(flop));
 
         assertEq(address(vow.flopper()), address(newFlop));
 
@@ -706,15 +735,15 @@ contract EndTest is DSTest {
                 addresses,
                 liquidatable,
                 oracleSettings,
-                100 * MILLION,
-                100,
-                50 * THOUSAND,
-                13000,
-                1000000001243680656318820312,
-                5000,
-                6 hours,
-                6 hours,
-                150000
+                100 * MILLION,                 // ilkDebtCeiling
+                100,                           // minVaultAmount
+                50 * THOUSAND,                 // maxLiquidationAmount
+                1300,                          // liquidationPenalty
+                1000000001243680656318820312,  // ilkStabilityFee
+                500,                           // bidIncrease
+                6 hours,                       // bidDuration
+                6 hours,                       // auctionDuration
+                15000                          // liquidationRatio
             );
         }
 
@@ -738,7 +767,7 @@ contract EndTest is DSTest {
         }
 
         {
-            (, uint256 rate,, uint256 line, uint256 dust) = vat.ilks(ilk);
+            (,,, uint256 line, uint256 dust) = vat.ilks(ilk);
             (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
             assertEq(line, 100 * MILLION * RAD);
             assertEq(dust, 100 * RAD);
@@ -751,7 +780,7 @@ contract EndTest is DSTest {
         }
 
         {
-            assertEq(tokenFlip.beg(), 5 ether / 100); // WAD pct
+            assertEq(tokenFlip.beg(), 5 * WAD / 100); // WAD pct
             assertEq(uint256(tokenFlip.ttl()), 6 hours);
             assertEq(uint256(tokenFlip.tau()), 6 hours);
 

@@ -95,15 +95,23 @@ contract DssAction {
         libCall("deauthorize(address,address)", base, ward);
     }
 
-    /**********************/
-    /***    ChangeLog   ***/
-    /**********************/
-    function setChainLogAddress(bytes32 key, address value) internal {
-        libCall("setChainLogAddress(bytes32,address)", key, value);
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
+    function setChangelogAddress(bytes32 key, address value) internal {
+        libCall("setChangelogAddress(bytes32,address)", key, value);
     }
 
-    function setChainLogVersion(string memory version) internal {
-        libCall("setChainLogVersion(string)", version);
+    function setChangelogVersion(string memory version) internal {
+        libCall("setChangelogVersion(string)", version);
+    }
+
+    function setChangelogIPFS(string memory ipfs) internal {
+        libCall("setChangelogIPFS(string)", ipfs);
+    }
+
+    function setChangelogSHA256(string memory SHA256) internal {
+        libCall("setChangelogSHA256(string)", SHA256);
     }
 
     /**************************/
@@ -256,12 +264,12 @@ contract DssAction {
         libCall("updateCollateralAuctionContract(bytes32,address,address)", ilk, newFlip, oldFlip);
     }
 
-    function updateSurplusAuctionContract(bytes32 ilk, address newFlap, address oldFlap) internal {
-        libCall("updateSurplusAuctionContract(bytes32,address,address)", ilk, newFlap, oldFlap);
+    function updateSurplusAuctionContract(address newFlap, address oldFlap) internal {
+        libCall("updateSurplusAuctionContract(address,address)", newFlap, oldFlap);
     }
 
-    function updateDebtAuctionContract(bytes32 ilk, address newFlop, address oldFlop) internal {
-        libCall("updateDebtAuctionContract(bytes32,address,address)", ilk, newFlop, oldFlop);
+    function updateDebtAuctionContract(address newFlop, address oldFlop) internal {
+        libCall("updateDebtAuctionContract(address,address)", newFlop, oldFlop);
     }
 
     /*************************/
