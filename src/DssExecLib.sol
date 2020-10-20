@@ -287,7 +287,7 @@ contract DssExecLib {
     }
     /**
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
-        @param _pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinSurplusAuctionBidIncrease(uint256 _pct) public {
         setMinSurplusAuctionBidIncrease(flap(), _pct);
@@ -296,11 +296,11 @@ contract DssExecLib {
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * WAD / 100,000
         @param _flap   The address of the Flapper core contract
-        @param _pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinSurplusAuctionBidIncrease(address _flap, uint256 _pct) public {
-        require(_pct < 100 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
-        Fileable(_flap).file("beg", wdiv(_pct, 100 * THOUSAND));
+        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        Fileable(_flap).file("beg", wdiv(_pct, 10 * THOUSAND));
     }
     /**
         @dev Set bid duration for surplus auctions.

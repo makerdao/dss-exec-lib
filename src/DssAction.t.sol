@@ -400,7 +400,7 @@ contract ActionTest is DSTest {
     }
 
     function test_setMinSurplusAuctionBidIncrease() public {
-        action.setMinSurplusAuctionBidIncrease_test(5250); // 5.25%
+        action.setMinSurplusAuctionBidIncrease_test(525); // 5.25%
         assertEq(flap.beg(), 5.25 ether / 100); // WAD pct
     }
 
@@ -489,7 +489,7 @@ contract ActionTest is DSTest {
     function test_setIlkLiquidationPenalty() public {
         action.setIlkLiquidationPenalty_test("gold", 13250); // 13.25%
         (, uint256 chop,) = cat.ilks("gold");
-        assertEq(chop, 113.25 * WAD / 100);  // WAD pct 113.25%
+        assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
     }
 
     function test_setIlkMaxLiquidationAmount() public {
