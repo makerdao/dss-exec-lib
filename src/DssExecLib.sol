@@ -29,7 +29,6 @@ interface DssVat {
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
 }
 
-// TODO: Is there a better way to set up these interfaces?
 interface AuctionLike {
     function vat() external returns (address);
     function cat() external returns (address); // Only flip
@@ -935,6 +934,7 @@ contract DssExecLib {
         require(AuctionLike(_addresses[2]).vat() == vat(),      "flip-vat-not-match");
 		require(AuctionLike(_addresses[2]).cat() == cat(),      "flip-cat-not-match");
         require(AuctionLike(_addresses[2]).ilk() == _ilk,       "flip-ilk-not-match");
+
 
         // Set the token PIP in the Spotter
         setContract(spot(), _ilk, "pip", _addresses[3]);
