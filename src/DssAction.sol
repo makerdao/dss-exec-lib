@@ -2,9 +2,9 @@ pragma solidity ^0.6.7;
 
 contract DssAction {
 
-    address public lib;
+    address public immutable lib;
 
-    function setLib(address lib_) public {
+    constructor(address lib_) public {
         lib = lib_;
     }
 
@@ -342,7 +342,4 @@ contract DssAction {
             liquidationRatio
         );
     }
-
-    // Abstract enforcement of required execute() function
-    // function execute() external virtual;
 }
