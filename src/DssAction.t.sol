@@ -272,7 +272,7 @@ contract EndTest is DSTest {
         assertTrue(false);
     }
 
-    function test_basic_sanity_mainnet() public {
+    function test_basic_sanity() public {
         assertTrue(true);
     }
 
