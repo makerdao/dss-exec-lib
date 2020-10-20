@@ -445,7 +445,7 @@ contract ActionTest is DSTest {
     }
 
     function test_setDebtAuctionMKRIncreaseRate() public {
-        action.setDebtAuctionMKRIncreaseRate_test(5250);
+        action.setDebtAuctionMKRIncreaseRate_test(525);
         assertEq(flop.pad(), 105.25 ether / 100); // WAD pct
     }
 
