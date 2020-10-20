@@ -527,7 +527,7 @@ contract ActionTest is DSTest {
     function test_updateSurplusAuctionContract() public {
         Flapper newFlap = new Flapper(address(vat), address(gov));
         newFlap.rely(address(action));
-        action.updateSurplusAuctionContract_test("gold", address(newFlap), address(flap));
+        action.updateSurplusAuctionContract_test(address(newFlap), address(flap));
 
         assertEq(address(vow.flapper()), address(newFlap));
 
@@ -542,7 +542,7 @@ contract ActionTest is DSTest {
     function test_updateDebtAuctionContract() public {
         Flopper newFlop = new Flopper(address(vat), address(gov));
         newFlop.rely(address(action));
-        action.updateDebtAuctionContract_test("gold", address(newFlop), address(flop));
+        action.updateDebtAuctionContract_test(address(newFlop), address(flop));
 
         assertEq(address(vow.flopper()), address(newFlop));
 

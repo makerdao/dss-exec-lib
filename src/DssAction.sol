@@ -256,12 +256,12 @@ contract DssAction {
         libCall("updateCollateralAuctionContract(bytes32,address,address)", ilk, newFlip, oldFlip);
     }
 
-    function updateSurplusAuctionContract(bytes32 ilk, address newFlap, address oldFlap) internal {
-        libCall("updateSurplusAuctionContract(bytes32,address,address)", ilk, newFlap, oldFlap);
+    function updateSurplusAuctionContract(address newFlap, address oldFlap) internal {
+        libCall("updateSurplusAuctionContract(address,address)", newFlap, oldFlap);
     }
 
-    function updateDebtAuctionContract(bytes32 ilk, address newFlop, address oldFlop) internal {
-        libCall("updateDebtAuctionContract(bytes32,address,address)", ilk, newFlop, oldFlop);
+    function updateDebtAuctionContract(address newFlop, address oldFlop) internal {
+        libCall("updateDebtAuctionContract(address,address)", newFlop, oldFlop);
     }
 
     /*************************/
