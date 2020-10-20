@@ -39,7 +39,7 @@ interface PipLike {
     function peek() external returns (bytes32, bool);
 }
 
-contract EndTest is DSTest {
+contract ActionTest is DSTest {
     Hevm hevm;
 
     Vat   vat;
