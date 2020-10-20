@@ -932,7 +932,7 @@ contract DssExecLib {
         require(JoinLike(_addresses[1]).gem() == _addresses[0], "join-gem-not-match");
         require(JoinLike(_addresses[1]).dec() == 18,            "join-dec-not-match");
         require(AuctionLike(_addresses[2]).vat() == vat(),      "flip-vat-not-match");
-		require(AuctionLike(_addresses[2]).cat() == cat(),      "flip-cat-not-match");
+        require(AuctionLike(_addresses[2]).cat() == cat(),      "flip-cat-not-match");
         require(AuctionLike(_addresses[2]).ilk() == _ilk,       "flip-ilk-not-match");
 
 
