@@ -95,9 +95,9 @@ contract DssAction {
         libCall("deauthorize(address,address)", base, ward);
     }
 
-    /**********************/
-    /***    ChangeLog   ***/
-    /**********************/
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
     function setChangelogAddress(bytes32 key, address value) internal {
         libCall("setChangelogAddress(bytes32,address)", key, value);
     }

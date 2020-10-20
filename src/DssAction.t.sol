@@ -296,9 +296,9 @@ contract ActionTest is DSTest {
         assertEq(vat.wards(address(1)), 0);
     }
 
-    /**************************/
-    /***    Changelog       ***/
-    /**************************/
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
 
     function test_setAddress() public {
         bytes32 ilk = "silver";
