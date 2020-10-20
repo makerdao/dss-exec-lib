@@ -590,7 +590,7 @@ contract DssExecLib {
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct) public {
         (,,,, address _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
@@ -600,11 +600,11 @@ contract DssExecLib {
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * WAD / 100,000
         @param _flip   The address of the ilk's flip core accounting contract
-        @param _pct    The pct to set in integer form (x1000). (ex. 5% = 5 * 1000 = 5000)
+        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setIlkMinAuctionBidIncrease(address _flip, uint256 _pct) public {
-        require(_pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
-        Fileable(_flip).file("beg", wdiv(_pct, 100 * THOUSAND));
+        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
+        Fileable(_flip).file("beg", wdiv(_pct, 10 * THOUSAND));
     }
     /**
         @dev Set bid duration for a collateral type.

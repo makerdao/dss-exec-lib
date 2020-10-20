@@ -506,7 +506,7 @@ contract ActionTest is DSTest {
 
     function test_setIlkMinAuctionBidIncrease() public {
         action.setIlkMinAuctionBidIncrease_test("gold", 5000); // 5%
-        assertEq(ilks["gold"].flip.beg(), 5 ether / 100); // WAD pct
+        assertEq(ilks["gold"].flip.beg(), 5 * WAD / 10); // WAD pct
     }
 
     function test_setIlkBidDuration() public {
@@ -781,7 +781,7 @@ contract ActionTest is DSTest {
         }
 
         {
-            assertEq(tokenFlip.beg(), 5 ether / 100); // WAD pct
+            assertEq(tokenFlip.beg(), 5 * WAD / 10); // WAD pct
             assertEq(uint256(tokenFlip.ttl()), 6 hours);
             assertEq(uint256(tokenFlip.tau()), 6 hours);
 
