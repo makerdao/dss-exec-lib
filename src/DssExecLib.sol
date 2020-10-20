@@ -287,20 +287,20 @@ contract DssExecLib {
     }
     /**
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setMinSurplusAuctionBidIncrease(uint256 _pct) public {
-        setMinSurplusAuctionBidIncrease(flap(), _pct);
+    function setMinSurplusAuctionBidIncrease(uint256 _pct_bps) public {
+        setMinSurplusAuctionBidIncrease(flap(), _pct_bps);
     }
     /**
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * WAD / 100,000
         @param _flap   The address of the Flapper core contract
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setMinSurplusAuctionBidIncrease(address _flap, uint256 _pct) public {
-        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
-        Fileable(_flap).file("beg", wdiv(_pct, 10 * THOUSAND));
+    function setMinSurplusAuctionBidIncrease(address _flap, uint256 _pct_bps) public {
+        require(_pct_bps < 10 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        Fileable(_flap).file("beg", wdiv(_pct_bps, 10 * THOUSAND));
     }
     /**
         @dev Set bid duration for surplus auctions.
@@ -375,20 +375,20 @@ contract DssExecLib {
     }
     /**
         @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setMinDebtAuctionBidIncrease(uint256 _pct) public {
-        setMinDebtAuctionBidIncrease(flop(), _pct);
+    function setMinDebtAuctionBidIncrease(uint256 _pct_bps) public {
+        setMinDebtAuctionBidIncrease(flop(), _pct_bps);
     }
     /**
         @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * WAD / 100,000
         @param _flop   The address of the Flopper core contract
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setMinDebtAuctionBidIncrease(address _flop, uint256 _pct) public {
-        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
-        Fileable(_flop).file("beg", wdiv(_pct, 10 * THOUSAND));
+    function setMinDebtAuctionBidIncrease(address _flop, uint256 _pct_bps) public {
+        require(_pct_bps < 10 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        Fileable(_flop).file("beg", wdiv(_pct_bps, 10 * THOUSAND));
     }
     /**
         @dev Set bid duration for debt auctions.
@@ -423,18 +423,18 @@ contract DssExecLib {
     /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setDebtAuctionMKRIncreaseRate(uint256 _pct) public { setDebtAuctionMKRIncreaseRate(flop(), _pct); }
+    function setDebtAuctionMKRIncreaseRate(uint256 _pct_bps) public { setDebtAuctionMKRIncreaseRate(flop(), _pct_bps); }
     /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 50% to 150% WAD needed for pad)
         @param _flop   The address of the Flopper core contract
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setDebtAuctionMKRIncreaseRate(address _flop, uint256 _pct) public {
-        Fileable(_flop).file("pad", wdiv(add(_pct, 10 * THOUSAND), 10 * THOUSAND));
+    function setDebtAuctionMKRIncreaseRate(address _flop, uint256 _pct_bps) public {
+        Fileable(_flop).file("pad", wdiv(add(_pct_bps, 10 * THOUSAND), 10 * THOUSAND));
     }
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
@@ -540,19 +540,19 @@ contract DssExecLib {
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
-    function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct) public { setIlkLiquidationPenalty(cat(), _ilk, _pct); }
+    function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public { setIlkLiquidationPenalty(cat(), _ilk, _pct_bps); }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 13% to 113% WAD needed for chop)
         @param _cat    The address of the Cat core accounting contract (will need to revisit for LIQ-2.0)
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
-    function setIlkLiquidationPenalty(address _cat, bytes32 _ilk, uint256 _pct) public {
-        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
-        Fileable(_cat).file(_ilk, "chop", wdiv(add(_pct, 10 * THOUSAND), 10 * THOUSAND));
+    function setIlkLiquidationPenalty(address _cat, bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < 10 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
+        Fileable(_cat).file(_ilk, "chop", wdiv(add(_pct_bps, 10 * THOUSAND), 10 * THOUSAND));
     }
     /**
         @dev Set max DAI amount for liquidation per vault for a collateral type. Amount will be converted to the correct internal precision.
@@ -573,38 +573,38 @@ contract DssExecLib {
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
-    function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct) public { setIlkLiquidationRatio(spot(), _ilk, _pct); }
+    function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps) public { setIlkLiquidationRatio(spot(), _ilk, _pct_bps); }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * RAY / 100,000
         @param _spot   The address of the Spot core accounting contract
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
-    function setIlkLiquidationRatio(address _spot, bytes32 _ilk, uint256 _pct) public {
-        require(_pct < 100 * THOUSAND, "LibDssExec/incorrect-ilk-mat-precision"); // Fails if pct >= 1000%
-        Fileable(_spot).file(_ilk, "mat", rdiv(_pct, 10 * THOUSAND));
+    function setIlkLiquidationRatio(address _spot, bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < 100 * THOUSAND, "LibDssExec/incorrect-ilk-mat-precision"); // Fails if pct >= 1000%
+        Fileable(_spot).file(_ilk, "mat", rdiv(_pct_bps, 10 * THOUSAND));
     }
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct) public {
+    function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps) public {
         (,,,, address _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
-        setIlkMinAuctionBidIncrease(_flip, _pct);
+        setIlkMinAuctionBidIncrease(_flip, _pct_bps);
     }
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * WAD / 100,000
         @param _flip   The address of the ilk's flip core accounting contract
-        @param _pct    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setIlkMinAuctionBidIncrease(address _flip, uint256 _pct) public {
-        require(_pct < 10 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
-        Fileable(_flip).file("beg", wdiv(_pct, 10 * THOUSAND));
+    function setIlkMinAuctionBidIncrease(address _flip, uint256 _pct_bps) public {
+        require(_pct_bps < 10 * THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
+        Fileable(_flip).file("beg", wdiv(_pct_bps, 10 * THOUSAND));
     }
     /**
         @dev Set bid duration for a collateral type.
