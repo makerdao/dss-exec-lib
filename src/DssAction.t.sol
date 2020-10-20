@@ -123,7 +123,7 @@ contract EndTest is DSTest {
         return ilks[ilk].gem.balanceOf(usr);
     }
 
-    function init_collateral(bytes32 name, address action) internal returns (Ilk memory) {
+    function init_collateral(bytes32 name, address _action) internal returns (Ilk memory) {
         DSToken coin = new DSToken(name);
         coin.mint(20 ether);
 
@@ -158,9 +158,9 @@ contract EndTest is DSTest {
 
         reg.add(address(gemA));
 
-        flip.rely(action);
-        gemA.rely(action);
-        osm.rely(action);
+        flip.rely(_action);
+        gemA.rely(_action);
+        osm.rely(_action);
 
         ilks[name].pip = pip;
         ilks[name].osm = osm;
@@ -324,16 +324,16 @@ contract EndTest is DSTest {
     /*********************/
 
     function test_updateCollateralPrice() public {
-        uint256 spot;
+        uint256 _spot;
 
-        (,, spot,,) = vat.ilks("gold");
-        assertEq(spot, ray(3 ether));
+        (,, _spot,,) = vat.ilks("gold");
+        assertEq(_spot, ray(3 ether));
         ilks["gold"].pip.poke(bytes32(10 * WAD));
 
         action.updateCollateralPrice_test("gold");
 
-        (,, spot,,) = vat.ilks("gold");
-        assertEq(spot, ray(5 ether)); // $5 at 200%
+        (,, _spot,,) = vat.ilks("gold");
+        assertEq(_spot, ray(5 ether)); // $5 at 200%
     }
 
     /****************************/
