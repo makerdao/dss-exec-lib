@@ -261,6 +261,7 @@ contract ActionTest is DSTest {
         flap.rely(address(action));
         flop.rely(address(action));
         median.rely(address(action));
+        log.rely(address(action));
 
         flipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
@@ -293,6 +294,34 @@ contract ActionTest is DSTest {
 
         action.deauthorize_test(address(vat), address(1));
         assertEq(vat.wards(address(1)), 0);
+    }
+
+    /**************************/
+    /***    Changelog       ***/
+    /**************************/
+
+    function test_setAddress() public {
+        bytes32 ilk = "silver";
+        action.setChangelogAddress_test(ilk, address(this));
+        assertEq(log.getAddress(ilk), address(this));
+    }
+
+    function test_setVersion() public {
+        string memory version = "9001.0.0";
+        action.setChangelogVersion_test(version);
+        assertEq(log.version(), version);
+    }
+
+    function test_setIPFS() public {
+        string memory ipfs = "QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW";
+        action.setChangelogIPFS_test(ipfs);
+        assertEq(log.ipfs(), ipfs);
+    }
+
+    function test_setSHA256() public {
+        string memory SHA256 = "e42dc9d043a57705f3f097099e6b2de4230bca9a020c797508da079f9079e35b";
+        action.setChangelogSHA256_test(SHA256);
+        assertEq(log.sha256sum(), SHA256);
     }
 
     /**************************/

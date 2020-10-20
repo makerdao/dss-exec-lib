@@ -98,12 +98,20 @@ contract DssAction {
     /**********************/
     /***    ChangeLog   ***/
     /**********************/
-    function setChainLogAddress(bytes32 key, address value) internal {
-        libCall("setChainLogAddress(bytes32,address)", key, value);
+    function setChangelogAddress(bytes32 key, address value) internal {
+        libCall("setChangelogAddress(bytes32,address)", key, value);
     }
 
-    function setChainLogVersion(string memory version) internal {
-        libCall("setChainLogVersion(string)", version);
+    function setChangelogVersion(string memory version) internal {
+        libCall("setChangelogVersion(string)", version);
+    }
+
+    function setChangelogIPFS(string memory ipfs) internal {
+        libCall("setChangelogIPFS(string)", ipfs);
+    }
+
+    function setChangelogSHA256(string memory SHA256) internal {
+        libCall("setChangelogSHA256(string)", SHA256);
     }
 
     /**************************/

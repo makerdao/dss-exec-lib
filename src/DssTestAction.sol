@@ -28,6 +28,26 @@ contract DssTestAction is DssAction {
         accumulateCollateralStabilityFees(ilk);
     }
 
+    /**************************/
+    /***     Changelog      ***/
+    /**************************/
+
+    function setChangelogAddress_test(bytes32 key, address value) public {
+        setChangelogAddress(key, value);
+    }
+
+    function setChangelogVersion_test(string memory version) public {
+        setChangelogVersion(version);
+    }
+
+    function setChangelogIPFS_test(string memory ipfs) public {
+        setChangelogIPFS(ipfs);
+    }
+
+    function setChangelogSHA256_test(string memory SHA256) public {
+        setChangelogSHA256(SHA256);
+    }
+
     /*********************/
     /*** Price Updates ***/
     /*********************/
