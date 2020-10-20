@@ -505,8 +505,8 @@ contract ActionTest is DSTest {
     }
 
     function test_setIlkMinAuctionBidIncrease() public {
-        action.setIlkMinAuctionBidIncrease_test("gold", 5000); // 5%
-        assertEq(ilks["gold"].flip.beg(), 5 * WAD / 10); // WAD pct
+        action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
+        assertEq(ilks["gold"].flip.beg(), 5 * WAD / 100); // WAD pct
     }
 
     function test_setIlkBidDuration() public {
@@ -735,15 +735,15 @@ contract ActionTest is DSTest {
                 addresses,
                 liquidatable,
                 oracleSettings,
-                100 * MILLION,
-                100,
-                50 * THOUSAND,
-                1300,
-                1000000001243680656318820312,
-                5000,
-                6 hours,
-                6 hours,
-                15000
+                100 * MILLION,                 // ilkDebtCeiling
+                100,                           // minVaultAmount
+                50 * THOUSAND,                 // maxLiquidationAmount
+                1300,                          // liquidationPenalty
+                1000000001243680656318820312,  // ilkStabilityFee
+                500,                           // bidIncrease
+                6 hours,                       // bidDuration
+                6 hours,                       // auctionDuration
+                15000                          // liquidationRatio
             );
         }
 
@@ -780,7 +780,7 @@ contract ActionTest is DSTest {
         }
 
         {
-            assertEq(tokenFlip.beg(), 5 * WAD / 10); // WAD pct
+            assertEq(tokenFlip.beg(), 5 * WAD / 100); // WAD pct
             assertEq(uint256(tokenFlip.ttl()), 6 hours);
             assertEq(uint256(tokenFlip.tau()), 6 hours);
 
