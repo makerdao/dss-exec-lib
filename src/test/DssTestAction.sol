@@ -92,6 +92,14 @@ contract DssTestAction is DssAction {
         setGlobalDebtCeiling(amount);
     }
 
+    function increaseGlobalDebtCeiling_test(uint256 amount) public {
+        increaseGlobalDebtCeiling(amount);
+    }
+
+    function decreaseGlobalDebtCeiling_test(uint256 amount) public {
+        decreaseGlobalDebtCeiling(amount);
+    }
+
     function setDSR_test(uint256 rate) public {
         setDSR(rate);
     }

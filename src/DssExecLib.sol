@@ -288,18 +288,32 @@ contract DssExecLib {
     }
     /**
         @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
+        @param _amount The amount to add in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function increaseGlobalDebtCeiling(uint256 _amount) public {
+        increaseGlobalDebtCeiling(vat(), _amount);
+    }
+    /**
+        @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
         @param _amount The amount to add in DAI (ex. 10m DAI amount == 10000000)
     */
-    function increaseGlobalLine(address _vat, uint256 _amount) public {
+    function increaseGlobalDebtCeiling(address _vat, uint256 _amount) public {
         setGlobalDebtCeiling(add(DssVat(_vat).Line() / RAD, _amount));
+    }
+    /**
+        @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
+        @param _amount The amount to reduce in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function decreaseGlobalDebtCeiling(uint256 _amount) public {
+        decreaseGlobalDebtCeiling(vat(), _amount);
     }
     /**
         @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
         @param _amount The amount to reduce in DAI (ex. 10m DAI amount == 10000000)
     */
-    function decreaseGlobalLine(address _vat, uint256 _amount) public {
+    function decreaseGlobalDebtCeiling(address _vat, uint256 _amount) public {
         setGlobalDebtCeiling(sub(DssVat(_vat).Line() / RAD, _amount));
     }
     /**
@@ -1032,7 +1046,7 @@ contract DssExecLib {
         RegistryLike(reg()).add(_addresses[1]);
 
         // Increase the global debt ceiling by the ilk ceiling
-        increaseGlobalLine(vat(), _ilkDebtCeiling);
+        increaseGlobalDebtCeiling(_ilkDebtCeiling);
         // Set the ilk debt ceiling
         setIlkDebtCeiling(_ilk, _ilkDebtCeiling);
         // Set the ilk dust
