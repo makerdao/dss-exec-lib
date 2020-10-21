@@ -52,6 +52,13 @@ new DssExec(
 
 Below is an outline of all functions used in the library.
 
+### Changelog Management
+- `setChangelogAddress(bytes32 _key, address _val)`: Set an address in the MCD on-chain changelog.
+- `setChangelogVersion(string memory _version)`: Set version in the MCD on-chain changelog.
+- `setChangelogIPFS(string memory _ipfsHash)`: Set IPFS hash of IPFS changelog in MCD on-chain changelog.
+- `setChangelogSHA256(string memory _SHA256Sum)`: Set SHA256 hash in MCD on-chain changelog.
+- `getChangelogAddress(bytes32 _key)`: Get MCD address from key from MCD on-chain changelog.
+
 ### Authorizations
 - `authorize(address _base, address _ward)`: Give an address authorization to perform auth actions on the contract.
 - `deauthorize(address _base, address _ward)`: Revoke contract authorization from an address.
