@@ -7,9 +7,9 @@ import "ds-value/value.sol";
 
 import "dss-interfaces/Interfaces.sol";
 
-import "./DssExec.sol";
-import "./DssAction.sol";
-import {DssExecLib} from "./DssExecLib.sol";
+import "../DssExec.sol";
+import "../DssAction.sol";
+import {DssExecLib} from "../DssExecLib.sol";
 
 interface Hevm {
     function warp(uint256) external;
