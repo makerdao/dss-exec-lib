@@ -28,6 +28,26 @@ contract DssTestAction is DssAction {
         accumulateCollateralStabilityFees(ilk);
     }
 
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
+
+    function setChangelogAddress_test(bytes32 key, address value) public {
+        setChangelogAddress(key, value);
+    }
+
+    function setChangelogVersion_test(string memory version) public {
+        setChangelogVersion(version);
+    }
+
+    function setChangelogIPFS_test(string memory ipfs) public {
+        setChangelogIPFS(ipfs);
+    }
+
+    function setChangelogSHA256_test(string memory SHA256) public {
+        setChangelogSHA256(SHA256);
+    }
+
     /*********************/
     /*** Price Updates ***/
     /*********************/
@@ -57,67 +77,67 @@ contract DssTestAction is DssAction {
         setDSR(rate);
     }
 
-    function setSurplusAuctionAmount_test(uint256 amount) public { 
+    function setSurplusAuctionAmount_test(uint256 amount) public {
         setSurplusAuctionAmount(amount);
     }
 
-    function setSurplusBuffer_test(uint256 amount) public { 
+    function setSurplusBuffer_test(uint256 amount) public {
         setSurplusBuffer(amount);
     }
 
-    function setMinSurplusAuctionBidIncrease_test(uint256 pct) public { 
+    function setMinSurplusAuctionBidIncrease_test(uint256 pct) public {
         setMinSurplusAuctionBidIncrease(pct);
     }
 
-    function setSurplusAuctionBidDuration_test(uint256 length) public { 
+    function setSurplusAuctionBidDuration_test(uint256 length) public {
         setSurplusAuctionBidDuration(length);
     }
 
-    function setSurplusAuctionDuration_test(uint256 length) public { 
+    function setSurplusAuctionDuration_test(uint256 length) public {
         setSurplusAuctionDuration(length);
     }
 
-    function setDebtAuctionDelay_test(uint256 length) public { 
+    function setDebtAuctionDelay_test(uint256 length) public {
         setDebtAuctionDelay(length);
     }
 
-    function setDebtAuctionDAIAmount_test(uint256 amount) public { 
+    function setDebtAuctionDAIAmount_test(uint256 amount) public {
         setDebtAuctionDAIAmount(amount);
     }
 
-    function setDebtAuctionMKRAmount_test(uint256 amount) public { 
+    function setDebtAuctionMKRAmount_test(uint256 amount) public {
         setDebtAuctionMKRAmount(amount);
     }
 
-    function setMinDebtAuctionBidIncrease_test(uint256 pct) public { 
+    function setMinDebtAuctionBidIncrease_test(uint256 pct) public {
         setMinDebtAuctionBidIncrease(pct);
     }
 
-    function setDebtAuctionBidDuration_test(uint256 length) public { 
+    function setDebtAuctionBidDuration_test(uint256 length) public {
         setDebtAuctionBidDuration(length);
     }
 
-    function setDebtAuctionDuration_test(uint256 length) public { 
+    function setDebtAuctionDuration_test(uint256 length) public {
         setDebtAuctionDuration(length);
     }
 
-    function setDebtAuctionMKRIncreaseRate_test(uint256 pct) public { 
+    function setDebtAuctionMKRIncreaseRate_test(uint256 pct) public {
         setDebtAuctionMKRIncreaseRate(pct);
     }
 
-    function setMaxTotalDAILiquidationAmount_test(uint256 amount) public { 
+    function setMaxTotalDAILiquidationAmount_test(uint256 amount) public {
         setMaxTotalDAILiquidationAmount(amount);
     }
 
-    function setEmergencyShutdownProcessingTime_test(uint256 length) public { 
+    function setEmergencyShutdownProcessingTime_test(uint256 length) public {
         setEmergencyShutdownProcessingTime(length);
     }
 
-    function setGlobalStabilityFee_test(uint256 rate) public { 
+    function setGlobalStabilityFee_test(uint256 rate) public {
         setGlobalStabilityFee(rate);
     }
 
-    function setDAIReferenceValue_test(uint256 amount) public { 
+    function setDAIReferenceValue_test(uint256 amount) public {
         setDAIReferenceValue(amount);
     }
 
@@ -167,12 +187,12 @@ contract DssTestAction is DssAction {
         updateCollateralAuctionContract(ilk, newFlip, oldFlip);
     }
 
-    function updateSurplusAuctionContract_test(bytes32 ilk, address newFlap, address oldFlap) public {
-        updateSurplusAuctionContract(ilk, newFlap, oldFlap);
+    function updateSurplusAuctionContract_test(address newFlap, address oldFlap) public {
+        updateSurplusAuctionContract(newFlap, oldFlap);
     }
 
-    function updateDebtAuctionContract_test(bytes32 ilk, address newFlop, address oldFlop) public {
-        updateDebtAuctionContract(ilk, newFlop, oldFlop);
+    function updateDebtAuctionContract_test(address newFlop, address oldFlop) public {
+        updateDebtAuctionContract(newFlop, oldFlop);
     }
 
     /*************************/
@@ -237,18 +257,18 @@ contract DssTestAction is DssAction {
         uint256          liquidationRatio
     ) public {
         addNewCollateral(
-            ilk, 
-            addresses, 
-            liquidatable, 
+            ilk,
+            addresses,
+            liquidatable,
             oracleSettings,
-            ilkDebtCeiling, 
-            minVaultAmount, 
-            maxLiquidationAmount, 
-            liquidationPenalty, 
-            ilkStabilityFee, 
-            bidIncrease, 
-            bidDuration, 
-            auctionDuration, 
+            ilkDebtCeiling,
+            minVaultAmount,
+            maxLiquidationAmount,
+            liquidationPenalty,
+            ilkStabilityFee,
+            bidIncrease,
+            bidDuration,
+            auctionDuration,
             liquidationRatio
         );
     }
