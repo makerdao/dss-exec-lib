@@ -46,6 +46,7 @@ interface Pricing {
 
 interface DssVat {
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
+    function Line() external view returns (uint256);
 }
 
 interface AuctionLike {
@@ -284,6 +285,36 @@ contract DssExecLib {
     function setGlobalDebtCeiling(address _vat, uint256 _amount) public {
         require(_amount < WAD, "LibDssExec/incorrect-global-Line-precision");
         Fileable(_vat).file("Line", _amount * RAD);
+    }
+    /**
+        @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
+        @param _amount The amount to add in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function increaseGlobalDebtCeiling(uint256 _amount) public {
+        increaseGlobalDebtCeiling(vat(), _amount);
+    }
+    /**
+        @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
+        @param _vat    The address of the Vat core accounting contract
+        @param _amount The amount to add in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function increaseGlobalDebtCeiling(address _vat, uint256 _amount) public {
+        setGlobalDebtCeiling(add(DssVat(_vat).Line() / RAD, _amount));
+    }
+    /**
+        @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
+        @param _amount The amount to reduce in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function decreaseGlobalDebtCeiling(uint256 _amount) public {
+        decreaseGlobalDebtCeiling(vat(), _amount);
+    }
+    /**
+        @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
+        @param _vat    The address of the Vat core accounting contract
+        @param _amount The amount to reduce in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function decreaseGlobalDebtCeiling(address _vat, uint256 _amount) public {
+        setGlobalDebtCeiling(sub(DssVat(_vat).Line() / RAD, _amount));
     }
     /**
         @dev Set the Dai Savings Rate.
@@ -1014,6 +1045,8 @@ contract DssExecLib {
         // Add new ilk to the IlkRegistry
         RegistryLike(reg()).add(_addresses[1]);
 
+        // Increase the global debt ceiling by the ilk ceiling
+        increaseGlobalDebtCeiling(_ilkDebtCeiling);
         // Set the ilk debt ceiling
         setIlkDebtCeiling(_ilk, _ilkDebtCeiling);
         // Set the ilk dust

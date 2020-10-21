@@ -169,6 +169,14 @@ contract DssAction {
         libCall("setGlobalDebtCeiling(uint256)", amount);
     }
 
+    function increaseGlobalDebtCeiling(uint256 amount) internal {
+        libCall("increaseGlobalDebtCeiling(uint256)", amount);
+    }
+
+    function decreaseGlobalDebtCeiling(uint256 amount) internal {
+        libCall("decreaseGlobalDebtCeiling(uint256)", amount);
+    }
+
     function setDSR(uint256 rate) internal {
         libCall("setDSR(uint256)", rate);
     }

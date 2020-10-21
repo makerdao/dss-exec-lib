@@ -398,8 +398,22 @@ contract ActionTest is DSTest {
     /******************************/
 
     function test_setGlobalDebtCeiling() public {
-        action.setGlobalDebtCeiling_test(100 * MILLION); // $100,000,000
+        action.setGlobalDebtCeiling_test(100 * MILLION); // 100,000,000 Dai
         assertEq(vat.Line(), 100 * MILLION * RAD);  // Fixes precision
+    }
+
+    function test_increaseGlobalDebtCeiling() public {
+        action.setGlobalDebtCeiling_test(100 * MILLION); // setup
+
+        action.increaseGlobalDebtCeiling_test(100 * MILLION); // 100,000,000 Dai
+        assertEq(vat.Line(), 200 * MILLION * RAD);  // Fixes precision
+    }
+
+    function test_decreaseGlobalDebtCeiling() public {
+        action.setGlobalDebtCeiling_test(300 * MILLION); // setup
+
+        action.decreaseGlobalDebtCeiling_test(100 * MILLION); // 100,000,000 Dai
+        assertEq(vat.Line(), 200 * MILLION * RAD);  // Fixes precision
     }
 
     function test_setDSR() public {
@@ -749,6 +763,8 @@ contract ActionTest is DSTest {
             oracleSettings[0] = isOsm;
             oracleSettings[1] = medianSrc;
 
+            uint256 globalLine = vat.Line();
+
             action.addNewCollateral_test(
                 ilk,
                 addresses,
@@ -764,6 +780,8 @@ contract ActionTest is DSTest {
                 6 hours,                       // auctionDuration
                 15000                          // liquidationRatio
             );
+
+            assertEq(vat.Line(), globalLine + 100 * MILLION * RAD);
         }
 
         assertEq(vat.wards(address(tokenJoin)), 1);
