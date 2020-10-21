@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
-/// DssExecLib.sol -- MakerDAO Executive Spellcrafting Library
-
+//
+// DssExecLib.sol -- MakerDAO Executive Spellcrafting Library
+//
+// Copyright (C) 2020 Maker Ecosystem Growth Holdings, Inc.
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
