@@ -27,7 +27,7 @@ import {GemJoin}          from 'dss/join.sol';
 import {End}              from 'dss/end.sol';
 import {Spotter}          from 'dss/spot.sol';
 
-import {DssTestAction}    from './DssTestAction.sol';
+import {DssTestAction}    from './test/DssTestAction.sol';
 import {DssExecLib}       from './DssExecLib.sol';
 
 interface Hevm {

@@ -1,6 +1,6 @@
 pragma solidity ^0.6.7;
 
-import "./DssAction.sol";
+import "../DssAction.sol";
 
 contract DssTestAction is DssAction {
 
