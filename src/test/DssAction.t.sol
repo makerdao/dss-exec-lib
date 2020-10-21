@@ -749,6 +749,8 @@ contract ActionTest is DSTest {
             oracleSettings[0] = isOsm;
             oracleSettings[1] = medianSrc;
 
+            uint256 globalLine = vat.Line();
+
             action.addNewCollateral_test(
                 ilk,
                 addresses,
@@ -764,6 +766,8 @@ contract ActionTest is DSTest {
                 6 hours,                       // auctionDuration
                 15000                          // liquidationRatio
             );
+
+            assertEq(vat.Line(), globalLine + 100 * MILLION * RAD);
         }
 
         assertEq(vat.wards(address(tokenJoin)), 1);
