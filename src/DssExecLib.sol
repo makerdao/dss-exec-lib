@@ -523,19 +523,19 @@ contract DssExecLib {
         Fileable(_jug).file("base", _rate);
     }
     /**
-        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
-        @param _amount The amount to set as integer (x1000) (ex. $1.025 == 1025)
+        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
+        @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
-    function setDAIReferenceValue(uint256 _amount) public { setDAIReferenceValue(spot(), _amount); }
+    function setDAIReferenceValue(uint256 _value) public { setDAIReferenceValue(spot(), _value); }
     /**
-        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is amount * RAY / 1000
+        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
+        @dev Equation used for conversion is value * RAY / 1000
         @param _spot   The address of the Spot core contract
-        @param _amount The amount to set as integer (x1000) (ex. $1.025 == 1025)
+        @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
-    function setDAIReferenceValue(address _spot, uint256 _amount) public {
-        require(_amount < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
-        Fileable(_spot).file("par", rdiv(_amount, 1000));
+    function setDAIReferenceValue(address _spot, uint256 _value) public {
+        require(_value < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
+        Fileable(_spot).file("par", rdiv(_value, 1000));
     }
 
     /*****************************/

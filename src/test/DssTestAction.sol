@@ -51,8 +51,8 @@ contract DssTestAction is DssAction {
     /*** Changelog Management ***/
     /****************************/
 
-    function setChangelogAddress_test(bytes32 key, address value) public {
-        setChangelogAddress(key, value);
+    function setChangelogAddress_test(bytes32 key, address val) public {
+        setChangelogAddress(key, val);
     }
 
     function setChangelogVersion_test(string memory version) public {
@@ -156,8 +156,8 @@ contract DssTestAction is DssAction {
         setGlobalStabilityFee(rate);
     }
 
-    function setDAIReferenceValue_test(uint256 amount) public {
-        setDAIReferenceValue(amount);
+    function setDAIReferenceValue_test(uint256 value) public {
+        setDAIReferenceValue(value);
     }
 
     /*****************************/

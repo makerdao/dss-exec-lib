@@ -48,6 +48,18 @@ new DssExec(
 );
 ```
 
+## Variables and Precision
+
+Below is an outline of how all variables are accounted for for precision based on name. 
+
+**NOTE: `DSSExecLib.sol` has NatSpec comments above every function definition that provides a comprehensive definition of the function, its parameters, and any precision calculations that are made.**
+
+- `amount`: Integer amount, (e.g., 10m DAI amount == 10000000)
+- `rate`: Rate value expressed as value corresponding to percent from this [list](https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW) (e.g., 4% => 1000000001243680656318820312)
+- `duration`: Time, in seconds.
+- `pct_bps`: Percentage, in basis points (e.g., 5% = 5 * 100 = 500).
+- `value`: Decimal value, expressed as 1000x (e.g., $1.025 == 1025)
+
 ## Actions
 
 Below is an outline of all functions used in the library.
@@ -75,32 +87,32 @@ Below is an outline of all functions used in the library.
 - `setContract(address _base, bytes32 _ilk, bytes32 _what, address _addr)`: Set a contract in another contract, defining the relationship for a given ilk.
 
 ### System Risk Parameters
-- `setGlobalDebtCeiling(uint256 _amount)`: Set the global debt ceiling. Amount will be converted to the correct internal precision.
+- `setGlobalDebtCeiling(uint256 _amount)`: Set the global debt ceiling. 
 - `setDSR(uint256 _rate)`: Set the Dai Savings Rate.
-- `setSurplusAuctionAmount(uint256 _amount)`: Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
-- `setSurplusBuffer(uint256 _amount)`: Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
-- `setMinSurplusAuctionBidIncrease(uint256 _pct_bps)`: Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
+- `setSurplusAuctionAmount(uint256 _amount)`: Set the DAI amount for system surplus auctions. 
+- `setSurplusBuffer(uint256 _amount)`: Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. 
+- `setMinSurplusAuctionBidIncrease(uint256 _pct_bps)`: Set minimum bid increase for surplus auctions. 
 - `setSurplusAuctionBidDuration(uint256 _length)`: Set bid duration for surplus auctions.
 - `setSurplusAuctionDuration(uint256 _length)`: Set total auction duration for surplus auctions.
 - `setDebtAuctionDelay(uint256 _length)`: Set the number of seconds that pass before system debt is auctioned for MKR tokens.
-- `setDebtAuctionDAIAmount(uint256 _amount)`: Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
-- `setDebtAuctionMKRAmount(uint256 _amount)`: Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
-- `setMinDebtAuctionBidIncrease(uint256 _pct_bps)`: Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
+- `setDebtAuctionDAIAmount(uint256 _amount)`: Set the DAI amount for system debt to be covered by each debt auction. 
+- `setDebtAuctionMKRAmount(uint256 _amount)`: Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. 
+- `setMinDebtAuctionBidIncrease(uint256 _pct_bps)`: Set minimum bid increase for debt auctions. 
 - `setDebtAuctionBidDuration(uint256 _length)`: Set bid duration for debt auctions.
 - `setDebtAuctionDuration(uint256 _length)`: Set total auction duration for debt auctions.
-- `setDebtAuctionMKRIncreaseRate(uint256 _pct_bps)`: Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision. MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR).
-- `setMaxTotalDAILiquidationAmount(uint256 _amount)`: Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
+- `setDebtAuctionMKRIncreaseRate(uint256 _pct_bps)`: Set the rate of increasing amount of MKR out for auction during debt auctions.  MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR).
+- `setMaxTotalDAILiquidationAmount(uint256 _amount)`: Set the maximum total DAI amount that can be out for liquidation in the system at any point. 
 - `setEmergencyShutdownProcessingTime(uint256 _length)`: Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
 - `setGlobalStabilityFee(uint256 _rate)`: Set the global stability fee (not typically used, currently is 0).
-- `setDAIReferenceValue(uint256 _amount) `: Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
+- `setDAIReferenceValue(uint256 _amount) `: Set the value of DAI in the reference asset (e.g. $1 per DAI). 
 
 ### Collateral Management
-- `setIlkDebtCeiling(bytes32 _ilk, uint256 _amount)`: Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
-- `setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount)`: Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
-- `setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps)`: Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
-- `setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount)`: Set max DAI amount for liquidation per vault for a collateral type. Amount will be converted to the correct internal precision.
-- `setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps)`: Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
-- `setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps)`: Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
+- `setIlkDebtCeiling(bytes32 _ilk, uint256 _amount)`: Set a collateral debt ceiling. 
+- `setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount)`: Set a collateral minimum vault amount. 
+- `setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps)`: Set a collateral liquidation penalty. 
+- `setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount)`: Set max DAI amount for liquidation per vault for a collateral type. 
+- `setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps)`: Set a collateral liquidation ratio. 
+- `setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps)`: Set minimum bid increase for collateral. 
 - `setIlkBidDuration(bytes32 _ilk, uint256 _length)`: Set bid duration for a collateral type.
 - `setIlkAuctionDuration(bytes32 _ilk, uint256 _length)`: Set auction duration for a collateral type.
 - `setIlkStabilityFee(bytes32 _ilk, uint256 _rate)`: Set the stability fee for a given ilk.

@@ -233,8 +233,8 @@ contract DssAction {
         libCall("setGlobalStabilityFee(uint256)", rate);
     }
 
-    function setDAIReferenceValue(uint256 amount) internal {
-        libCall("setDAIReferenceValue(uint256)", amount);
+    function setDAIReferenceValue(uint256 value) internal {
+        libCall("setDAIReferenceValue(uint256)", value);
     }
 
     /*****************************/
