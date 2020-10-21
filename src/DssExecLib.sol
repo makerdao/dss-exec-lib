@@ -161,22 +161,39 @@ contract DssExecLib {
     /****************************/
     /*** Changelog Management ***/
     /****************************/
+    /**
+        @dev Set an address in the MCD on-chain changelog.
+        @param _key Identifier for contract (e.g. "MCD_VAT")
+        @param _val Address to be authorized
+    */
     function setChangelogAddress(bytes32 _key, address _val) public {
         ChainlogLike(LOG).setAddress(_key, _val);
     }
-
+    /**
+        @dev Set version in the MCD on-chain changelog.
+        @param _version Changelog version (e.g. "1.1.2")
+    */
     function setChangelogVersion(string memory _version) public {
         ChainlogLike(LOG).setVersion(_version);
     }
-
+    /**
+        @dev Set IPFS hash of IPFS changelog in MCD on-chain changelog.
+        @param _ipfsHash IPFS hash (e.g. "QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW")
+    */
     function setChangelogIPFS(string memory _ipfsHash) public {
         ChainlogLike(LOG).setIPFS(_ipfsHash);
     }
-
+    /**
+        @dev Set SHA256 hash in MCD on-chain changelog.
+        @param _SHA256Sum SHA256 hash (e.g. "e42dc9d043a57705f3f097099e6b2de4230bca9a020c797508da079f9079e35b")
+    */
     function setChangelogSHA256(string memory _SHA256Sum) public {
         ChainlogLike(LOG).setSha256sum(_SHA256Sum);
     }
-
+    /**
+        @dev Get MCD address from key from MCD on-chain changelog.
+        @param _key Identifier for contract (e.g. "MCD_VAT")
+    */
     function getChangelogAddress(bytes32 _key) public view returns (address) {
         return ChainlogLike(LOG).getAddress(_key);
     }
@@ -306,7 +323,7 @@ contract DssExecLib {
     }
     /**
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
-        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinSurplusAuctionBidIncrease(uint256 _pct_bps) public {
         setMinSurplusAuctionBidIncrease(flap(), _pct_bps);
@@ -314,8 +331,8 @@ contract DssExecLib {
     /**
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * WAD / 100,000
-        @param _flap   The address of the Flapper core contract
-        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @param _flap    The address of the Flapper core contract
+        @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinSurplusAuctionBidIncrease(address _flap, uint256 _pct_bps) public {
         require(_pct_bps < 10 * THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
@@ -323,46 +340,46 @@ contract DssExecLib {
     }
     /**
         @dev Set bid duration for surplus auctions.
-        @param _length Amount of time for bids.
+        @param _duration Amount of time for bids.
     */
-    function setSurplusAuctionBidDuration(uint256 _length) public {
-        setSurplusAuctionBidDuration(flap(), _length);
+    function setSurplusAuctionBidDuration(uint256 _duration) public {
+        setSurplusAuctionBidDuration(flap(), _duration);
     }
     /**
         @dev Set bid duration for surplus auctions.
         @param _flap   The address of the Flapper core contract
-        @param _length Amount of time for bids.
+        @param _duration Amount of time for bids.
     */
-    function setSurplusAuctionBidDuration(address _flap, uint256 _length) public {
-        Fileable(_flap).file("ttl", _length);
+    function setSurplusAuctionBidDuration(address _flap, uint256 _duration) public {
+        Fileable(_flap).file("ttl", _duration);
     }
     /**
         @dev Set total auction duration for surplus auctions.
-        @param _length Amount of time for auctions.
+        @param _duration Amount of time for auctions.
     */
-    function setSurplusAuctionDuration(uint256 _length) public {
-        setSurplusAuctionDuration(flap(), _length);
+    function setSurplusAuctionDuration(uint256 _duration) public {
+        setSurplusAuctionDuration(flap(), _duration);
     }
     /**
         @dev Set total auction duration for surplus auctions.
         @param _flap   The address of the Flapper core contract
-        @param _length Amount of time for auctions.
+        @param _duration Amount of time for auctions.
     */
-    function setSurplusAuctionDuration(address _flap, uint256 _length) public {
-        Fileable(_flap).file("tau", _length);
+    function setSurplusAuctionDuration(address _flap, uint256 _duration) public {
+        Fileable(_flap).file("tau", _duration);
     }
     /**
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
-        @param _length Duration in seconds
+        @param _duration Duration in seconds
     */
-    function setDebtAuctionDelay(uint256 _length) public { setDebtAuctionDelay(vow(), _length); }
+    function setDebtAuctionDelay(uint256 _duration) public { setDebtAuctionDelay(vow(), _duration); }
     /**
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
         @param _vow    The address of the Vow core contract
-        @param _length Duration in seconds
+        @param _duration Duration in seconds
     */
-    function setDebtAuctionDelay(address _vow, uint256 _length) public {
-        Fileable(_vow).file("wait", _length);
+    function setDebtAuctionDelay(address _vow, uint256 _duration) public {
+        Fileable(_vow).file("wait", _duration);
     }
     /**
         @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
@@ -411,33 +428,33 @@ contract DssExecLib {
     }
     /**
         @dev Set bid duration for debt auctions.
-        @param _length Amount of time for bids.
+        @param _duration Amount of time for bids.
     */
-    function setDebtAuctionBidDuration(uint256 _length) public {
-        setDebtAuctionBidDuration(flop(), _length);
+    function setDebtAuctionBidDuration(uint256 _duration) public {
+        setDebtAuctionBidDuration(flop(), _duration);
     }
     /**
         @dev Set bid duration for debt auctions.
         @param _flop   The address of the Flopper core contract
-        @param _length Amount of time for bids.
+        @param _duration Amount of time for bids.
     */
-    function setDebtAuctionBidDuration(address _flop, uint256 _length) public {
-        Fileable(_flop).file("ttl", _length);
+    function setDebtAuctionBidDuration(address _flop, uint256 _duration) public {
+        Fileable(_flop).file("ttl", _duration);
     }
     /**
         @dev Set total auction duration for debt auctions.
-        @param _length Amount of time for auctions.
+        @param _duration Amount of time for auctions.
     */
-    function setDebtAuctionDuration(uint256 _length) public {
-        setDebtAuctionDuration(flop(), _length);
+    function setDebtAuctionDuration(uint256 _duration) public {
+        setDebtAuctionDuration(flop(), _duration);
     }
     /**
         @dev Set total auction duration for debt auctions.
         @param _flop   The address of the Flopper core contract
-        @param _length Amount of time for auctions.
+        @param _duration Amount of time for auctions.
     */
-    function setDebtAuctionDuration(address _flop, uint256 _length) public {
-        Fileable(_flop).file("tau", _length);
+    function setDebtAuctionDuration(address _flop, uint256 _duration) public {
+        Fileable(_flop).file("tau", _duration);
     }
     /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
@@ -470,17 +487,17 @@ contract DssExecLib {
         Fileable(_cat).file("box", _amount * RAD);
     }
     /**
-        @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
-        @param _length Time in seconds to set for ES processing time
+        @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
+        @param _duration Time in seconds to set for ES processing time
     */
-    function setEmergencyShutdownProcessingTime(uint256 _length) public { setEmergencyShutdownProcessingTime(end(), _length); }
+    function setEmergencyShutdownProcessingTime(uint256 _duration) public { setEmergencyShutdownProcessingTime(end(), _duration); }
     /**
-        @dev Set the length of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
+        @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _end    The address of the End core contract
-        @param _length Time in seconds to set for ES processing time
+        @param _duration Time in seconds to set for ES processing time
     */
-    function setEmergencyShutdownProcessingTime(address _end, uint256 _length) public {
-        Fileable(_end).file("wait", _length);
+    function setEmergencyShutdownProcessingTime(address _end, uint256 _duration) public {
+        Fileable(_end).file("wait", _duration);
     }
         /**
         @dev Set the global stability fee (is not typically used, currently is 0).
@@ -506,19 +523,19 @@ contract DssExecLib {
         Fileable(_jug).file("base", _rate);
     }
     /**
-        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
-        @param _amount The amount to set as integer (x1000) (ex. $1.025 == 1025)
+        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
+        @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
-    function setDAIReferenceValue(uint256 _amount) public { setDAIReferenceValue(spot(), _amount); }
+    function setDAIReferenceValue(uint256 _value) public { setDAIReferenceValue(spot(), _value); }
     /**
-        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is amount * RAY / 1000
+        @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
+        @dev Equation used for conversion is value * RAY / 1000
         @param _spot   The address of the Spot core contract
-        @param _amount The amount to set as integer (x1000) (ex. $1.025 == 1025)
+        @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
-    function setDAIReferenceValue(address _spot, uint256 _amount) public {
-        require(_amount < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
-        Fileable(_spot).file("par", rdiv(_amount, 1000));
+    function setDAIReferenceValue(address _spot, uint256 _value) public {
+        require(_value < WAD, "LibDssExec/incorrect-ilk-dunk-precision");
+        Fileable(_spot).file("par", rdiv(_value, 1000));
     }
 
     /*****************************/
@@ -628,36 +645,36 @@ contract DssExecLib {
     /**
         @dev Set bid duration for a collateral type.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _length Amount of time for bids.
+        @param _duration Amount of time for bids.
     */
-    function setIlkBidDuration(bytes32 _ilk, uint256 _length) public {
+    function setIlkBidDuration(bytes32 _ilk, uint256 _duration) public {
         (,,,, address _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
-        setIlkBidDuration(_flip, _length);
+        setIlkBidDuration(_flip, _duration);
     }
     /**
         @dev Set bid duration for a collateral type.
         @param _flip   The address of the ilk's flip core accounting contract
-        @param _length Amount of time for bids.
+        @param _duration Amount of time for bids.
     */
-    function setIlkBidDuration(address _flip, uint256 _length) public {
-        Fileable(_flip).file("ttl", _length);
+    function setIlkBidDuration(address _flip, uint256 _duration) public {
+        Fileable(_flip).file("ttl", _duration);
     }
     /**
         @dev Set auction duration for a collateral type.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _length Amount of time for auctions.
+        @param _duration Amount of time for auctions.
     */
-    function setIlkAuctionDuration(bytes32 _ilk, uint256 _length) public {
+    function setIlkAuctionDuration(bytes32 _ilk, uint256 _duration) public {
         (,,,, address _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
-        setIlkAuctionDuration(_flip, _length);
+        setIlkAuctionDuration(_flip, _duration);
     }
     /**
         @dev Set auction duration for a collateral type.
         @param _flip   The address of the ilk's flip core accounting contract
-        @param _length Amount of time for auctions.
+        @param _duration Amount of time for auctions.
     */
-    function setIlkAuctionDuration(address _flip, uint256 _length) public {
-        Fileable(_flip).file("tau", _length);
+    function setIlkAuctionDuration(address _flip, uint256 _duration) public {
+        Fileable(_flip).file("tau", _duration);
     }
     /**
         @dev Set the stability fee for a given ilk.
