@@ -103,17 +103,6 @@ contract DssAction {
         _dcall(abi.encodeWithSignature(sig, what, arr, bool1, bools, num1, num2, num3, num4, num5, num6, num7, num8, num9));
     }
 
-    /**********************/
-    /*** Authorizations ***/
-    /**********************/
-    function authorize(address base, address ward) internal virtual {
-        libCall("authorize(address,address)", base, ward);
-    }
-
-    function deauthorize(address base, address ward) internal {
-        libCall("deauthorize(address,address)", base, ward);
-    }
-
     /****************************/
     /*** Changelog Management ***/
     /****************************/
@@ -131,6 +120,17 @@ contract DssAction {
 
     function setChangelogSHA256(string memory SHA256) internal {
         libCall("setChangelogSHA256(string)", SHA256);
+    }
+
+    /**********************/
+    /*** Authorizations ***/
+    /**********************/
+    function authorize(address base, address ward) internal virtual {
+        libCall("authorize(address,address)", base, ward);
+    }
+
+    function deauthorize(address base, address ward) internal {
+        libCall("deauthorize(address,address)", base, ward);
     }
 
     /**************************/
@@ -181,20 +181,20 @@ contract DssAction {
         libCall("setSurplusBuffer(uint256)", amount);
     }
 
-    function setMinSurplusAuctionBidIncrease(uint256 pct) internal {
-        libCall("setMinSurplusAuctionBidIncrease(uint256)", pct);
+    function setMinSurplusAuctionBidIncrease(uint256 pct_bps) internal {
+        libCall("setMinSurplusAuctionBidIncrease(uint256)", pct_bps);
     }
 
-    function setSurplusAuctionBidDuration(uint256 length) internal {
-        libCall("setSurplusAuctionBidDuration(uint256)", length);
+    function setSurplusAuctionBidDuration(uint256 duration) internal {
+        libCall("setSurplusAuctionBidDuration(uint256)", duration);
     }
 
-    function setSurplusAuctionDuration(uint256 length) internal {
-        libCall("setSurplusAuctionDuration(uint256)", length);
+    function setSurplusAuctionDuration(uint256 duration) internal {
+        libCall("setSurplusAuctionDuration(uint256)", duration);
     }
 
-    function setDebtAuctionDelay(uint256 length) internal {
-        libCall("setDebtAuctionDelay(uint256)", length);
+    function setDebtAuctionDelay(uint256 duration) internal {
+        libCall("setDebtAuctionDelay(uint256)", duration);
     }
 
     function setDebtAuctionDAIAmount(uint256 amount) internal {
@@ -205,28 +205,28 @@ contract DssAction {
         libCall("setDebtAuctionMKRAmount(uint256)", amount);
     }
 
-    function setMinDebtAuctionBidIncrease(uint256 pct) internal {
-        libCall("setMinDebtAuctionBidIncrease(uint256)", pct);
+    function setMinDebtAuctionBidIncrease(uint256 pct_bps) internal {
+        libCall("setMinDebtAuctionBidIncrease(uint256)", pct_bps);
     }
 
-    function setDebtAuctionBidDuration(uint256 length) internal {
-        libCall("setDebtAuctionBidDuration(uint256)", length);
+    function setDebtAuctionBidDuration(uint256 duration) internal {
+        libCall("setDebtAuctionBidDuration(uint256)", duration);
     }
 
-    function setDebtAuctionDuration(uint256 length) internal {
-        libCall("setDebtAuctionDuration(uint256)", length);
+    function setDebtAuctionDuration(uint256 duration) internal {
+        libCall("setDebtAuctionDuration(uint256)", duration);
     }
 
-    function setDebtAuctionMKRIncreaseRate(uint256 pct) internal {
-        libCall("setDebtAuctionMKRIncreaseRate(uint256)", pct);
+    function setDebtAuctionMKRIncreaseRate(uint256 pct_bps) internal {
+        libCall("setDebtAuctionMKRIncreaseRate(uint256)", pct_bps);
     }
 
     function setMaxTotalDAILiquidationAmount(uint256 amount) internal {
         libCall("setMaxTotalDAILiquidationAmount(uint256)", amount);
     }
 
-    function setEmergencyShutdownProcessingTime(uint256 length) internal {
-        libCall("setEmergencyShutdownProcessingTime(uint256)", length);
+    function setEmergencyShutdownProcessingTime(uint256 duration) internal {
+        libCall("setEmergencyShutdownProcessingTime(uint256)", duration);
     }
 
     function setGlobalStabilityFee(uint256 rate) internal {
@@ -248,28 +248,28 @@ contract DssAction {
         libCall("setIlkMinVaultAmount(bytes32,uint256)", ilk, amount);
     }
 
-    function setIlkLiquidationPenalty(bytes32 ilk, uint256 pct) internal {
-        libCall("setIlkLiquidationPenalty(bytes32,uint256)", ilk, pct);
+    function setIlkLiquidationPenalty(bytes32 ilk, uint256 pct_bps) internal {
+        libCall("setIlkLiquidationPenalty(bytes32,uint256)", ilk, pct_bps);
     }
 
     function setIlkMaxLiquidationAmount(bytes32 ilk, uint256 amount) internal {
         libCall("setIlkMaxLiquidationAmount(bytes32,uint256)", ilk, amount);
     }
 
-    function setIlkLiquidationRatio(bytes32 ilk, uint256 pct) internal {
-        libCall("setIlkLiquidationRatio(bytes32,uint256)", ilk, pct);
+    function setIlkLiquidationRatio(bytes32 ilk, uint256 pct_bps) internal {
+        libCall("setIlkLiquidationRatio(bytes32,uint256)", ilk, pct_bps);
     }
 
-    function setIlkMinAuctionBidIncrease(bytes32 ilk, uint256 pct) internal {
-        libCall("setIlkMinAuctionBidIncrease(bytes32,uint256)", ilk, pct);
+    function setIlkMinAuctionBidIncrease(bytes32 ilk, uint256 pct_bps) internal {
+        libCall("setIlkMinAuctionBidIncrease(bytes32,uint256)", ilk, pct_bps);
     }
 
-    function setIlkBidDuration(bytes32 ilk, uint256 length) internal {
-        libCall("setIlkBidDuration(bytes32,uint256)", ilk, length);
+    function setIlkBidDuration(bytes32 ilk, uint256 duration) internal {
+        libCall("setIlkBidDuration(bytes32,uint256)", ilk, duration);
     }
 
-    function setIlkAuctionDuration(bytes32 ilk, uint256 length) internal {
-        libCall("setIlkAuctionDuration(bytes32,uint256)", ilk, length);
+    function setIlkAuctionDuration(bytes32 ilk, uint256 duration) internal {
+        libCall("setIlkAuctionDuration(bytes32,uint256)", ilk, duration);
     }
 
     function setIlkStabilityFee(bytes32 ilk, uint256 rate) internal {

@@ -104,20 +104,20 @@ contract DssTestAction is DssAction {
         setSurplusBuffer(amount);
     }
 
-    function setMinSurplusAuctionBidIncrease_test(uint256 pct) public {
-        setMinSurplusAuctionBidIncrease(pct);
+    function setMinSurplusAuctionBidIncrease_test(uint256 pct_bps) public {
+        setMinSurplusAuctionBidIncrease(pct_bps);
     }
 
-    function setSurplusAuctionBidDuration_test(uint256 length) public {
-        setSurplusAuctionBidDuration(length);
+    function setSurplusAuctionBidDuration_test(uint256 duration) public {
+        setSurplusAuctionBidDuration(duration);
     }
 
-    function setSurplusAuctionDuration_test(uint256 length) public {
-        setSurplusAuctionDuration(length);
+    function setSurplusAuctionDuration_test(uint256 duration) public {
+        setSurplusAuctionDuration(duration);
     }
 
-    function setDebtAuctionDelay_test(uint256 length) public {
-        setDebtAuctionDelay(length);
+    function setDebtAuctionDelay_test(uint256 duration) public {
+        setDebtAuctionDelay(duration);
     }
 
     function setDebtAuctionDAIAmount_test(uint256 amount) public {
@@ -128,28 +128,28 @@ contract DssTestAction is DssAction {
         setDebtAuctionMKRAmount(amount);
     }
 
-    function setMinDebtAuctionBidIncrease_test(uint256 pct) public {
-        setMinDebtAuctionBidIncrease(pct);
+    function setMinDebtAuctionBidIncrease_test(uint256 pct_bps) public {
+        setMinDebtAuctionBidIncrease(pct_bps);
     }
 
-    function setDebtAuctionBidDuration_test(uint256 length) public {
-        setDebtAuctionBidDuration(length);
+    function setDebtAuctionBidDuration_test(uint256 duration) public {
+        setDebtAuctionBidDuration(duration);
     }
 
-    function setDebtAuctionDuration_test(uint256 length) public {
-        setDebtAuctionDuration(length);
+    function setDebtAuctionDuration_test(uint256 duration) public {
+        setDebtAuctionDuration(duration);
     }
 
-    function setDebtAuctionMKRIncreaseRate_test(uint256 pct) public {
-        setDebtAuctionMKRIncreaseRate(pct);
+    function setDebtAuctionMKRIncreaseRate_test(uint256 pct_bps) public {
+        setDebtAuctionMKRIncreaseRate(pct_bps);
     }
 
     function setMaxTotalDAILiquidationAmount_test(uint256 amount) public {
         setMaxTotalDAILiquidationAmount(amount);
     }
 
-    function setEmergencyShutdownProcessingTime_test(uint256 length) public {
-        setEmergencyShutdownProcessingTime(length);
+    function setEmergencyShutdownProcessingTime_test(uint256 duration) public {
+        setEmergencyShutdownProcessingTime(duration);
     }
 
     function setGlobalStabilityFee_test(uint256 rate) public {
@@ -171,28 +171,28 @@ contract DssTestAction is DssAction {
         setIlkMinVaultAmount(ilk, amount);
     }
 
-    function setIlkLiquidationPenalty_test(bytes32 ilk, uint256 pct) public {
-        setIlkLiquidationPenalty(ilk, pct);
+    function setIlkLiquidationPenalty_test(bytes32 ilk, uint256 pct_bps) public {
+        setIlkLiquidationPenalty(ilk, pct_bps);
     }
 
     function setIlkMaxLiquidationAmount_test(bytes32 ilk, uint256 amount) public {
         setIlkMaxLiquidationAmount(ilk, amount);
     }
 
-    function setIlkLiquidationRatio_test(bytes32 ilk, uint256 pct) public {
-        setIlkLiquidationRatio(ilk, pct);
+    function setIlkLiquidationRatio_test(bytes32 ilk, uint256 pct_bps) public {
+        setIlkLiquidationRatio(ilk, pct_bps);
     }
 
-    function setIlkMinAuctionBidIncrease_test(bytes32 ilk, uint256 pct) public {
-        setIlkMinAuctionBidIncrease(ilk, pct);
+    function setIlkMinAuctionBidIncrease_test(bytes32 ilk, uint256 pct_bps) public {
+        setIlkMinAuctionBidIncrease(ilk, pct_bps);
     }
 
-    function setIlkBidDuration_test(bytes32 ilk, uint256 length) public {
-        setIlkBidDuration(ilk, length);
+    function setIlkBidDuration_test(bytes32 ilk, uint256 duration) public {
+        setIlkBidDuration(ilk, duration);
     }
 
-    function setIlkAuctionDuration_test(bytes32 ilk, uint256 length) public {
-        setIlkAuctionDuration(ilk, length);
+    function setIlkAuctionDuration_test(bytes32 ilk, uint256 duration) public {
+        setIlkAuctionDuration(ilk, duration);
     }
 
     function setIlkStabilityFee_test(bytes32 ilk, uint256 rate) public {
