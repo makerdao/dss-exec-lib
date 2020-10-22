@@ -570,7 +570,9 @@ contract DssExecLib {
         @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
         @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
-    function setDAIReferenceValue(uint256 _value) public { setDAIReferenceValue(spot(), _value); }
+    function setDAIReferenceValue(uint256 _value) public {
+        setDAIReferenceValue(spot(), _value);
+    }
     /**
         @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
         @dev Equation used for conversion is value * RAY / 1000
@@ -590,7 +592,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
-    function setIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public { setIlkDebtCeiling(vat(), _ilk, _amount); }
+    function setIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
+        setIlkDebtCeiling(vat(), _ilk, _amount);
+    }
     /**
         @dev Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
@@ -606,7 +610,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
-    function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public { setIlkMinVaultAmount(vat(), _ilk, _amount); }
+    function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public {
+        setIlkMinVaultAmount(vat(), _ilk, _amount);
+    }
     /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
@@ -622,7 +628,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
-    function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public { setIlkLiquidationPenalty(cat(), _ilk, _pct_bps); }
+    function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
+        setIlkLiquidationPenalty(cat(), _ilk, _pct_bps);
+    }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 13% to 113% WAD needed for chop)
@@ -639,7 +647,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
-    function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public { setIlkMaxLiquidationAmount(cat(), _ilk, _amount); }
+    function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public {
+        setIlkMaxLiquidationAmount(cat(), _ilk, _amount);
+    }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
         @param _cat    The address of the Cat core accounting contract (will need to revisit for LIQ-2.0)
@@ -655,7 +665,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
-    function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps) public { setIlkLiquidationRatio(spot(), _ilk, _pct_bps); }
+    function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps) public {
+        setIlkLiquidationRatio(spot(), _ilk, _pct_bps);
+    }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * RAY / 100,000
@@ -725,7 +737,9 @@ contract DssExecLib {
         @param _ilk     The ilk to update (ex. bytes32("ETH-A"))
         @param _rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
-    function setIlkStabilityFee(bytes32 _ilk, uint256 _rate) public { setIlkStabilityFee(jug(), _ilk, _rate, true); }
+    function setIlkStabilityFee(bytes32 _ilk, uint256 _rate) public {
+        setIlkStabilityFee(jug(), _ilk, _rate, true);
+    }
     /**
         @dev Set the stability fee for a given ilk.
             Many of the settings that change weekly rely on the rate accumulator
@@ -748,7 +762,6 @@ contract DssExecLib {
 
         Fileable(_jug).file(_ilk, "duty", _rate);
     }
-
 
     /***********************/
     /*** Core Management ***/
