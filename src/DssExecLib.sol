@@ -228,14 +228,29 @@ contract DssExecLib {
         @dev Update rate accumulation for the Dai Savings Rate (DSR).
     */
     function accumulateDSR() public {
-        Drippable(pot()).drip();
+        accumulateDSR(pot());
+    }
+    /**
+        @dev Update rate accumulation for the Dai Savings Rate (DSR).
+        @param _pot   Address of the MCD_POT core contract
+    */
+    function accumulateDSR(address _pot) public {
+        Drippable(_pot).drip();
     }
     /**
         @dev Update rate accumulation for the stability fees of a given collateral type.
         @param _ilk   Collateral type
     */
     function accumulateCollateralStabilityFees(bytes32 _ilk) public {
-        Drippable(jug()).drip(_ilk);
+        accumulateCollateralStabilityFees(jug());
+    }
+    /**
+        @dev Update rate accumulation for the stability fees of a given collateral type.
+        @param _jug   Address of the MCD_JUG core contract
+        @param _ilk   Collateral type
+    */
+    function accumulateCollateralStabilityFees(address _jug, bytes32 _ilk) public {
+        Drippable(_jug).drip(_ilk);
     }
 
     /*********************/
@@ -328,7 +343,7 @@ contract DssExecLib {
         setGlobalDebtCeiling(sub(DssVat(_vat).Line() / RAD, _amount));
     }
     /**
-        @dev Set the Dai Savings Rate. See docs/rates.txt
+        @dev Set the Dai Savings Rate. See: docs/rates.txt
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
     function setDSR(uint256 _rate) public {
@@ -544,10 +559,12 @@ contract DssExecLib {
         Fileable(_end).file("wait", _duration);
     }
         /**
-        @dev Set the global stability fee (is not typically used, currently is 0).
+        @dev Set the global stability fee (is not typically used, currently is 0). See: docs/rates.txt
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
-    function setGlobalStabilityFee(uint256 _rate) public { setGlobalStabilityFee(jug(), _rate); }
+    function setGlobalStabilityFee(uint256 _rate) public {
+        setGlobalStabilityFee(jug(), _rate);
+    }
     /**
         @dev Set the global stability fee (is not typically used, currently is 0).
             Many of the settings that change weekly rely on the rate accumulator
@@ -558,7 +575,6 @@ contract DssExecLib {
 
             A table of rates can also be found at:
             https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
-
         @param _jug    The address of the Jug core accounting contract
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
@@ -769,7 +785,7 @@ contract DssExecLib {
         Fileable(_flip).file("tau", _duration);
     }
     /**
-        @dev Set the stability fee for a given ilk.
+        @dev Set the stability fee for a given ilk. See: docs/rates.txt
         @param _ilk     The ilk to update (ex. bytes32("ETH-A"))
         @param _rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
