@@ -407,5 +407,8 @@ contract DssLibExecTest is DSTest, DSMath {
 
         checkSystemValues(afterSpell);
         checkCollateralValues("ETH-A",  afterSpell);
+
+        assertTrue(spell.officeHours());
+        assertTrue(spell.action() != address(0));
     }
 }
