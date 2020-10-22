@@ -532,7 +532,9 @@ contract DssExecLib {
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _duration Time in seconds to set for ES processing time
     */
-    function setEmergencyShutdownProcessingTime(uint256 _duration) public { setEmergencyShutdownProcessingTime(end(), _duration); }
+    function setEmergencyShutdownProcessingTime(uint256 _duration) public {
+        setEmergencyShutdownProcessingTime(end(), _duration);
+    }
     /**
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _end    The address of the End core contract
