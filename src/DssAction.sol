@@ -252,6 +252,14 @@ contract DssAction {
         libCall("setIlkDebtCeiling(bytes32,uint256)", ilk, amount);
     }
 
+    function increaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
+        libCall("increaseIlkDebtCeiling(bytes32,uint256)", ilk, amount);
+    }
+
+    function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
+        libCall("decreaseIlkDebtCeiling(bytes32,uint256)", ilk, amount);
+    }
+
     function setIlkMinVaultAmount(bytes32 ilk, uint256 amount) internal {
         libCall("setIlkMinVaultAmount(bytes32,uint256)", ilk, amount);
     }

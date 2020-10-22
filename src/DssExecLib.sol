@@ -242,7 +242,7 @@ contract DssExecLib {
         @param _ilk   Collateral type
     */
     function accumulateCollateralStabilityFees(bytes32 _ilk) public {
-        accumulateCollateralStabilityFees(jug());
+        accumulateCollateralStabilityFees(jug(), _ilk);
     }
     /**
         @dev Update rate accumulation for the stability fees of a given collateral type.
@@ -623,39 +623,45 @@ contract DssExecLib {
     }
     /**
         @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
+             This function will also decrease the global debt ceiling by _amount
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to increase in DAI (ex. 10m DAI amount == 10000000)
     */
     function increaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
-        increaseIlkDebtCeiling(vat(), _ilk, _amount);
+        increaseIlkDebtCeiling(vat(), _ilk, _amount, true);
     }
     /**
         @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to increase in DAI (ex. 10m DAI amount == 10000000)
+        @param _global If true, increases the global debt ceiling by _amount
     */
-    function increaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount) public {
+    function increaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
         setIlkDebtCeiling(_vat, _ilk, add(line_ / RAD, _amount));
+        if (_global) { increaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
         @dev Decrease a collateral debt ceiling. Amount will be converted to the correct internal precision.
+             This function will also decrease the global debt ceiling by _amount
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
     */
     function decreaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
-        decreaseIlkDebtCeiling(vat(), _ilk, _amount);
+        decreaseIlkDebtCeiling(vat(), _ilk, _amount, true);
     }
     /**
         @dev Decrease a collateral debt ceiling. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
+        @param _global If true, decreases the global debt ceiling by _amount
     */
-    function decreaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount) public {
+    function decreaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
         setIlkDebtCeiling(_vat, _ilk, sub(line_ / RAD, _amount));
+        if (_global) { decreaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
