@@ -606,6 +606,42 @@ contract DssExecLib {
         Fileable(_vat).file(_ilk, "line", _amount * RAD);
     }
     /**
+        @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to increase in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function increaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
+        increaseIlkDebtCeiling(vat(), _ilk, _amount);
+    }
+    /**
+        @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param _vat    The address of the Vat core accounting contract
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to increase in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function increaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount) public {
+        (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
+        setIlkDebtCeiling(_vat, _ilk, add(line_ / RAD, _amount));
+    }
+    /**
+        @dev Decrease a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function decreaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
+        decreaseIlkDebtCeiling(vat(), _ilk, _amount);
+    }
+    /**
+        @dev Decrease a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param _vat    The address of the Vat core accounting contract
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function decreaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount) public {
+        (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
+        setIlkDebtCeiling(_vat, _ilk, sub(line_ / RAD, _amount));
+    }
+    /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
