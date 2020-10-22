@@ -110,6 +110,8 @@ interface ChainlogLike {
 
 contract DssExecLib {
 
+    // Changelog address applies to MCD deployments on
+    //        mainnet, kovan, rinkeby, ropsten, and goerli
     address constant public LOG = 0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F;
 
     uint256 constant public THOUSAND = 10 ** 3;
@@ -118,7 +120,7 @@ contract DssExecLib {
     uint256 constant public RAY      = 10 ** 27;
     uint256 constant public RAD      = 10 ** 45;
 
-    // --- Math ---
+    // --- SafeMath Functions ---
     function add(uint x, uint y) internal pure returns (uint z) {
         require((z = x + y) >= x);
     }
@@ -244,8 +246,17 @@ contract DssExecLib {
         @param _ilk   Collateral type
     */
     function updateCollateralPrice(bytes32 _ilk) public {
-        Pricing(spot()).poke(_ilk);
+        updateCollateralPrice(spot(), _ilk);
     }
+    /**
+        @dev Update price of a given collateral type.
+        @param _spot  Spotter contract address
+        @param _ilk   Collateral type
+    */
+    function updateCollateralPrice(address _spot, bytes32 _ilk) public {
+        Pricing(_spot).poke(_ilk);
+    }
+
     /****************************/
     /*** System Configuration ***/
     /****************************/
