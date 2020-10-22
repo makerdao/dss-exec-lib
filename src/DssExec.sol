@@ -25,22 +25,25 @@ interface PauseAbstract {
     function exec(address, bytes32, bytes calldata, uint256) external returns (bytes memory);
 }
 
+interface Changelog {
+    function getAddress(bytes32) external view returns (address);
+}
+
 contract DssExec {
 
-    // TODO: Can we use the on-chain changelog here to generalize this for mainnet or kovan
-    PauseAbstract public pause =
-        PauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
-    address         public action;
-    bytes32         public tag;
-    uint256         public eta;
-    bytes           public sig;
-    uint256         public expiration;
-    bool            public done;
-    bool            public officeHours;
+    Changelog      public log   = Changelog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
+    PauseAbstract  public pause = PauseAbstract(log.getAddress("MCD_PAUSE"));
+    address        public action;
+    bytes32        public tag;
+    uint256        public eta;
+    bytes          public sig;
+    uint256        public expiration;
+    bool           public done;
+    bool           public officeHours;
 
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
-    // Hash: seth keccak -- "$(wget https://raw.githubusercontent.com/makerdao/community/d8496d07a5eae08f2d1886f6bf4de1a813b4584d/governance/votes/Executive%20vote%20-%20September%204%2C%202020.md -q -O - 2>/dev/null)"
+    // Hash: seth keccak -- "$(wget https://<executive-vote-canonical-post> -q -O - 2>/dev/null)"
     string          public description;
 
     // @param _description  A string description of the spell
