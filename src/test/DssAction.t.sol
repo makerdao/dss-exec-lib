@@ -526,7 +526,7 @@ contract ActionTest is DSTest {
         action.increaseIlkDebtCeiling_test("gold", 100 * MILLION);
         (,,, uint256 line,) = vat.ilks("gold");
         assertEq(line, 200 * MILLION * RAD);
-        assertEq(vat.Line(), 100 * MILLION * RAD); // also increased
+        assertEq(vat.Line(), 200 * MILLION * RAD); // also increased
     }
 
     function test_decreaseIlkDebtCeiling() public {
