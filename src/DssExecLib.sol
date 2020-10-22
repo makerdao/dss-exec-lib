@@ -328,7 +328,7 @@ contract DssExecLib {
         setGlobalDebtCeiling(sub(DssVat(_vat).Line() / RAD, _amount));
     }
     /**
-        @dev Set the Dai Savings Rate.
+        @dev Set the Dai Savings Rate. See docs/rates.txt
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
     function setDSR(uint256 _rate) public {
