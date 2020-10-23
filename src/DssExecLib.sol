@@ -110,6 +110,8 @@ interface ChainlogLike {
 
 contract DssExecLib {
 
+    // Changelog address applies to MCD deployments on
+    //        mainnet, kovan, rinkeby, ropsten, and goerli
     address constant public LOG = 0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F;
 
     uint256 constant public THOUSAND = 10 ** 3;
@@ -118,7 +120,7 @@ contract DssExecLib {
     uint256 constant public RAY      = 10 ** 27;
     uint256 constant public RAD      = 10 ** 45;
 
-    // --- Math ---
+    // --- SafeMath Functions ---
     function add(uint x, uint y) internal pure returns (uint z) {
         require((z = x + y) >= x);
     }
@@ -226,14 +228,29 @@ contract DssExecLib {
         @dev Update rate accumulation for the Dai Savings Rate (DSR).
     */
     function accumulateDSR() public {
-        Drippable(pot()).drip();
+        accumulateDSR(pot());
+    }
+    /**
+        @dev Update rate accumulation for the Dai Savings Rate (DSR).
+        @param _pot   Address of the MCD_POT core contract
+    */
+    function accumulateDSR(address _pot) public {
+        Drippable(_pot).drip();
     }
     /**
         @dev Update rate accumulation for the stability fees of a given collateral type.
         @param _ilk   Collateral type
     */
     function accumulateCollateralStabilityFees(bytes32 _ilk) public {
-        Drippable(jug()).drip(_ilk);
+        accumulateCollateralStabilityFees(jug(), _ilk);
+    }
+    /**
+        @dev Update rate accumulation for the stability fees of a given collateral type.
+        @param _jug   Address of the MCD_JUG core contract
+        @param _ilk   Collateral type
+    */
+    function accumulateCollateralStabilityFees(address _jug, bytes32 _ilk) public {
+        Drippable(_jug).drip(_ilk);
     }
 
     /*********************/
@@ -244,8 +261,17 @@ contract DssExecLib {
         @param _ilk   Collateral type
     */
     function updateCollateralPrice(bytes32 _ilk) public {
-        Pricing(spot()).poke(_ilk);
+        updateCollateralPrice(spot(), _ilk);
     }
+    /**
+        @dev Update price of a given collateral type.
+        @param _spot  Spotter contract address
+        @param _ilk   Collateral type
+    */
+    function updateCollateralPrice(address _spot, bytes32 _ilk) public {
+        Pricing(_spot).poke(_ilk);
+    }
+
     /****************************/
     /*** System Configuration ***/
     /****************************/
@@ -317,7 +343,7 @@ contract DssExecLib {
         setGlobalDebtCeiling(sub(DssVat(_vat).Line() / RAD, _amount));
     }
     /**
-        @dev Set the Dai Savings Rate.
+        @dev Set the Dai Savings Rate. See: docs/rates.txt
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
     function setDSR(uint256 _rate) public {
@@ -521,7 +547,9 @@ contract DssExecLib {
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _duration Time in seconds to set for ES processing time
     */
-    function setEmergencyShutdownProcessingTime(uint256 _duration) public { setEmergencyShutdownProcessingTime(end(), _duration); }
+    function setEmergencyShutdownProcessingTime(uint256 _duration) public {
+        setEmergencyShutdownProcessingTime(end(), _duration);
+    }
     /**
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _end    The address of the End core contract
@@ -531,10 +559,12 @@ contract DssExecLib {
         Fileable(_end).file("wait", _duration);
     }
         /**
-        @dev Set the global stability fee (is not typically used, currently is 0).
+        @dev Set the global stability fee (is not typically used, currently is 0). See: docs/rates.txt
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
-    function setGlobalStabilityFee(uint256 _rate) public { setGlobalStabilityFee(jug(), _rate); }
+    function setGlobalStabilityFee(uint256 _rate) public {
+        setGlobalStabilityFee(jug(), _rate);
+    }
     /**
         @dev Set the global stability fee (is not typically used, currently is 0).
             Many of the settings that change weekly rely on the rate accumulator
@@ -545,7 +575,6 @@ contract DssExecLib {
 
             A table of rates can also be found at:
             https://ipfs.io/ipfs/QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW
-
         @param _jug    The address of the Jug core accounting contract
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
@@ -557,7 +586,9 @@ contract DssExecLib {
         @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
         @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
-    function setDAIReferenceValue(uint256 _value) public { setDAIReferenceValue(spot(), _value); }
+    function setDAIReferenceValue(uint256 _value) public {
+        setDAIReferenceValue(spot(), _value);
+    }
     /**
         @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
         @dev Equation used for conversion is value * RAY / 1000
@@ -577,7 +608,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
-    function setIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public { setIlkDebtCeiling(vat(), _ilk, _amount); }
+    function setIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
+        setIlkDebtCeiling(vat(), _ilk, _amount);
+    }
     /**
         @dev Set a collateral debt ceiling. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
@@ -589,11 +622,55 @@ contract DssExecLib {
         Fileable(_vat).file(_ilk, "line", _amount * RAD);
     }
     /**
+        @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
+             This function will also decrease the global debt ceiling by _amount
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to increase in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function increaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
+        increaseIlkDebtCeiling(vat(), _ilk, _amount, true);
+    }
+    /**
+        @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param _vat    The address of the Vat core accounting contract
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to increase in DAI (ex. 10m DAI amount == 10000000)
+        @param _global If true, increases the global debt ceiling by _amount
+    */
+    function increaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
+        setIlkDebtCeiling(_vat, _ilk, add(line_ / RAD, _amount));
+        if (_global) { increaseGlobalDebtCeiling(_vat, _amount); }
+    }
+    /**
+        @dev Decrease a collateral debt ceiling. Amount will be converted to the correct internal precision.
+             This function will also decrease the global debt ceiling by _amount
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function decreaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
+        decreaseIlkDebtCeiling(vat(), _ilk, _amount, true);
+    }
+    /**
+        @dev Decrease a collateral debt ceiling. Amount will be converted to the correct internal precision.
+        @param _vat    The address of the Vat core accounting contract
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
+        @param _global If true, decreases the global debt ceiling by _amount
+    */
+    function decreaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
+        setIlkDebtCeiling(_vat, _ilk, sub(line_ / RAD, _amount));
+        if (_global) { decreaseGlobalDebtCeiling(_vat, _amount); }
+    }
+    /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
-    function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public { setIlkMinVaultAmount(vat(), _ilk, _amount); }
+    function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public {
+        setIlkMinVaultAmount(vat(), _ilk, _amount);
+    }
     /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
@@ -609,7 +686,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
-    function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public { setIlkLiquidationPenalty(cat(), _ilk, _pct_bps); }
+    function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
+        setIlkLiquidationPenalty(cat(), _ilk, _pct_bps);
+    }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 13% to 113% WAD needed for chop)
@@ -626,7 +705,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
-    function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public { setIlkMaxLiquidationAmount(cat(), _ilk, _amount); }
+    function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public {
+        setIlkMaxLiquidationAmount(cat(), _ilk, _amount);
+    }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
         @param _cat    The address of the Cat core accounting contract (will need to revisit for LIQ-2.0)
@@ -642,7 +723,9 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
-    function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps) public { setIlkLiquidationRatio(spot(), _ilk, _pct_bps); }
+    function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps) public {
+        setIlkLiquidationRatio(spot(), _ilk, _pct_bps);
+    }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * RAY / 100,000
@@ -708,11 +791,13 @@ contract DssExecLib {
         Fileable(_flip).file("tau", _duration);
     }
     /**
-        @dev Set the stability fee for a given ilk.
+        @dev Set the stability fee for a given ilk. See: docs/rates.txt
         @param _ilk     The ilk to update (ex. bytes32("ETH-A"))
         @param _rate    The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
-    function setIlkStabilityFee(bytes32 _ilk, uint256 _rate) public { setIlkStabilityFee(jug(), _ilk, _rate, true); }
+    function setIlkStabilityFee(bytes32 _ilk, uint256 _rate) public {
+        setIlkStabilityFee(jug(), _ilk, _rate, true);
+    }
     /**
         @dev Set the stability fee for a given ilk.
             Many of the settings that change weekly rely on the rate accumulator
@@ -735,7 +820,6 @@ contract DssExecLib {
 
         Fileable(_jug).file(_ilk, "duty", _rate);
     }
-
 
     /***********************/
     /*** Core Management ***/

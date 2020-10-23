@@ -175,6 +175,14 @@ contract DssTestAction is DssAction {
         setIlkDebtCeiling(ilk, amount);
     }
 
+    function increaseIlkDebtCeiling_test(bytes32 ilk, uint256 amount) public {
+        increaseIlkDebtCeiling(ilk, amount);
+    }
+
+    function decreaseIlkDebtCeiling_test(bytes32 ilk, uint256 amount) public {
+        decreaseIlkDebtCeiling(ilk, amount);
+    }
+
     function setIlkMinVaultAmount_test(bytes32 ilk, uint256 amount) public {
         setIlkMinVaultAmount(ilk, amount);
     }

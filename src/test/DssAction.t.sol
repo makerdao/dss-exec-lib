@@ -416,6 +416,12 @@ contract ActionTest is DSTest {
         assertEq(vat.Line(), 200 * MILLION * RAD);  // Fixes precision
     }
 
+    function testFail_decreaseGlobalDebtCeiling() public {
+        action.setGlobalDebtCeiling_test(100 * MILLION); // setup
+
+        action.decreaseGlobalDebtCeiling_test(101 * MILLION); // fail
+    }
+
     function test_setDSR() public {
         uint256 rate = 1000000001243680656318820312;
         action.setDSR_test(rate);
@@ -511,6 +517,32 @@ contract ActionTest is DSTest {
         action.setIlkDebtCeiling_test("gold", 100 * MILLION);
         (,,, uint256 line,) = vat.ilks("gold");
         assertEq(line, 100 * MILLION * RAD);
+    }
+
+    function test_increaseIlkDebtCeiling() public {
+        action.setGlobalDebtCeiling_test(100 * MILLION);
+        action.setIlkDebtCeiling_test("gold", 100 * MILLION); // Setup
+
+        action.increaseIlkDebtCeiling_test("gold", 100 * MILLION);
+        (,,, uint256 line,) = vat.ilks("gold");
+        assertEq(line, 200 * MILLION * RAD);
+        assertEq(vat.Line(), 200 * MILLION * RAD); // also increased
+    }
+
+    function test_decreaseIlkDebtCeiling() public {
+        action.setGlobalDebtCeiling_test(300 * MILLION);
+        action.setIlkDebtCeiling_test("gold", 300 * MILLION); // Setup
+
+        action.decreaseIlkDebtCeiling_test("gold", 100 * MILLION);
+        (,,, uint256 line,) = vat.ilks("gold");
+        assertEq(line, 200 * MILLION * RAD);
+        assertEq(vat.Line(), 200 * MILLION * RAD); // also decreased
+    }
+
+    function testFail_decreaseIlkDebtCeiling() public {
+        action.setIlkDebtCeiling_test("gold", 100 * MILLION); // Setup
+
+        action.decreaseIlkDebtCeiling_test("gold", 101 * MILLION); // Fail
     }
 
     function test_setIlkMinVaultAmount() public {
