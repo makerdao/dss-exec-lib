@@ -103,7 +103,6 @@ interface ChainlogLike {
     function setIPFS(string calldata) external;
     function setSha256sum(string calldata) external;
     function setAddress(bytes32, address) external;
-    function getAddress(bytes32) external view returns (address);
     function removeAddress(bytes32) external;
 }
 
@@ -144,24 +143,6 @@ contract DssExecLib {
     }
 
     /****************************/
-    /*** Core Address Helpers ***/
-    /****************************/
-    function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
-    function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
-    function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
-    function pot()        public view returns (address) { return getChangelogAddress("MCD_POT"); }
-    function vow()        public view returns (address) { return getChangelogAddress("MCD_VOW"); }
-    function end()        public view returns (address) { return getChangelogAddress("MCD_END"); }
-    function reg()        public view returns (address) { return getChangelogAddress("ILK_REGISTRY"); }
-    function spot()       public view returns (address) { return getChangelogAddress("MCD_SPOT"); }
-    function flap()       public view returns (address) { return getChangelogAddress("MCD_FLAP"); }
-    function flop()       public view returns (address) { return getChangelogAddress("MCD_FLOP"); }
-    function osmMom()     public view returns (address) { return getChangelogAddress("OSM_MOM"); }
-    function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
-    function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
-
-
-    /****************************/
     /*** Changelog Management ***/
     /****************************/
     /**
@@ -192,13 +173,6 @@ contract DssExecLib {
     */
     function setChangelogSHA256(string memory _SHA256Sum) public {
         ChainlogLike(LOG).setSha256sum(_SHA256Sum);
-    }
-    /**
-        @dev Get MCD address from key from MCD on-chain changelog.
-        @param _key Identifier for contract (e.g. "MCD_VAT")
-    */
-    function getChangelogAddress(bytes32 _key) public view returns (address) {
-        return ChainlogLike(LOG).getAddress(_key);
     }
 
     /**********************/
@@ -817,68 +791,67 @@ contract DssExecLib {
         uint256          _liquidationRatio
     ) public {
         // Sanity checks
-        require(JoinLike(_addresses[1]).vat() == vat(),         "join-vat-not-match");
+        require(JoinLike(_addresses[1]).vat() == _addresses[4],         "join-vat-not-match");
         require(JoinLike(_addresses[1]).ilk() == _ilk,          "join-ilk-not-match");
         require(JoinLike(_addresses[1]).gem() == _addresses[0], "join-gem-not-match");
         require(JoinLike(_addresses[1]).dec() == 18,            "join-dec-not-match");
-        require(AuctionLike(_addresses[2]).vat() == vat(),      "flip-vat-not-match");
-        require(AuctionLike(_addresses[2]).cat() == cat(),      "flip-cat-not-match");
+        require(AuctionLike(_addresses[2]).vat() == _addresses[4],      "flip-vat-not-match");
+        require(AuctionLike(_addresses[2]).cat() == _addresses[5],      "flip-cat-not-match");
         require(AuctionLike(_addresses[2]).ilk() == _ilk,       "flip-ilk-not-match");
 
-
         // Set the token PIP in the Spotter
-        setContract(spot(), _ilk, "pip", _addresses[3]);
+        setContract(_addresses[8], _ilk, "pip", _addresses[3]);
 
         // Set the ilk Flipper in the Cat
-        setContract(cat(), _ilk, "flip", _addresses[2]);
+        setContract(_addresses[5], _ilk, "flip", _addresses[2]);
 
         // Init ilk in Vat & Jug
-        Initializable(vat()).init(_ilk);
-        Initializable(jug()).init(_ilk);
+        Initializable(_addresses[4]).init(_ilk);
+        Initializable(_addresses[6]).init(_ilk);
 
         // Allow ilk Join to modify Vat registry
-        authorize(vat(), _addresses[1]);
+        authorize(_addresses[4], _addresses[1]);
 		// Allow the ilk Flipper to reduce the Cat litterbox on deal()
-        authorize(cat(), _addresses[2]);
+        authorize(_addresses[5], _addresses[2]);
         // Allow Cat to kick auctions in ilk Flipper
-        authorize(_addresses[2], cat());
+        authorize(_addresses[2], _addresses[5]);
         // Allow End to yank auctions in ilk Flipper
-        authorize(_addresses[2], end());
+        authorize(_addresses[2], _addresses[7]);
         // Allow FlipperMom to access to the ilk Flipper
-        authorize(_addresses[2], flipperMom());
+        authorize(_addresses[2], _addresses[10]);
         // Disallow Cat to kick auctions in ilk Flipper
-        if(!_liquidatable) deauthorize(flipperMom(), _addresses[2]);
+        if(!_liquidatable) deauthorize(_addresses[10], _addresses[2]);
 
         if(_oracleSettings[0]) {
             // Allow OsmMom to access to the TOKEN Osm
-            authorize(_addresses[3], osmMom());
+            authorize(_addresses[3], _addresses[11]);
             if (_oracleSettings[1]) {
                 // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
                 addReaderToMedianWhitelist(address(OracleLike(_addresses[3]).src()), _addresses[3]);
             }
             // Whitelist Spotter to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(_addresses[3], spot());
+            addReaderToOSMWhitelist(_addresses[3], _addresses[8]);
             // Whitelist End to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(_addresses[3], end());
+            addReaderToOSMWhitelist(_addresses[3], _addresses[7]);
             // Set TOKEN Osm in the OsmMom for new ilk
-            allowOSMFreeze(osmMom(), _addresses[3], _ilk);
+            allowOSMFreeze(_addresses[11], _addresses[3], _ilk);
         }
 
         // Add new ilk to the IlkRegistry
-        RegistryLike(reg()).add(_addresses[1]);
+        RegistryLike(_addresses[9]).add(_addresses[1]);
 
         // Increase the global debt ceiling by the ilk ceiling
-        increaseGlobalDebtCeiling(vat(), _ilkDebtCeiling);
+        increaseGlobalDebtCeiling(_addresses[4], _ilkDebtCeiling);
         // Set the ilk debt ceiling
-        setIlkDebtCeiling(vat(), _ilk, _ilkDebtCeiling);
+        setIlkDebtCeiling(_addresses[4], _ilk, _ilkDebtCeiling);
         // Set the ilk dust
-        setIlkMinVaultAmount(vat(), _ilk, _minVaultAmount);
+        setIlkMinVaultAmount(_addresses[4], _ilk, _minVaultAmount);
         // Set the Lot size
-        setIlkMaxLiquidationAmount(cat(), _ilk, _maxLiquidationAmount);
+        setIlkMaxLiquidationAmount(_addresses[5], _ilk, _maxLiquidationAmount);
         // Set the ilk liquidation penalty
-        setIlkLiquidationPenalty(cat(), _ilk, _liquidationPenalty);
+        setIlkLiquidationPenalty(_addresses[5], _ilk, _liquidationPenalty);
         // Set the ilk stability fee
-        setIlkStabilityFee(jug(), _ilk, _ilkStabilityFee, true);
+        setIlkStabilityFee(_addresses[6], _ilk, _ilkStabilityFee, true);
         // Set the ilk percentage between bids
         setIlkMinAuctionBidIncrease(_addresses[2], _bidIncrease);
         // Set the ilk time max time between bids
@@ -886,9 +859,9 @@ contract DssExecLib {
         // Set the ilk max auction duration to
         setIlkAuctionDuration(_addresses[2], _auctionDuration);
         // Set the ilk min collateralization ratio
-        setIlkLiquidationRatio(spot(), _ilk, _liquidationRatio);
+        setIlkLiquidationRatio(_addresses[8], _ilk, _liquidationRatio);
 
         // Update ilk spot value in Vat
-        updateCollateralPrice(spot(), _ilk);
+        updateCollateralPrice(_addresses[8], _ilk);
     }
 }

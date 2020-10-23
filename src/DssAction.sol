@@ -415,7 +415,7 @@ contract DssAction {
     /*****************************/
     function addNewCollateral(
         bytes32          ilk,
-        address[] memory addresses,
+        address[] memory _addresses,
         bool             liquidatable,
         bool[] memory    oracleSettings,
         uint256          ilkDebtCeiling,
@@ -428,6 +428,19 @@ contract DssAction {
         uint256          auctionDuration,
         uint256          liquidationRatio
     ) internal {
+        address[] memory addresses = new address[](12);
+        addresses[0] = _addresses[0];
+        addresses[1] = _addresses[1];
+        addresses[2] = _addresses[2];
+        addresses[3] = _addresses[3];
+        addresses[4] = vat();
+        addresses[5] = cat();
+        addresses[6] = jug();
+        addresses[7] = end();
+        addresses[8] = spot();
+        addresses[9] = reg();
+        addresses[10] = flipperMom();
+        addresses[11] = osmMom();
         libCall(
             "addNewCollateral(bytes32,address[],bool,bool[],uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
             ilk,
