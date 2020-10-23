@@ -799,13 +799,13 @@ contract DssExecLib {
         uint256          _liquidationRatio
     ) public {
         // Sanity checks
-        require(JoinLike(_addresses[1]).vat() == _addresses[4],         "join-vat-not-match");
-        require(JoinLike(_addresses[1]).ilk() == _ilk,          "join-ilk-not-match");
-        require(JoinLike(_addresses[1]).gem() == _addresses[0], "join-gem-not-match");
-        require(JoinLike(_addresses[1]).dec() == 18,            "join-dec-not-match");
-        require(AuctionLike(_addresses[2]).vat() == _addresses[4],      "flip-vat-not-match");
-        require(AuctionLike(_addresses[2]).cat() == _addresses[5],      "flip-cat-not-match");
-        require(AuctionLike(_addresses[2]).ilk() == _ilk,       "flip-ilk-not-match");
+        require(JoinLike(_addresses[1]).vat() == _addresses[4],     "join-vat-not-match");
+        require(JoinLike(_addresses[1]).ilk() == _ilk,              "join-ilk-not-match");
+        require(JoinLike(_addresses[1]).gem() == _addresses[0],     "join-gem-not-match");
+        require(JoinLike(_addresses[1]).dec() == 18,                "join-dec-not-match");
+        require(AuctionLike(_addresses[2]).vat() == _addresses[4],  "flip-vat-not-match");
+        require(AuctionLike(_addresses[2]).cat() == _addresses[5],  "flip-cat-not-match");
+        require(AuctionLike(_addresses[2]).ilk() == _ilk,           "flip-ilk-not-match");
 
         // Set the token PIP in the Spotter
         setContract(_addresses[8], _ilk, "pip", _addresses[3]);
