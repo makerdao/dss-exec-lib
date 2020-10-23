@@ -16,8 +16,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 pragma solidity ^0.6.7;
+
+import "./MathLib.sol";
 
 interface Initializable {
     function init(bytes32) external;
@@ -106,43 +107,10 @@ interface ChainlogLike {
     function removeAddress(bytes32) external;
 }
 
-library MathLib {
-
-    uint256 constant public WAD      = 10 ** 18;
-    uint256 constant public RAY      = 10 ** 27;
-    uint256 constant public RAD      = 10 ** 45;
-    uint256 constant public THOUSAND = 10 ** 3;
-    uint256 constant public MILLION  = 10 ** 6;
-
-    // --- SafeMath Functions ---
-    function add(uint x, uint y) internal pure returns (uint z) {
-        require((z = x + y) >= x);
-    }
-    function sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x);
-    }
-    function mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x);
-    }
-    function wmul(uint x, uint y) internal pure returns (uint z) {
-        z = add(mul(x, y), WAD / 2) / WAD;
-    }
-    function rmul(uint x, uint y) internal pure returns (uint z) {
-        z = add(mul(x, y), RAY / 2) / RAY;
-    }
-    function wdiv(uint x, uint y) internal pure returns (uint z) {
-        z = add(mul(x, WAD), y / 2) / y;
-    }
-    function rdiv(uint x, uint y) internal pure returns (uint z) {
-        z = add(mul(x, RAY), y / 2) / y;
-    }
-}
-
 
 contract DssExecLib {
 
     using MathLib for *;
-
 
     /****************************/
     /*** Changelog Management ***/
@@ -267,7 +235,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setGlobalDebtCeiling(address _vat, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-global-Line-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-global-Line-precision"
         Fileable(_vat).file("Line", _amount * MathLib.RAD);
     }
     /**
@@ -292,7 +260,7 @@ contract DssExecLib {
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
     function setDSR(address _pot, uint256 _rate) public {
-        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY), "LibDssExec/dsr-out-of-bounds");
+        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY));  // "LibDssExec/dsr-out-of-bounds"
         Fileable(_pot).file("dsr", _rate);
     }
     /**
@@ -301,7 +269,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setSurplusAuctionAmount(address _vow, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-vow-bump-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-vow-bump-precision"
         Fileable(_vow).file("bump", _amount * MathLib.RAD);
     }
     /**
@@ -310,7 +278,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setSurplusBuffer(address _vow, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-vow-hump-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-vow-hump-precision"
         Fileable(_vow).file("hump", _amount * MathLib.RAD);
     }
     /**
@@ -362,7 +330,7 @@ contract DssExecLib {
         @param _amount The amount to set in MKR (ex. 250 MKR amount == 250)
     */
     function setDebtAuctionMKRAmount(address _vow, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-vow-dump-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-vow-dump-precision"
         Fileable(_vow).file("dump", _amount * MathLib.WAD);
     }
     /**
@@ -372,7 +340,7 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinDebtAuctionBidIncrease(address _flop, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-flap-beg-precision"
         Fileable(_flop).file("beg", MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND));
     }
     /**
@@ -407,7 +375,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
     */
     function setMaxTotalDAILiquidationAmount(address _cat, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-vow-dump-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-vow-dump-precision"
         Fileable(_cat).file("box", _amount * MathLib.RAD);
     }
     /**
@@ -432,7 +400,7 @@ contract DssExecLib {
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
     function setGlobalStabilityFee(address _jug, uint256 _rate) public {
-        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY), "LibDssExec/global-stability-fee-out-of-bounds");
+        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY));  // "LibDssExec/global-stability-fee-out-of-bounds"
         Fileable(_jug).file("base", _rate);
     }
     /**
@@ -442,7 +410,7 @@ contract DssExecLib {
         @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
     function setDAIReferenceValue(address _spot, uint256 _value) public {
-        require(_value < MathLib.WAD, "LibDssExec/incorrect-ilk-dunk-precision");
+        require(_value < MathLib.WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
         Fileable(_spot).file("par", MathLib.rdiv(_value, 1000));
     }
 
@@ -456,7 +424,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-ilk-line-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         Fileable(_vat).file(_ilk, "line", _amount * MathLib.RAD);
     }
     /**
@@ -490,7 +458,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setIlkMinVaultAmount(address _vat, bytes32 _ilk, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-ilk-dust-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-dust-precision"
         Fileable(_vat).file(_ilk, "dust", _amount * MathLib.RAD);
     }
     /**
@@ -501,7 +469,7 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
     function setIlkLiquidationPenalty(address _cat, bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
+        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-chop-precision"
         Fileable(_cat).file(_ilk, "chop", MathLib.wdiv(MathLib.add(_pct_bps, 10 * MathLib.THOUSAND), 10 * MathLib.THOUSAND));
     }
     /**
@@ -511,7 +479,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setIlkMaxLiquidationAmount(address _cat, bytes32 _ilk, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-ilk-dunk-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
         Fileable(_cat).file(_ilk, "dunk", _amount * MathLib.RAD);
     }
     /**
@@ -522,7 +490,7 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
     function setIlkLiquidationRatio(address _spot, bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < 100 * MathLib.THOUSAND, "LibDssExec/incorrect-ilk-mat-precision"); // Fails if pct >= 1000%
+        require(_pct_bps < 100 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-mat-precision" // Fails if pct >= 1000%
         Fileable(_spot).file(_ilk, "mat", MathLib.rdiv(_pct_bps, 10 * MathLib.THOUSAND));
     }
     /**
@@ -532,7 +500,7 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setIlkMinAuctionBidIncrease(address _flip, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND, "LibDssExec/incorrect-ilk-chop-precision");
+        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-chop-precision"
         Fileable(_flip).file("beg", MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND));
     }
     /**
@@ -568,7 +536,7 @@ contract DssExecLib {
         @param _doDrip `true` to accumulate stability fees for the collateral
     */
     function setIlkStabilityFee(address _jug, bytes32 _ilk, uint256 _rate, bool _doDrip) public {
-        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY), "LibDssExec/ilk-stability-fee-out-of-bounds");
+        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY));  // "LibDssExec/ilk-stability-fee-out-of-bounds"
         if (_doDrip) Drippable(_jug).drip(_ilk);
 
         Fileable(_jug).file(_ilk, "duty", _rate);
@@ -615,8 +583,8 @@ contract DssExecLib {
         Fileable(_newFlip).file("tau", AuctionLike(_oldFlip).tau());
 
         // Sanity checks
-        require(AuctionLike(_newFlip).ilk() == _ilk, "non-matching-ilk");
-        require(AuctionLike(_newFlip).vat() == _vat, "non-matching-vat");
+        require(AuctionLike(_newFlip).ilk() == _ilk);  // "non-matching-ilk"
+        require(AuctionLike(_newFlip).vat() == _vat);  // "non-matching-vat"
     }
     /**
         @dev Update surplus auction contracts.
@@ -642,8 +610,8 @@ contract DssExecLib {
         Fileable(_newFlap).file("tau", AuctionLike(_oldFlap).tau());
 
         // Sanity checks
-        require(AuctionLike(_newFlap).gem() == AuctionLike(_oldFlap).gem(), "non-matching-gem");
-        require(AuctionLike(_newFlap).vat() == _vat,                        "non-matching-vat");
+        require(AuctionLike(_newFlap).gem() == AuctionLike(_oldFlap).gem());  // "non-matching-gem"
+        require(AuctionLike(_newFlap).vat() == _vat);  // "non-matching-vat"
     }
     /**
         @dev Update debt auction contracts.
@@ -674,8 +642,8 @@ contract DssExecLib {
         Fileable(_newFlop).file("tau", AuctionLike(_oldFlop).tau());
 
         // Sanity checks
-        require(AuctionLike(_newFlop).gem() == AuctionLike(_oldFlop).gem(), "non-matching-gem");
-        require(AuctionLike(_newFlop).vat() == _vat,                       "non-matching-vat");
+        require(AuctionLike(_newFlop).gem() == AuctionLike(_oldFlop).gem()); // "non-matching-gem"
+        require(AuctionLike(_newFlop).vat() == _vat);  // "non-matching-vat"
     }
 
     /*************************/
@@ -799,13 +767,13 @@ contract DssExecLib {
         uint256          _liquidationRatio
     ) public {
         // Sanity checks
-        require(JoinLike(_addresses[1]).vat() == _addresses[4],     "join-vat-not-match");
-        require(JoinLike(_addresses[1]).ilk() == _ilk,              "join-ilk-not-match");
-        require(JoinLike(_addresses[1]).gem() == _addresses[0],     "join-gem-not-match");
-        require(JoinLike(_addresses[1]).dec() == 18,                "join-dec-not-match");
-        require(AuctionLike(_addresses[2]).vat() == _addresses[4],  "flip-vat-not-match");
-        require(AuctionLike(_addresses[2]).cat() == _addresses[5],  "flip-cat-not-match");
-        require(AuctionLike(_addresses[2]).ilk() == _ilk,           "flip-ilk-not-match");
+        require(JoinLike(_addresses[1]).vat() == _addresses[4]);    // "join-vat-not-match"
+        require(JoinLike(_addresses[1]).ilk() == _ilk);             // "join-ilk-not-match"
+        require(JoinLike(_addresses[1]).gem() == _addresses[0]);    // "join-gem-not-match"
+        require(JoinLike(_addresses[1]).dec() == 18);               // "join-dec-not-match"
+        require(AuctionLike(_addresses[2]).vat() == _addresses[4]); // "flip-vat-not-match"
+        require(AuctionLike(_addresses[2]).cat() == _addresses[5]); // "flip-cat-not-match"
+        require(AuctionLike(_addresses[2]).ilk() == _ilk);          // "flip-ilk-not-match"
 
         // Set the token PIP in the Spotter
         setContract(_addresses[8], _ilk, "pip", _addresses[3]);
