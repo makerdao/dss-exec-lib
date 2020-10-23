@@ -106,7 +106,6 @@ interface ChainlogLike {
     function removeAddress(bytes32) external;
 }
 
-
 library MathLib {
 
     uint256 constant public WAD      = 10 ** 18;
@@ -144,42 +143,45 @@ contract DssExecLib {
 
     using MathLib for *;
 
-    // Changelog address applies to MCD deployments on
-    //        mainnet, kovan, rinkeby, ropsten, and goerli
-    address constant public LOG = 0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F;
 
     /****************************/
     /*** Changelog Management ***/
     /****************************/
     /**
         @dev Set an address in the MCD on-chain changelog.
-        @param _key Identifier for contract (e.g. "MCD_VAT")
-        @param _val Address to be authorized
+        @param _log Address of the chainlog contract
+        @param _key Access key for the address (e.g. "MCD_VAT")
+        @param _val The address associated with the _key
     */
-    function setChangelogAddress(bytes32 _key, address _val) public {
-        ChainlogLike(LOG).setAddress(_key, _val);
+    function setChangelogAddress(address _log, bytes32 _key, address _val) public {
+        ChainlogLike(_log).setAddress(_key, _val);
     }
+
     /**
         @dev Set version in the MCD on-chain changelog.
+        @param _log Address of the chainlog contract
         @param _version Changelog version (e.g. "1.1.2")
     */
-    function setChangelogVersion(string memory _version) public {
-        ChainlogLike(LOG).setVersion(_version);
+    function setChangelogVersion(address _log, string memory _version) public {
+        ChainlogLike(_log).setVersion(_version);
     }
     /**
         @dev Set IPFS hash of IPFS changelog in MCD on-chain changelog.
+        @param _log Address of the chainlog contract
         @param _ipfsHash IPFS hash (e.g. "QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW")
     */
-    function setChangelogIPFS(string memory _ipfsHash) public {
-        ChainlogLike(LOG).setIPFS(_ipfsHash);
+    function setChangelogIPFS(address _log, string memory _ipfsHash) public {
+        ChainlogLike(_log).setIPFS(_ipfsHash);
     }
     /**
         @dev Set SHA256 hash in MCD on-chain changelog.
+        @param _log Address of the chainlog contract
         @param _SHA256Sum SHA256 hash (e.g. "e42dc9d043a57705f3f097099e6b2de4230bca9a020c797508da079f9079e35b")
     */
-    function setChangelogSHA256(string memory _SHA256Sum) public {
-        ChainlogLike(LOG).setSha256sum(_SHA256Sum);
+    function setChangelogSHA256(address _log, string memory _SHA256Sum) public {
+        ChainlogLike(_log).setSha256sum(_SHA256Sum);
     }
+
 
     /**********************/
     /*** Authorizations ***/
