@@ -288,7 +288,7 @@ contract DssExecLib {
         @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinSurplusAuctionBidIncrease(address _flap, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND, "LibDssExec/incorrect-flap-beg-precision");
+        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-flap-beg-precision"
         Fileable(_flap).file("beg", MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND));
     }
     /**
@@ -321,7 +321,7 @@ contract DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setDebtAuctionDAIAmount(address _vow, uint256 _amount) public {
-        require(_amount < MathLib.WAD, "LibDssExec/incorrect-vow-sump-precision");
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-vow-sump-precision"
         Fileable(_vow).file("sump", _amount * MathLib.RAD);
     }
     /**
