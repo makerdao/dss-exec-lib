@@ -43,11 +43,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     uint256 constant MILLION  = 10 ** 6;
 
     function execute() external {
-
-        // Option 1: Use a generic library call
-        libCall("setIlkDebtCeiling(bytes32,uint256)", "ETH-A", 10 * MILLION);
-
-        // Option 2: Custom setter for ease of use.
+        setIlkDebtCeiling("ETH-A", 10 * MILLION);
         setGlobalDebtCeiling(1500 * MILLION);
     }
 }
