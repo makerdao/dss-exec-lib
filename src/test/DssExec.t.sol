@@ -407,4 +407,17 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue(spell.officeHours());
         assertTrue(spell.action() != address(0));
     }
+
+    function testExecLibDeployCost() public {
+        new DssExecLib();
+    }
+
+    function testExecDeployCost() public {
+        new DssExec(
+            "Basic Spell",                              // Description
+            now + 30 days,                              // Expiration
+            true,                                       // OfficeHours enabled
+            address(new DssLibSpellAction(execlib))
+        );
+    }
 }

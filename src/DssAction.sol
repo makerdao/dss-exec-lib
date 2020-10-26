@@ -120,6 +120,10 @@ contract DssAction {
         _dcall(abi.encodeWithSignature(sig, mcd_addr, what));
     }
 
+    function libCall(string memory sig, address mcd_addr, string memory what) internal {
+        _dcall(abi.encodeWithSignature(sig, mcd_addr, what));
+    }
+
     function libCall(string memory sig, address mcd_addr, address addr, bytes32 what) internal {
         _dcall(abi.encodeWithSignature(sig, mcd_addr, addr, what));
     }
@@ -137,7 +141,7 @@ contract DssAction {
     }
 
     function libCall(string memory sig, address mcd_addr, address mcd_addr2, address mcd_addr3, address addr, address addr2) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, mcd_addr3, addr, addr2)); 
+        _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, mcd_addr3, addr, addr2));
     }
 
     function libCall(string memory sig, address mcd_addr, address mcd_addr2, address mcd_addr3, address mcd_addr4, bytes32 what, address addr, address addr2) internal {
@@ -167,19 +171,19 @@ contract DssAction {
     /*** Changelog Management ***/
     /****************************/
     function setChangelogAddress(bytes32 key, address value) internal {
-        libCall("setChangelogAddress(bytes32,address)", key, value);
+        libCall("setChangelogAddress(address,bytes32,address)", LOG, key, value);
     }
 
     function setChangelogVersion(string memory version) internal {
-        libCall("setChangelogVersion(string)", version);
+        libCall("setChangelogVersion(address,string)", LOG, version);
     }
 
     function setChangelogIPFS(string memory ipfs) internal {
-        libCall("setChangelogIPFS(string)", ipfs);
+        libCall("setChangelogIPFS(address,string)", LOG, ipfs);
     }
 
     function setChangelogSHA256(string memory SHA256) internal {
-        libCall("setChangelogSHA256(string)", SHA256);
+        libCall("setChangelogSHA256(address,string)", LOG, SHA256);
     }
 
     /**********************/
