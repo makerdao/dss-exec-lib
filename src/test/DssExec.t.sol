@@ -104,7 +104,7 @@ contract DssLibExecTest is DSTest, DSMath {
     Hevm hevm;
 
     DssExec spell;
-    address execlib;
+    address constant public LIB = 0x5F1759A86a515D61db55a8002b34693DbD321DbD;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -165,13 +165,11 @@ contract DssLibExecTest is DSTest, DSMath {
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
 
-        execlib = 0x5F1759A86a515D61db55a8002b34693DbD321DbD; // This would be deployed only once
-
         spell = new DssExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
             true,                                       // OfficeHours enabled
-            address(new DssLibSpellAction(execlib))
+            address(new DssLibSpellAction(LIB))
         );
 
         //
@@ -417,7 +415,7 @@ contract DssLibExecTest is DSTest, DSMath {
             "Basic Spell",                              // Description
             now + 30 days,                              // Expiration
             true,                                       // OfficeHours enabled
-            address(new DssLibSpellAction(execlib))
+            address(new DssLibSpellAction(LIB))
         );
     }
 }
