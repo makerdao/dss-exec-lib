@@ -83,7 +83,6 @@ contract ActionTest is DSTest {
     Flopper flop;
 
     DssTestAction action;
-    DssExecLib lib;
 
     struct Ilk {
         DSValue pip;
@@ -96,6 +95,7 @@ contract ActionTest is DSTest {
     mapping (bytes32 => Ilk) ilks;
 
     address constant public LOG = 0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F;
+    address constant public LIB = 0x5F1759A86a515D61db55a8002b34693DbD321DbD;
 
     uint256 constant public THOUSAND = 10 ** 3;
     uint256 constant public MILLION  = 10 ** 6;
@@ -264,9 +264,7 @@ contract ActionTest is DSTest {
         log.setAddress("GOV_GUARD",    address(govGuard));
         log.setAddress("FLIPPER_MOM",  address(flipperMom));
 
-        lib = new DssExecLib();
-
-        action = new DssTestAction(address(lib));
+        action = new DssTestAction(LIB);
 
         init_collateral("gold", address(action));
 

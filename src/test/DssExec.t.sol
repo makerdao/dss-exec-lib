@@ -165,7 +165,7 @@ contract DssLibExecTest is DSTest, DSMath {
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
 
-        execlib = address(new DssExecLib()); // This would be deployed only once
+        execlib = 0x5F1759A86a515D61db55a8002b34693DbD321DbD; // This would be deployed only once
 
         spell = new DssExec(
             "A test dss exec spell",                    // Description
