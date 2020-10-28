@@ -433,10 +433,10 @@ contract DssAction {
         uint256          liquidationRatio
     ) internal {
         address[] memory addresses = new address[](12);
-        addresses[0] = _addresses[0];
-        addresses[1] = _addresses[1];
-        addresses[2] = _addresses[2];
-        addresses[3] = _addresses[3];
+        addresses[0] = _addresses[0];  // Gem
+        addresses[1] = _addresses[1];  // Join
+        addresses[2] = _addresses[2];  // Flip
+        addresses[3] = _addresses[3];  // Pip/OSM
         addresses[4] = vat();
         addresses[5] = cat();
         addresses[6] = jug();
