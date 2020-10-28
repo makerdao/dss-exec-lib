@@ -186,7 +186,7 @@ contract DssLibExecTest is DSTest, DSMath {
             vow_dump: 250 * WAD,
             vow_sump: 50000 * RAD,
             vow_bump: 10000 * RAD,
-            vow_hump: 2 * MILLION * RAD,
+            vow_hump: 4 * MILLION * RAD,
             cat_box: 15 * MILLION * RAD,
             ilk_count: 15
         });
