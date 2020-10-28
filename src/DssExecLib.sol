@@ -90,15 +90,8 @@ interface MomLike {
 
 interface RegistryLike {
     function add(address) external;
-    function ilkData(bytes32) external returns (
-        uint256       pos,
-        address       gem,
-        address       pip,
-        address       join,
-        address       flip,
-        uint256       dec,
-        string memory name,
-        string memory symbol
+    function info(bytes32) external view returns (
+        string memory, string memory, uint256, address, address, address, address
     );
 }
 
@@ -844,5 +837,124 @@ contract DssExecLib {
 
         // Update ilk spot value in Vat
         updateCollateralPrice(_addresses[8], _ilk);
+    }
+
+
+    function addCollateralBase(
+        address          _vat,         // MCD_VAT
+        address          _cat,         // MCD_CAT
+        address          _jug,         // MCD_JUG
+        address          _end,         // MCD_END
+        address          _spot,        // MCD_SPOT
+        address          _reg,         // ILK_REGISTRY
+        bytes32          _ilk,         // bytes32 tag for ilk (ex. "ETH-A")
+        address          _gem,         // ERC20 token address
+        address          _join,        // Join Adapter
+        address          _flip,        // Auction Contract
+        address          _pip          // Pricing Contract
+    ) public {
+        // Sanity checks
+        require(JoinLike(_join).vat() == _vat);     // "join-vat-not-match"
+        require(JoinLike(_join).ilk() == _ilk);     // "join-ilk-not-match"
+        require(JoinLike(_join).gem() == _gem);     // "join-gem-not-match"
+        require(JoinLike(_join).dec() ==
+                   ERC20(_gem).decimals());         // "join-dec-not-match"
+        require(AuctionLike(_flip).vat() == _vat);  // "flip-vat-not-match"
+        require(AuctionLike(_flip).cat() == _cat);  // "flip-cat-not-match"
+        require(AuctionLike(_flip).ilk() == _ilk);  // "flip-ilk-not-match"
+
+        // Set the token PIP in the Spotter
+        setContract(_spot, _ilk, "pip", _pip);
+
+        // Set the ilk Flipper in the Cat
+        setContract(_cat, _ilk, "flip", _flip);
+
+        // Init ilk in Vat & Jug
+        Initializable(_vat).init(_ilk);  // Vat
+        Initializable(_jug).init(_ilk);  // Jug
+
+        // Allow ilk Join to modify Vat registry
+        authorize(_vat, _join);
+		// Allow the ilk Flipper to reduce the Cat litterbox on deal()
+        authorize(_cat, _flip);
+        // Allow Cat to kick auctions in ilk Flipper
+        authorize(_flip, _cat);
+        // Allow End to yank auctions in ilk Flipper
+        authorize(_flip, _end);
+
+        // Add new ilk to the IlkRegistry
+        RegistryLike(_reg).add(_join);
+    }
+
+    // [0] ILK_REGISTRY
+    // [1] FLIPPER_MOM
+    // [2] OSM_MOM
+    // [3] MCD_SPOT
+    // [4] MCD_END
+    // [5] MCD_JUG
+    // [6] MCD_CAT
+    function addCollateralValues(
+        address[] memory   _addresses,   // Core addresses
+        bytes32                  _ilk,
+        bool            _liquidatable,
+        bool                  _is_osm,
+        bool           _whitelist_osm,
+        uint256       _ilkDebtCeiling,
+        uint256 _maxLiquidationAmount,
+        uint256   _liquidationPenalty,
+        uint256      _ilkStabilityFee,
+        uint256     _liquidationRatio
+    ) public {
+
+        // Requires Collateral has been added to the system
+        (,,,address gem, address pip, address join, address flip) = RegistryLike(_addresses[0]).info(_ilk);  // [0] ILK_REGISTRY
+
+        if(_is_osm) {
+            // Allow OsmMom to access to the TOKEN Osm
+            authorize(pip, _addresses[2]);  // [2] OSM_MOM
+            if (_whitelist_osm) {
+                // Whitelist Osm to read the Median data (only necessary if it is the first time the token is being added to an ilk)
+                addReaderToMedianWhitelist(address(OracleLike(pip).src()), pip);
+            }
+            // Whitelist Spotter to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(pip, _addresses[3]);  // [3] MCD_SPOT
+            // Whitelist End to read the Osm data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(pip, _addresses[4]);  // [4] MCD_END
+            // Set TOKEN Osm in the OsmMom for new ilk
+            allowOSMFreeze(_addresses[2], pip, _ilk);  // [2] OSM_MOM
+        }
+
+        {
+            address vat = JoinLike(join).vat();
+            // Increase the global debt ceiling by the ilk ceiling
+            increaseGlobalDebtCeiling(vat, _ilkDebtCeiling);
+            // Set the ilk debt ceiling
+            setIlkDebtCeiling(vat, _ilk, _ilkDebtCeiling);
+            // Set the ilk dust
+            setIlkMinVaultAmount(vat, _ilk, 100); // 100 Dai Dust Default
+        }
+        {
+            // Set the Lot size
+            setIlkMaxLiquidationAmount(_addresses[6], _ilk, _maxLiquidationAmount);  // [6] MCD_CAT
+            // Set the ilk liquidation penalty
+            setIlkLiquidationPenalty(_addresses[6], _ilk, 1300);  // [6] MCD_CAT, 13% chop
+
+            // Set the ilk stability fee
+            setIlkStabilityFee(_addresses[5], _ilk, _ilkStabilityFee, true);  // [5] MCD_JUG
+
+            // Set some parameter defaults
+
+            // Set the ilk percentage between bids
+            setIlkMinAuctionBidIncrease(flip, 300);  // 3% bid increase
+            // Set the ilk time max time between bids
+            setIlkBidDuration(flip, 21600); // 6 Hour Default
+            // Set the ilk max auction duration to
+            setIlkAuctionDuration(flip, 21600);  // 6 Hour Default
+            // Set the ilk min collateralization ratio
+            setIlkLiquidationRatio(_addresses[3], _ilk, _liquidationRatio);  // [3] MCD_SPOT
+        }
+
+        // Update ilk spot value in Vat
+        updateCollateralPrice(_addresses[3], _ilk);  // [3] MCD_SPOT
     }
 }
