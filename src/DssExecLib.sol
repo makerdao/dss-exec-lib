@@ -45,6 +45,10 @@ interface Pricing {
     function poke(bytes32) external;
 }
 
+interface ERC20 {
+    function decimals() external returns (uint8);
+}
+
 interface DssVat {
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
     function Line() external view returns (uint256);
@@ -770,7 +774,8 @@ contract DssExecLib {
         require(JoinLike(_addresses[1]).vat() == _addresses[4]);    // "join-vat-not-match"
         require(JoinLike(_addresses[1]).ilk() == _ilk);             // "join-ilk-not-match"
         require(JoinLike(_addresses[1]).gem() == _addresses[0]);    // "join-gem-not-match"
-        require(JoinLike(_addresses[1]).dec() == 18);               // "join-dec-not-match"
+        require(JoinLike(_addresses[1]).dec() ==
+                   ERC20(_addresses[0]).decimals());                // "join-dec-not-match"
         require(AuctionLike(_addresses[2]).vat() == _addresses[4]); // "flip-vat-not-match"
         require(AuctionLike(_addresses[2]).cat() == _addresses[5]); // "flip-cat-not-match"
         require(AuctionLike(_addresses[2]).ilk() == _ilk);          // "flip-ilk-not-match"
