@@ -839,7 +839,20 @@ contract DssExecLib {
         updateCollateralPrice(_addresses[8], _ilk);
     }
 
-
+    /**
+        @dev Performs basic functions and sanity checks to add a new collateral type to the MCD system
+        @param _vat      MCD_VAT
+        @param _cat      MCD_CAT
+        @param _jug      MCD_JUG
+        @param _end      MCD_END
+        @param _spot     MCD_SPOT
+        @param _reg      ILK_REGISTRY
+        @param _ilk      Collateral type key code [Ex. "ETH-A"]
+        @param _gem      Address of token contract
+        @param _join     Address of join adapter
+        @param _flip     Address of flipper
+        @param _pip      Address of price feed
+    */
     function addCollateralBase(
         address          _vat,         // MCD_VAT
         address          _cat,         // MCD_CAT
