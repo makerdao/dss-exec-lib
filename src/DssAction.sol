@@ -163,21 +163,11 @@ contract DssAction {
         _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, mcd_addr3, mcd_addr4, what, addr, addr2));
     }
 
-    function libCall(string memory sig, bytes32 what, address[] memory addresses) internal {
+    function libCall(string memory sig, address _vat, address _cat, address _jug, address _end, address _spot, address _reg,
+            bytes32 _ilk, address _gem, address _join, address _flip, address _pip) internal {
         _dcall(
             abi.encodeWithSignature(
-                sig,
-                vat(),
-                cat(),
-                jug(),
-                end(),
-                spot(),
-                reg(),
-                what,
-                addresses[0],
-                addresses[1],
-                addresses[2],
-                addresses[3]
+                sig, _vat, _cat, _jug, _end, _spot, _reg, _ilk, _gem, _join, _flip, _pip
             )
         );
     }
@@ -437,17 +427,15 @@ contract DssAction {
         CollateralOpts memory co
     ) internal {
 
-        // TODO clean this up and use params for libcall
-        address[] memory addresses = new address[](4);
-        addresses[0] = co.gem;
-        addresses[1] = co.join;
-        addresses[2] = co.flip;
-        addresses[3] = co.pip;
-
+        // Add the collateral to the system.
         libCall(
             "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
+            vat(), cat(), jug(), end(), spot(), reg(),
             co.ilk,
-            addresses
+            co.gem,
+            co.join,
+            co.flip,
+            co.pip
         );
 
         // Allow FlipperMom to access to the ilk Flipper
