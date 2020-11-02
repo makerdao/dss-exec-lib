@@ -45,6 +45,10 @@ interface Pricing {
     function poke(bytes32) external;
 }
 
+interface ERC20 {
+    function decimals() external returns (uint8);
+}
+
 interface DssVat {
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
     function Line() external view returns (uint256);
@@ -86,15 +90,8 @@ interface MomLike {
 
 interface RegistryLike {
     function add(address) external;
-    function ilkData(bytes32) external returns (
-        uint256       pos,
-        address       gem,
-        address       pip,
-        address       join,
-        address       flip,
-        uint256       dec,
-        string memory name,
-        string memory symbol
+    function info(bytes32) external view returns (
+        string memory, string memory, uint256, address, address, address, address
     );
 }
 
@@ -770,7 +767,8 @@ contract DssExecLib {
         require(JoinLike(_addresses[1]).vat() == _addresses[4]);    // "join-vat-not-match"
         require(JoinLike(_addresses[1]).ilk() == _ilk);             // "join-ilk-not-match"
         require(JoinLike(_addresses[1]).gem() == _addresses[0]);    // "join-gem-not-match"
-        require(JoinLike(_addresses[1]).dec() == 18);               // "join-dec-not-match"
+        require(JoinLike(_addresses[1]).dec() ==
+                   ERC20(_addresses[0]).decimals());                // "join-dec-not-match"
         require(AuctionLike(_addresses[2]).vat() == _addresses[4]); // "flip-vat-not-match"
         require(AuctionLike(_addresses[2]).cat() == _addresses[5]); // "flip-cat-not-match"
         require(AuctionLike(_addresses[2]).ilk() == _ilk);          // "flip-ilk-not-match"
@@ -839,5 +837,52 @@ contract DssExecLib {
 
         // Update ilk spot value in Vat
         updateCollateralPrice(_addresses[8], _ilk);
+    }
+
+
+    function addCollateralBase(
+        address          _vat,         // MCD_VAT
+        address          _cat,         // MCD_CAT
+        address          _jug,         // MCD_JUG
+        address          _end,         // MCD_END
+        address          _spot,        // MCD_SPOT
+        address          _reg,         // ILK_REGISTRY
+        bytes32          _ilk,         // bytes32 tag for ilk (ex. "ETH-A")
+        address          _gem,         // ERC20 token address
+        address          _join,        // Join Adapter
+        address          _flip,        // Auction Contract
+        address          _pip          // Pricing Contract
+    ) public {
+        // Sanity checks
+        require(JoinLike(_join).vat() == _vat);     // "join-vat-not-match"
+        require(JoinLike(_join).ilk() == _ilk);     // "join-ilk-not-match"
+        require(JoinLike(_join).gem() == _gem);     // "join-gem-not-match"
+        require(JoinLike(_join).dec() ==
+                   ERC20(_gem).decimals());         // "join-dec-not-match"
+        require(AuctionLike(_flip).vat() == _vat);  // "flip-vat-not-match"
+        require(AuctionLike(_flip).cat() == _cat);  // "flip-cat-not-match"
+        require(AuctionLike(_flip).ilk() == _ilk);  // "flip-ilk-not-match"
+
+        // Set the token PIP in the Spotter
+        setContract(_spot, _ilk, "pip", _pip);
+
+        // Set the ilk Flipper in the Cat
+        setContract(_cat, _ilk, "flip", _flip);
+
+        // Init ilk in Vat & Jug
+        Initializable(_vat).init(_ilk);  // Vat
+        Initializable(_jug).init(_ilk);  // Jug
+
+        // Allow ilk Join to modify Vat registry
+        authorize(_vat, _join);
+		// Allow the ilk Flipper to reduce the Cat litterbox on deal()
+        authorize(_cat, _flip);
+        // Allow Cat to kick auctions in ilk Flipper
+        authorize(_flip, _cat);
+        // Allow End to yank auctions in ilk Flipper
+        authorize(_flip, _end);
+
+        // Add new ilk to the IlkRegistry
+        RegistryLike(_reg).add(_join);
     }
 }
