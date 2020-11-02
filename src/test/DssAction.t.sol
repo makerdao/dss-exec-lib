@@ -892,12 +892,11 @@ contract ActionTest is DSTest {
         DSToken token     = new DSToken(ilk);
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
         Flipper tokenFlip = new Flipper(address(vat), address(cat), ilk);
-        DSValue tokenPip  = new DSValue();
-        OSM     tokenOsm;
+        address tokenPip  = address(new DSValue());
 
         if (isOsm) {
-            tokenOsm = medianSrc ? new OSM(address(median)) : new OSM(address(tokenPip));
-            tokenOsm.rely(address(action));
+            tokenPip = medianSrc ? address(new OSM(address(median))) : address(new OSM(address(tokenPip)));
+            OSM(tokenPip).rely(address(action));
         }
 
         tokenFlip.rely(address(action));
@@ -910,7 +909,7 @@ contract ActionTest is DSTest {
             addresses[0] = address(token);
             addresses[1] = address(tokenJoin);
             addresses[2] = address(tokenFlip);
-            addresses[3] = isOsm ? address(tokenOsm) : address(tokenPip);
+            addresses[3] = tokenPip;
 
             bool[] memory oracleSettings = new bool[](3);
             oracleSettings[0] = liquidatable;
@@ -928,7 +927,7 @@ contract ActionTest is DSTest {
             amounts[7] = 6 hours;                      // auctionDuration
             amounts[8] = 15000;                        // liquidationRatio
 
-            //uint256 globalLine = vat.Line();  // FIXME stack too deep for this.
+            uint256 globalLine = vat.Line();
 
             action.addNewCollateral_test(
                 ilk,
@@ -937,7 +936,7 @@ contract ActionTest is DSTest {
                 amounts
             );
 
-            //assertEq(vat.Line(), globalLine + 100 * MILLION * RAD);
+            assertEq(vat.Line(), globalLine + 100 * MILLION * RAD);
         }
 
         {
@@ -953,12 +952,12 @@ contract ActionTest is DSTest {
 
 
         if (isOsm) {
-          assertEq(tokenOsm.wards(address(osmMom)), 1);
-          assertEq(tokenOsm.bud(address(spot)),     1);
-          assertEq(tokenOsm.bud(address(end)),      1);
+          assertEq(OSM(tokenPip).wards(address(osmMom)), 1);
+          assertEq(OSM(tokenPip).bud(address(spot)),     1);
+          assertEq(OSM(tokenPip).bud(address(end)),      1);
 
-           if (medianSrc) assertEq(median.bud(address(tokenOsm)),   1);
-          assertEq(osmMom.osms(ilk), address(tokenOsm));
+           if (medianSrc) assertEq(median.bud(tokenPip),   1);
+          assertEq(osmMom.osms(ilk), tokenPip);
         }
 
         {
