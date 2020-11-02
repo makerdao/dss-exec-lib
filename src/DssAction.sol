@@ -37,6 +37,18 @@ interface RegistryLike {
     );
 }
 
+// Includes Median and OSM functions
+interface OracleLike {
+    function src() external view returns (address);
+    function lift(address[] calldata) external;
+    function drop(address[] calldata) external;
+    function setBar(uint256) external;
+    function kiss(address) external;
+    function diss(address) external;
+    function kiss(address[] calldata) external;
+    function diss(address[] calldata) external;
+}
+
 contract DssAction {
 
     address public immutable lib;
@@ -148,23 +160,23 @@ contract DssAction {
         _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, mcd_addr3, mcd_addr4, what, addr, addr2));
     }
 
-    function libCall(
-        string memory sig,
-        bytes32 what,
-        address[] memory arr,
-        bool    bool1,
-        bool[] memory bools,
-        uint256 num1,
-        uint256 num2,
-        uint256 num3,
-        uint256 num4,
-        uint256 num5,
-        uint256 num6,
-        uint256 num7,
-        uint256 num8,
-        uint256 num9
-    ) internal {
-        _dcall(abi.encodeWithSignature(sig, what, arr, bool1, bools, num1, num2, num3, num4, num5, num6, num7, num8, num9));
+    function libCall(string memory sig, bytes32 what, address[] memory addresses) internal {
+        _dcall(
+            abi.encodeWithSignature(
+                sig, 
+                vat(),
+                cat(),
+                jug(),
+                end(),
+                spot(),
+                reg(),
+                what,
+                addresses[0],
+                addresses[1],
+                addresses[2],
+                addresses[3]
+            )
+        );
     }
 
     /****************************/
@@ -419,7 +431,7 @@ contract DssAction {
     /*****************************/
     function addNewCollateral(
         bytes32          ilk,
-        address[] memory _addresses,
+        address[] memory addresses,
         bool             liquidatable,
         bool[] memory    oracleSettings,
         uint256          ilkDebtCeiling,
@@ -432,34 +444,55 @@ contract DssAction {
         uint256          auctionDuration,
         uint256          liquidationRatio
     ) internal {
-        address[] memory addresses = new address[](12);
-        addresses[0] = _addresses[0];  // Gem
-        addresses[1] = _addresses[1];  // Join
-        addresses[2] = _addresses[2];  // Flip
-        addresses[3] = _addresses[3];  // Pip/OSM
-        addresses[4] = vat();
-        addresses[5] = cat();
-        addresses[6] = jug();
-        addresses[7] = end();
-        addresses[8] = spot();
-        addresses[9] = reg();
-        addresses[10] = flipperMom();
-        addresses[11] = osmMom();
         libCall(
-            "addNewCollateral(bytes32,address[],bool,bool[],uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+            "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
             ilk,
-            addresses,
-            liquidatable,
-            oracleSettings,
-            ilkDebtCeiling,
-            minVaultAmount,
-            maxLiquidationAmount,
-            liquidationPenalty,
-            ilkStabilityFee,
-            bidIncrease,
-            bidDuration,
-            auctionDuration,
-            liquidationRatio
+            addresses
         );
+
+        // Allow FlipperMom to access to the ilk Flipper
+        authorize(addresses[2], flipperMom());
+        // Disallow Cat to kick auctions in ilk Flipper
+        if(!liquidatable) deauthorize(flipperMom(), addresses[2]);
+
+        if(oracleSettings[0]) { // If pip == OSM
+            // Allow OsmMom to access to the TOKEN OSM
+            authorize(addresses[3], osmMom()); 
+            if (oracleSettings[1]) { // If median is src in OSM
+                // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
+                addReaderToMedianWhitelist(address(OracleLike(addresses[3]).src()), addresses[3]);
+            }
+            // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(addresses[3], spot());
+            // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(addresses[3], end());
+            // Set TOKEN OSM in the OsmMom for new ilk
+            allowOSMFreeze(addresses[3], ilk); 
+        }
+        // Increase the global debt ceiling by the ilk ceiling
+        increaseGlobalDebtCeiling(ilkDebtCeiling);
+        // Set the ilk debt ceiling
+        setIlkDebtCeiling(ilk, ilkDebtCeiling);
+        // Set the ilk dust
+        setIlkMinVaultAmount(ilk, minVaultAmount); // DEFAULT VALUE OF 100 DAI DUST
+        // Set the dunk size
+        setIlkMaxLiquidationAmount(ilk, maxLiquidationAmount);
+        // Set the ilk liquidation penalty
+        setIlkLiquidationPenalty(ilk, liquidationPenalty);
+
+        // Set the ilk stability fee
+        setIlkStabilityFee(ilk, ilkStabilityFee);
+
+        // Set the ilk percentage between bids
+        setIlkMinAuctionBidIncrease(ilk, bidIncrease);
+        // Set the ilk time max time between bids
+        setIlkBidDuration(ilk, bidDuration);
+        // Set the ilk max auction duration
+        setIlkAuctionDuration(ilk, auctionDuration); 
+        // Set the ilk min collateralization ratio
+        setIlkLiquidationRatio(ilk, liquidationRatio);
+
+        // Update ilk spot value in Vat
+        updateCollateralPrice(ilk);
     }
 }
