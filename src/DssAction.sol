@@ -18,6 +18,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pragma solidity ^0.6.7;
+pragma experimental ABIEncoderV2;
+
+import "./CollateralOpts.sol";
 
 // https://github.com/makerdao/dss-chain-log
 interface ChainlogLike {
@@ -163,7 +166,7 @@ contract DssAction {
     function libCall(string memory sig, bytes32 what, address[] memory addresses) internal {
         _dcall(
             abi.encodeWithSignature(
-                sig, 
+                sig,
                 vat(),
                 cat(),
                 jug(),
@@ -429,70 +432,67 @@ contract DssAction {
     /*****************************/
     /*** Collateral Onboarding ***/
     /*****************************/
+
     function addNewCollateral(
-        bytes32          ilk,
-        address[] memory addresses,
-        bool             liquidatable,
-        bool[] memory    oracleSettings,
-        uint256          ilkDebtCeiling,
-        uint256          minVaultAmount,
-        uint256          maxLiquidationAmount,
-        uint256          liquidationPenalty,
-        uint256          ilkStabilityFee,
-        uint256          bidIncrease,
-        uint256          bidDuration,
-        uint256          auctionDuration,
-        uint256          liquidationRatio
+        CollateralOpts memory co
     ) internal {
+
+        // TODO clean this up and use params for libcall
+        address[] memory addresses = new address[](4);
+        addresses[0] = co.gem;
+        addresses[1] = co.join;
+        addresses[2] = co.flip;
+        addresses[3] = co.pip;
+
         libCall(
             "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
-            ilk,
+            co.ilk,
             addresses
         );
 
         // Allow FlipperMom to access to the ilk Flipper
-        authorize(addresses[2], flipperMom());
+        authorize(co.flip, flipperMom());
         // Disallow Cat to kick auctions in ilk Flipper
-        if(!liquidatable) deauthorize(flipperMom(), addresses[2]);
+        if(!co.isLiquidatable) deauthorize(flipperMom(), co.flip);
 
-        if(oracleSettings[0]) { // If pip == OSM
+        if(co.isOSM) { // If pip == OSM
             // Allow OsmMom to access to the TOKEN OSM
-            authorize(addresses[3], osmMom()); 
-            if (oracleSettings[1]) { // If median is src in OSM
+            authorize(co.pip, osmMom());
+            if (co.whitelistOSM) { // If median is src in OSM
                 // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-                addReaderToMedianWhitelist(address(OracleLike(addresses[3]).src()), addresses[3]);
+                addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(addresses[3], spot());
+            addReaderToOSMWhitelist(co.pip, spot());
             // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(addresses[3], end());
+            addReaderToOSMWhitelist(co.pip, end());
             // Set TOKEN OSM in the OsmMom for new ilk
-            allowOSMFreeze(addresses[3], ilk); 
+            allowOSMFreeze(co.pip, co.ilk);
         }
         // Increase the global debt ceiling by the ilk ceiling
-        increaseGlobalDebtCeiling(ilkDebtCeiling);
+        increaseGlobalDebtCeiling(co.ilkDebtCeiling);
         // Set the ilk debt ceiling
-        setIlkDebtCeiling(ilk, ilkDebtCeiling);
+        setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
         // Set the ilk dust
-        setIlkMinVaultAmount(ilk, minVaultAmount); // DEFAULT VALUE OF 100 DAI DUST
+        setIlkMinVaultAmount(co.ilk, co.minVaultAmount); // DEFAULT VALUE OF 100 DAI DUST
         // Set the dunk size
-        setIlkMaxLiquidationAmount(ilk, maxLiquidationAmount);
+        setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
         // Set the ilk liquidation penalty
-        setIlkLiquidationPenalty(ilk, liquidationPenalty);
+        setIlkLiquidationPenalty(co.ilk, co.liquidationPenalty);
 
         // Set the ilk stability fee
-        setIlkStabilityFee(ilk, ilkStabilityFee);
+        setIlkStabilityFee(co.ilk, co.ilkStabilityFee);
 
         // Set the ilk percentage between bids
-        setIlkMinAuctionBidIncrease(ilk, bidIncrease);
+        setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
         // Set the ilk time max time between bids
-        setIlkBidDuration(ilk, bidDuration);
+        setIlkBidDuration(co.ilk, co.bidDuration);
         // Set the ilk max auction duration
-        setIlkAuctionDuration(ilk, auctionDuration); 
+        setIlkAuctionDuration(co.ilk, co.auctionDuration);
         // Set the ilk min collateralization ratio
-        setIlkLiquidationRatio(ilk, liquidationRatio);
+        setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
 
         // Update ilk spot value in Vat
-        updateCollateralPrice(ilk);
+        updateCollateralPrice(co.ilk);
     }
 }

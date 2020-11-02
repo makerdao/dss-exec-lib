@@ -18,6 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pragma solidity ^0.6.7;
+pragma experimental ABIEncoderV2;
 
 import "ds-test/test.sol";
 import "ds-math/math.sol";
@@ -28,6 +29,7 @@ import "dss-interfaces/Interfaces.sol";
 
 import "../DssExec.sol";
 import "../DssAction.sol";
+import "../CollateralOpts.sol";
 import {DssExecLib} from "../DssExecLib.sol";
 
 interface Hevm {
@@ -42,9 +44,32 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
 
     uint256 constant MILLION  = 10 ** 6;
 
+    // TODO test onboarding
+    CollateralOpts XMPL_A = CollateralOpts({
+        ilk:                   "XMPL-A",
+        gem:                   0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD,
+        join:                  0x6C186404A7A238D3d6027C0299D1822c1cf5d8f1,
+        flip:                  0x7FdDc36dcdC435D8F54FDCB3748adcbBF70f3dAC,
+        pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a,
+        isLiquidatable:        true,
+        isOSM:                 true,
+        whitelistOSM:          true,
+        ilkDebtCeiling:        3 * MILLION,
+        minVaultAmount:        100,
+        maxLiquidationAmount:  50000,
+        liquidationPenalty:    1300,
+        ilkStabilityFee:       1000000000705562181084137268,
+        bidIncrease:           500,
+        bidDuration:           6 hours,
+        auctionDuration:       6 hours,
+        liquidationRatio:      15000
+    });
+
     function execute() external {
         setIlkDebtCeiling("ETH-A", 10 * MILLION);
         setGlobalDebtCeiling(1500 * MILLION);
+
+        addNewCollateral(XMPL_A);
     }
 }
 
