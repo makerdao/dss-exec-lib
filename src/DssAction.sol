@@ -163,13 +163,10 @@ contract DssAction {
         _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, mcd_addr3, mcd_addr4, what, addr, addr2));
     }
 
-    function libCall(string memory sig, address _vat, address _cat, address _jug, address _end, address _spot, address _reg,
-            bytes32 _ilk, address _gem, address _join, address _flip, address _pip) internal {
-        _dcall(
-            abi.encodeWithSignature(
-                sig, _vat, _cat, _jug, _end, _spot, _reg, _ilk, _gem, _join, _flip, _pip
-            )
-        );
+    function libCall(
+        string memory sig, address _vat, address _cat, address _jug, address _end, address _spot, address _reg, bytes32 _ilk, address _gem, address _join, address _flip, address _pip
+    ) internal {
+        _dcall(abi.encodeWithSignature(sig, _vat, _cat, _jug, _end, _spot, _reg, _ilk, _gem, _join, _flip, _pip));
     }
 
     /****************************/
@@ -423,10 +420,7 @@ contract DssAction {
     /*** Collateral Onboarding ***/
     /*****************************/
 
-    function addNewCollateral(
-        CollateralOpts memory co
-    ) internal {
-
+    function addNewCollateral(CollateralOpts memory co) internal {
         // Add the collateral to the system.
         libCall(
             "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
