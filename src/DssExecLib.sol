@@ -854,17 +854,17 @@ contract DssExecLib {
         @param _pip      Address of price feed
     */
     function addCollateralBase(
-        address          _vat,         // MCD_VAT
-        address          _cat,         // MCD_CAT
-        address          _jug,         // MCD_JUG
-        address          _end,         // MCD_END
-        address          _spot,        // MCD_SPOT
-        address          _reg,         // ILK_REGISTRY
-        bytes32          _ilk,         // bytes32 tag for ilk (ex. "ETH-A")
-        address          _gem,         // ERC20 token address
-        address          _join,        // Join Adapter
-        address          _flip,        // Auction Contract
-        address          _pip          // Pricing Contract
+        address _vat,
+        address _cat,
+        address _jug,
+        address _end,
+        address _spot,
+        address _reg,
+        bytes32 _ilk,
+        address _gem,
+        address _join,
+        address _flip,
+        address _pip
     ) public {
         // Sanity checks
         require(JoinLike(_join).vat() == _vat);     // "join-vat-not-match"
