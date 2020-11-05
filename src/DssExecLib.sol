@@ -839,19 +839,32 @@ contract DssExecLib {
         updateCollateralPrice(_addresses[8], _ilk);
     }
 
-
+    /**
+        @dev Performs basic functions and sanity checks to add a new collateral type to the MCD system
+        @param _vat      MCD_VAT
+        @param _cat      MCD_CAT
+        @param _jug      MCD_JUG
+        @param _end      MCD_END
+        @param _spot     MCD_SPOT
+        @param _reg      ILK_REGISTRY
+        @param _ilk      Collateral type key code [Ex. "ETH-A"]
+        @param _gem      Address of token contract
+        @param _join     Address of join adapter
+        @param _flip     Address of flipper
+        @param _pip      Address of price feed
+    */
     function addCollateralBase(
-        address          _vat,         // MCD_VAT
-        address          _cat,         // MCD_CAT
-        address          _jug,         // MCD_JUG
-        address          _end,         // MCD_END
-        address          _spot,        // MCD_SPOT
-        address          _reg,         // ILK_REGISTRY
-        bytes32          _ilk,         // bytes32 tag for ilk (ex. "ETH-A")
-        address          _gem,         // ERC20 token address
-        address          _join,        // Join Adapter
-        address          _flip,        // Auction Contract
-        address          _pip          // Pricing Contract
+        address _vat,
+        address _cat,
+        address _jug,
+        address _end,
+        address _spot,
+        address _reg,
+        bytes32 _ilk,
+        address _gem,
+        address _join,
+        address _flip,
+        address _pip
     ) public {
         // Sanity checks
         require(JoinLike(_join).vat() == _vat);     // "join-vat-not-match"

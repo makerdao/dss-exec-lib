@@ -18,6 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pragma solidity ^0.6.7;
+pragma experimental ABIEncoderV2;
 
 import "ds-test/test.sol";
 import "ds-math/math.sol";
@@ -28,7 +29,9 @@ import "dss-interfaces/Interfaces.sol";
 
 import "../DssExec.sol";
 import "../DssAction.sol";
+import "../CollateralOpts.sol";
 import {DssExecLib} from "../DssExecLib.sol";
+import "./rates.sol";
 
 interface Hevm {
     function warp(uint256) external;
@@ -43,6 +46,27 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     uint256 constant MILLION  = 10 ** 6;
 
     function execute() external {
+        CollateralOpts memory XMPL_A = CollateralOpts({
+            ilk:                   "XMPL-A",
+            gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
+            join:                  0xa30925910067a2d9eB2a7358c017E6075F660842,
+            flip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
+            pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, // Using LRC-A pip as a dummy
+            isLiquidatable:        true,
+            isOSM:                 true,
+            whitelistOSM:          true,
+            ilkDebtCeiling:        3 * MILLION,
+            minVaultAmount:        100,
+            maxLiquidationAmount:  50000,
+            liquidationPenalty:    1300,
+            ilkStabilityFee:       1000000000705562181084137268,
+            bidIncrease:           300,
+            bidDuration:           6 hours,
+            auctionDuration:       6 hours,
+            liquidationRatio:      15000
+        });
+        addNewCollateral(XMPL_A);
+
         setIlkDebtCeiling("ETH-A", 10 * MILLION);
         setGlobalDebtCeiling(1500 * MILLION);
     }
@@ -53,7 +77,6 @@ contract DssLibExecTest is DSTest, DSMath {
     struct CollateralValues {
         uint256 line;
         uint256 dust;
-        uint256 duty;
         uint256 chop;
         uint256 dunk;
         uint256 pct;
@@ -65,8 +88,7 @@ contract DssLibExecTest is DSTest, DSMath {
     }
 
     struct SystemValues {
-        uint256 pot_dsr;
-        uint256 pot_dsrPct;
+        uint256 dsr_rate;
         uint256 vat_Line;
         uint256 pause_delay;
         uint256 vow_wait;
@@ -99,9 +121,22 @@ contract DssLibExecTest is DSTest, DSMath {
     OsmMomAbstract      osmMom = OsmMomAbstract(     0x76416A4d5190d071bfed309861527431304aA14f);
     FlipperMomAbstract flipMom = FlipperMomAbstract( 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472);
 
+    // XMPL-A specific
+    GemAbstract           xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
+    GemJoinAbstract  joinXMPLA = GemJoinAbstract(    0xa30925910067a2d9eB2a7358c017E6075F660842);
+    OsmAbstract         pipXMPL = OsmAbstract(       0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+    FlipAbstract     flipXMPLA = FlipAbstract(       0x32c6DF17f8E94694977aa41A595d8dc583836A51);
+    MedianAbstract    medXMPLA = MedianAbstract(     0xcCe92282d9fe310F4c232b0DA9926d5F24611C7B);
+
+    ChainlogAbstract chainlog  = ChainlogAbstract(   0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
+
+    address    makerDeployer05 = 0xDa0FaB05039809e63C5D068c897c3e602fA97457;
+
     SystemValues afterSpell;
 
     Hevm hevm;
+
+    Rates rates;
 
     DssExec spell;
     address execlib;
@@ -148,7 +183,7 @@ contract DssLibExecTest is DSTest, DSMath {
     }
 
     function expectedRate(uint256 percentValue) public pure returns (uint256) {
-        return (100000 + percentValue) * (10 ** 22);
+        return (10000 + percentValue) * (10 ** 23);
     }
 
     function diffCalc(uint256 expectedRate_, uint256 yearlyYield_) public pure returns (uint256) {
@@ -164,6 +199,7 @@ contract DssLibExecTest is DSTest, DSMath {
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
+        rates = new Rates();
 
         execlib = address(new DssExecLib()); // This would be deployed only once
 
@@ -178,34 +214,45 @@ contract DssLibExecTest is DSTest, DSMath {
         // Test for all system configuration changes
         //
         afterSpell = SystemValues({
-            pot_dsr: 1000000000000000000000000000,
-            pot_dsrPct: 0 * 1000,
-            vat_Line: 1500 * MILLION * RAD,
-            pause_delay: 12 * 60 * 60,
-            vow_wait: 561600,
-            vow_dump: 250 * WAD,
-            vow_sump: 50000 * RAD,
-            vow_bump: 10000 * RAD,
-            vow_hump: 4 * MILLION * RAD,
-            cat_box: 15 * MILLION * RAD,
-            ilk_count: 15
+            dsr_rate:     0,               // In basis points
+            vat_Line:     1500 * MILLION,  // In whole Dai units
+            pause_delay:  72 hours,        // In seconds
+            vow_wait:     156 hours,       // In seconds
+            vow_dump:     250,             // In whole Dai units
+            vow_sump:     50000,           // In whole Dai units
+            vow_bump:     10000,           // In whole Dai units
+            vow_hump:     4 * MILLION,     // In whole Dai units
+            cat_box:      15 * MILLION,    // In whole Dai units
+            ilk_count:    16               // Num expected in system
         });
 
         //
         // Test for all collateral based changes here
         //
         afterSpell.collaterals["ETH-A"] = CollateralValues({
-            line:         10 * MILLION * RAD,
-            dust:         100 * RAD,
-            duty:         1000000000627937192491029810,
-            pct:          2 * 1000,
-            chop:         113 * WAD / 100,
-            dunk:         50 * THOUSAND * RAD,
-            mat:          150 * RAY / 100,
-            beg:          103 * WAD / 100,
-            ttl:          6 hours,
-            tau:          6 hours,
-            liquidations: 1
+            line:         10 * MILLION,    // In whole Dai units
+            dust:         100,             // In whole Dai units
+            pct:          200,             // In basis points
+            chop:         1300,            // In basis points
+            dunk:         50 * THOUSAND,   // In whole Dai units
+            mat:          15000,           // In basis points
+            beg:          300,             // In basis points
+            ttl:          6 hours,         // In seconds
+            tau:          6 hours,         // In seconds
+            liquidations: 1                // 1 if enabled
+        });
+        // New collateral
+        afterSpell.collaterals["XMPL-A"] = CollateralValues({
+            line:         3 * MILLION,     // In whole Dai units
+            dust:         100,             // In whole Dai units
+            pct:          225,             // In basis points
+            chop:         1300,            // In basis points
+            dunk:         50 * THOUSAND,   // In whole Dai units
+            mat:          15000,           // In basis points
+            beg:          300,             // In basis points
+            ttl:          6 hours,         // In seconds
+            tau:          6 hours,         // In seconds
+            liquidations: 1                // 1 if enabled
         });
     }
 
@@ -297,21 +344,24 @@ contract DssLibExecTest is DSTest, DSMath {
 
     function checkSystemValues(SystemValues storage values) internal {
         // dsr
-        assertEq(pot.dsr(), values.pot_dsr);
+        uint expectedDSRRate = rates.rates(values.dsr_rate);
         // make sure dsr is less than 100% APR
         // bc -l <<< 'scale=27; e( l(2.00)/(60 * 60 * 24 * 365) )'
         // 1000000021979553151239153027
         assertTrue(
             pot.dsr() >= RAY && pot.dsr() < 1000000021979553151239153027
         );
-        assertTrue(diffCalc(expectedRate(values.pot_dsrPct), yearlyYield(values.pot_dsr)) <= TOLERANCE);
+        assertTrue(diffCalc(expectedRate(values.dsr_rate), yearlyYield(expectedDSRRate)) <= TOLERANCE);
 
-        // Line
-        assertEq(vat.Line(), values.vat_Line);
+        {
+        // Line values in RAD
+        uint normalizedLine = values.vat_Line * RAD;
+        assertEq(vat.Line(), normalizedLine);
         assertTrue(
             (vat.Line() >= RAD && vat.Line() < 100 * BILLION * RAD) ||
             vat.Line() == 0
         );
+        }
 
         // Pause delay
         assertEq(pause.delay(), values.pause_delay);
@@ -319,36 +369,48 @@ contract DssLibExecTest is DSTest, DSMath {
         // wait
         assertEq(vow.wait(), values.vow_wait);
 
-        // dump
-        assertEq(vow.dump(), values.vow_dump);
+        {
+        // dump values in WAD
+        uint normalizedDump = values.vow_dump * WAD;
+        assertEq(vow.dump(), normalizedDump);
         assertTrue(
             (vow.dump() >= WAD && vow.dump() < 2 * THOUSAND * WAD) ||
             vow.dump() == 0
         );
-
-        // sump
-        assertEq(vow.sump(), values.vow_sump);
+        }
+        {
+        // sump values in RAD
+        uint normalizedSump = values.vow_sump * RAD;
+        assertEq(vow.sump(), normalizedSump);
         assertTrue(
             (vow.sump() >= RAD && vow.sump() < 500 * THOUSAND * RAD) ||
             vow.sump() == 0
         );
-
-        // bump
-        assertEq(vow.bump(), values.vow_bump);
+        }
+        {
+        // bump values in RAD
+        uint normalizedBump = values.vow_bump * RAD;
+        assertEq(vow.bump(), normalizedBump);
         assertTrue(
             (vow.bump() >= RAD && vow.bump() < HUNDRED * THOUSAND * RAD) ||
             vow.bump() == 0
         );
-
-        // hump
-        assertEq(vow.hump(), values.vow_hump);
+        }
+        {
+        // hump values in RAD
+        uint normalizedHump = values.vow_hump * RAD;
+        assertEq(vow.hump(), normalizedHump);
         assertTrue(
             (vow.hump() >= RAD && vow.hump() < HUNDRED * MILLION * RAD) ||
             vow.hump() == 0
         );
+        }
 
-        // box
-        assertEq(cat.box(), values.cat_box);
+        // box values in RAD
+        {
+            uint normalizedBox = values.cat_box * RAD;
+            assertEq(cat.box(), normalizedBox);
+        }
 
         // check number of ilks
         assertEq(reg.count(), values.ilk_count);
@@ -356,37 +418,50 @@ contract DssLibExecTest is DSTest, DSMath {
 
     function checkCollateralValues(bytes32 ilk, SystemValues storage values) internal {
         (uint duty,)  = jug.ilks(ilk);
-        assertEq(duty,   values.collaterals[ilk].duty);
+
+        assertEq(duty, rates.rates(values.collaterals[ilk].pct));
         // make sure duty is less than 1000% APR
         // bc -l <<< 'scale=27; e( l(10.00)/(60 * 60 * 24 * 365) )'
         // 1000000073014496989316680335
-
         assertTrue(duty >= RAY && duty < 1000000073014496989316680335);  // gt 0 and lt 1000%
-        assertTrue(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(values.collaterals[ilk].duty)) <= TOLERANCE);
+        assertTrue(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(rates.rates(values.collaterals[ilk].pct))) <= TOLERANCE);
         assertTrue(values.collaterals[ilk].pct < THOUSAND * THOUSAND);   // check value lt 1000%
-
+        {
         (,,, uint line, uint dust) = vat.ilks(ilk);
-        assertEq(line, values.collaterals[ilk].line);
-
+        // Convert whole Dai units to expected RAD
+        uint normalizedTestLine = values.collaterals[ilk].line * RAD;
+        assertEq(line, normalizedTestLine);
         assertTrue((line >= RAD && line < BILLION * RAD) || line == 0);  // eq 0 or gt eq 1 RAD and lt 1B
-        assertEq(dust, values.collaterals[ilk].dust);
+        uint normalizedTestDust = values.collaterals[ilk].dust * RAD;
+        assertEq(dust, normalizedTestDust);
         assertTrue((dust >= RAD && dust < 10 * THOUSAND * RAD) || dust == 0); // eq 0 or gt eq 1 and lt 10k
-
+        }
+        {
         (, uint chop, uint dunk) = cat.ilks(ilk);
-        assertEq(chop, values.collaterals[ilk].chop);
+        // Convert BP to system expected value
+        uint normalizedTestChop = (values.collaterals[ilk].chop * 10**14) + WAD;
+        assertEq(chop, normalizedTestChop);
         // make sure chop is less than 100%
         assertTrue(chop >= WAD && chop < 2 * WAD);   // penalty gt eq 0% and lt 100%
-        assertEq(dunk, values.collaterals[ilk].dunk);
+        // Convert whole Dai units to expected RAD
+        uint normalizedTestDunk = values.collaterals[ilk].dunk * RAD;
+        assertEq(dunk, normalizedTestDunk);
         // put back in after LIQ-1.2
         assertTrue(dunk >= RAD && dunk < MILLION * RAD);
-
+        }
+        {
         (,uint mat) = spot.ilks(ilk);
-        assertEq(mat, values.collaterals[ilk].mat);
+        // Convert BP to system expected value
+        uint normalizedTestMat = (values.collaterals[ilk].mat * 10**23);
+        assertEq(mat, normalizedTestMat);
         assertTrue(mat >= RAY && mat < 10 * RAY);    // cr eq 100% and lt 1000%
-
+        }
+        {
         (address flipper,,) = cat.ilks(ilk);
         FlipAbstract flip = FlipAbstract(flipper);
-        assertEq(uint(flip.beg()), values.collaterals[ilk].beg);
+        // Convert BP to system expected value
+        uint normalizedTestBeg = (values.collaterals[ilk].beg + 10000)  * 10**14;
+        assertEq(uint(flip.beg()), normalizedTestBeg);
         assertTrue(flip.beg() >= WAD && flip.beg() < 105 * WAD / 100);  // gt eq 0% and lt 5%
         assertEq(uint(flip.ttl()), values.collaterals[ilk].ttl);
         assertTrue(flip.ttl() >= 600 && flip.ttl() < 10 hours);         // gt eq 10 minutes and lt 10 hours
@@ -394,6 +469,14 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue(flip.tau() >= 600 && flip.tau() <= 3 days);          // gt eq 10 minutes and lt eq 3 days
 
         assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);  // liquidations == 1 => on
+        assertEq(flip.wards(address(makerDeployer05)), 0); // Check deployer denied
+        assertEq(flip.wards(address(pauseProxy)), 1); // Check pause_proxy ward
+        }
+        {
+        GemJoinAbstract join = GemJoinAbstract(reg.join(ilk));
+        assertEq(join.wards(address(makerDeployer05)), 0); // Check deployer denied
+        assertEq(join.wards(address(pauseProxy)), 1); // Check pause_proxy ward
+        }
     }
 
     function testSpellIsCast_mainnet() public {
@@ -406,6 +489,77 @@ contract DssLibExecTest is DSTest, DSMath {
 
         assertTrue(spell.officeHours());
         assertTrue(spell.action() != address(0));
+    }
+
+    event Debug(uint, uint);
+
+    function testSpellIsCast_XMPL_INTEGRATION() public {
+        vote();
+        scheduleWaitAndCast();
+        assertTrue(spell.done());
+
+        pipXMPL.poke();
+        hevm.warp(now + 3601);
+        pipXMPL.poke();
+        spot.poke("XMPL-A");
+
+        hevm.store(
+            address(xmpl),
+            keccak256(abi.encode(address(this), uint256(3))),
+            bytes32(uint256(10 * THOUSAND * WAD))
+        );
+
+        // Check median matches pip.src()
+        assertEq(pipXMPL.src(), address(medXMPLA));
+
+        // Authorization
+        assertEq(joinXMPLA.wards(pauseProxy), 1);
+        assertEq(vat.wards(address(joinXMPLA)), 1);
+        assertEq(cat.wards(address(flipXMPLA)), 1);
+        assertEq(flipXMPLA.wards(address(cat)), 1);
+        assertEq(flipXMPLA.wards(pauseProxy), 1);
+        assertEq(flipXMPLA.wards(address(end)), 1);
+        assertEq(flipXMPLA.wards(address(flipMom)), 1);
+        assertEq(pipXMPL.wards(address(osmMom)), 1);
+        assertEq(pipXMPL.bud(address(spot)), 1);
+        assertEq(pipXMPL.bud(address(end)), 1);
+        assertEq(MedianAbstract(pipXMPL.src()).bud(address(pipXMPL)), 1);
+
+        // Join to adapter
+        assertEq(xmpl.balanceOf(address(this)), 10 * THOUSAND * WAD);
+        assertEq(vat.gem("XMPL-A", address(this)), 0);
+        xmpl.approve(address(joinXMPLA), 10 * THOUSAND * WAD);
+        joinXMPLA.join(address(this), 10 * THOUSAND * WAD);
+        assertEq(xmpl.balanceOf(address(this)), 0);
+        assertEq(vat.gem("XMPL-A", address(this)), 10 * THOUSAND * WAD);
+
+        // Deposit collateral, generate DAI
+        assertEq(vat.dai(address(this)), 0);
+        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(100 * WAD));
+        assertEq(vat.gem("XMPL-A", address(this)), 0);
+        assertEq(vat.dai(address(this)), 100 * RAD);
+
+        // Payback DAI, withdraw collateral
+        vat.frob("XMPL-A", address(this), address(this), address(this), -int(10 * THOUSAND * WAD), -int(100 * WAD));
+        assertEq(vat.gem("XMPL-A", address(this)), 10 * THOUSAND * WAD);
+        assertEq(vat.dai(address(this)), 0);
+
+        // Withdraw from adapter
+        joinXMPLA.exit(address(this), 10 * THOUSAND * WAD);
+        assertEq(xmpl.balanceOf(address(this)), 10 * THOUSAND * WAD);
+        assertEq(vat.gem("XMPL-A", address(this)), 0);
+
+        // Generate new DAI to force a liquidation
+        xmpl.approve(address(joinXMPLA), 10 * THOUSAND * WAD);
+        joinXMPLA.join(address(this), 10 * THOUSAND * WAD);
+        (,,uint256 spotV,,) = vat.ilks("XMPL-A");
+        // dart max amount of DAI
+        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(mul(10 * THOUSAND * WAD, spotV) / RAY));
+        hevm.warp(now + 1);
+        jug.drip("XMPL-A");
+        assertEq(flipXMPLA.kicks(), 0);
+        cat.bite("XMPL-A", address(this));
+        assertEq(flipXMPLA.kicks(), 1);
     }
 
     function testExecLibDeployCost() public {
