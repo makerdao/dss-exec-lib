@@ -51,7 +51,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
             join:                  0xa30925910067a2d9eB2a7358c017E6075F660842,
             flip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
-            pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, // Using LRC-A pip as a dummy 
+            pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, // Using LRC-A pip as a dummy
             isLiquidatable:        true,
             isOSM:                 true,
             whitelistOSM:          true,
@@ -64,7 +64,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             bidDuration:           6 hours,
             auctionDuration:       6 hours,
             liquidationRatio:      15000
-        }); 
+        });
         addNewCollateral(XMPL_A);
 
         setIlkDebtCeiling("ETH-A", 10 * MILLION);
@@ -497,7 +497,7 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue(spell.done());
 
         pipXMPL.poke();
-        hevm.warp(now + 3601); 
+        hevm.warp(now + 3601);
         pipXMPL.poke();
         spot.poke("XMPL-A");
 
@@ -508,7 +508,7 @@ contract DssLibExecTest is DSTest, DSMath {
         );
 
         // Check median matches pip.src()
-        assertEq(pipXMPL.src(), address(medXMPLA)); 
+        assertEq(pipXMPL.src(), address(medXMPLA));
 
         // Authorization
         assertEq(joinXMPLA.wards(pauseProxy), 1);
