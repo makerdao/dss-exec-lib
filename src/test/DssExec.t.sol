@@ -122,10 +122,10 @@ contract DssLibExecTest is DSTest, DSMath {
     FlipperMomAbstract flipMom = FlipperMomAbstract( 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472);
 
     // XMPL-A specific
-    GemAbstract           xmpl = GemAbstract(        0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD);
-    GemJoinAbstract  joinXMPLA = GemJoinAbstract(    0x6C186404A7A238D3d6027C0299D1822c1cf5d8f1);
-    OsmAbstract         pipXMPL = OsmAbstract(        0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
-    FlipAbstract     flipXMPLA = FlipAbstract(       0x7FdDc36dcdC435D8F54FDCB3748adcbBF70f3dAC);
+    GemAbstract           xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
+    GemJoinAbstract  joinXMPLA = GemJoinAbstract(    0xa30925910067a2d9eB2a7358c017E6075F660842);
+    OsmAbstract         pipXMPL = OsmAbstract(       0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+    FlipAbstract     flipXMPLA = FlipAbstract(       0x32c6DF17f8E94694977aa41A595d8dc583836A51);
     MedianAbstract    medXMPLA = MedianAbstract(     0xcCe92282d9fe310F4c232b0DA9926d5F24611C7B);
 
     ChainlogAbstract chainlog  = ChainlogAbstract(   0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
@@ -491,6 +491,8 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue(spell.action() != address(0));
     }
 
+    event Debug(uint, uint);
+
     function testSpellIsCast_XMPL_INTEGRATION() public {
         vote();
         scheduleWaitAndCast();
@@ -501,11 +503,17 @@ contract DssLibExecTest is DSTest, DSMath {
         pipXMPL.poke();
         spot.poke("XMPL-A");
 
-        hevm.store(
-            address(xmpl),
-            keccak256(abi.encode(address(this), uint256(0))),
-            bytes32(uint256(1 * THOUSAND * WAD))
-        );
+        for(uint i = 0; i < 10; i += 1) {
+            hevm.store(
+                address(xmpl),
+                keccak256(abi.encode(address(this), uint256(i))),
+                bytes32(uint256(10 * THOUSAND * WAD))
+            );
+            emit Debug(1, xmpl.balanceOf(address(this)));   
+            emit Debug(2, i);
+        }
+
+        
 
         // Check median matches pip.src()
         assertEq(pipXMPL.src(), address(medXMPLA));
@@ -524,40 +532,41 @@ contract DssLibExecTest is DSTest, DSMath {
         assertEq(MedianAbstract(pipXMPL.src()).bud(address(pipXMPL)), 1);
 
         // Join to adapter
-        assertEq(xmpl.balanceOf(address(this)), 1 * THOUSAND * WAD);
+        assertEq(xmpl.balanceOf(address(this)), 10 * THOUSAND * WAD);
         assertEq(vat.gem("XMPL-A", address(this)), 0);
-        xmpl.approve(address(joinXMPLA), 1 * THOUSAND * WAD);
-        joinXMPLA.join(address(this), 1 * THOUSAND * WAD);
+        xmpl.approve(address(joinXMPLA), 10 * THOUSAND * WAD);
+        joinXMPLA.join(address(this), 10 * THOUSAND * WAD);
         assertEq(xmpl.balanceOf(address(this)), 0);
-        assertEq(vat.gem("XMPL-A", address(this)), 1 * THOUSAND * WAD);
+        assertEq(vat.gem("XMPL-A", address(this)), 10 * THOUSAND * WAD);
 
         // Deposit collateral, generate DAI
         assertEq(vat.dai(address(this)), 0);
-        vat.frob("XMPL-A", address(this), address(this), address(this), int(1 * THOUSAND * WAD), int(100 * WAD));
+        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(100 * WAD));
         assertEq(vat.gem("XMPL-A", address(this)), 0);
         assertEq(vat.dai(address(this)), 100 * RAD);
 
         // Payback DAI, withdraw collateral
-        vat.frob("XMPL-A", address(this), address(this), address(this), -int(1 * THOUSAND * WAD), -int(100 * WAD));
-        assertEq(vat.gem("XMPL-A", address(this)), 1 * THOUSAND * WAD);
+        vat.frob("XMPL-A", address(this), address(this), address(this), -int(10 * THOUSAND * WAD), -int(100 * WAD));
+        assertEq(vat.gem("XMPL-A", address(this)), 10 * THOUSAND * WAD);
         assertEq(vat.dai(address(this)), 0);
 
         // Withdraw from adapter
-        joinXMPLA.exit(address(this), 1 * THOUSAND * WAD);
-        assertEq(xmpl.balanceOf(address(this)), 1 * THOUSAND * WAD);
+        joinXMPLA.exit(address(this), 10 * THOUSAND * WAD);
+        assertEq(xmpl.balanceOf(address(this)), 10 * THOUSAND * WAD);
         assertEq(vat.gem("XMPL-A", address(this)), 0);
 
         // Generate new DAI to force a liquidation
-        xmpl.approve(address(joinXMPLA), 1 * THOUSAND * WAD);
-        joinXMPLA.join(address(this), 1 * THOUSAND * WAD);
+        xmpl.approve(address(joinXMPLA), 10 * THOUSAND * WAD);
+        joinXMPLA.join(address(this), 10 * THOUSAND * WAD);
         (,,uint256 spotV,,) = vat.ilks("XMPL-A");
         // dart max amount of DAI
-        vat.frob("XMPL-A", address(this), address(this), address(this), int(1 * THOUSAND * WAD), int(mul(1 * THOUSAND * WAD, spotV) / RAY));
+        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(mul(10 * THOUSAND * WAD, spotV) / RAY));
         hevm.warp(now + 1);
         jug.drip("XMPL-A");
         assertEq(flipXMPLA.kicks(), 0);
         cat.bite("XMPL-A", address(this));
         assertEq(flipXMPLA.kicks(), 1);
+        assertTrue(false);
     }
 
     function testExecLibDeployCost() public {
