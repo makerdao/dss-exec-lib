@@ -503,17 +503,11 @@ contract DssLibExecTest is DSTest, DSMath {
         pipXMPL.poke();
         spot.poke("XMPL-A");
 
-        for(uint i = 0; i < 10; i += 1) {
-            hevm.store(
-                address(xmpl),
-                keccak256(abi.encode(address(this), uint256(i))),
-                bytes32(uint256(10 * THOUSAND * WAD))
-            );
-            emit Debug(1, xmpl.balanceOf(address(this)));   
-            emit Debug(2, i);
-        }
-
-        
+        hevm.store(
+            address(xmpl),
+            keccak256(abi.encode(address(this), uint256(3))),
+            bytes32(uint256(10 * THOUSAND * WAD))
+        );
 
         // Check median matches pip.src()
         assertEq(pipXMPL.src(), address(medXMPLA));
@@ -566,7 +560,6 @@ contract DssLibExecTest is DSTest, DSMath {
         assertEq(flipXMPLA.kicks(), 0);
         cat.bite("XMPL-A", address(this));
         assertEq(flipXMPLA.kicks(), 1);
-        assertTrue(false);
     }
 
     function testExecLibDeployCost() public {
