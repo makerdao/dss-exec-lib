@@ -278,39 +278,6 @@ contract DssTestAction is DssAction {
     /*****************************/
     /*** Collateral Onboarding ***/
     /*****************************/
-    /*
-    function addNewCollateral_test(
-        bytes32          ilk,
-        address[] memory addresses,
-        bool             liquidatable,
-        bool[] memory    oracleSettings,
-        uint256          ilkDebtCeiling,
-        uint256          minVaultAmount,
-        uint256          maxLiquidationAmount,
-        uint256          liquidationPenalty,
-        uint256          ilkStabilityFee,
-        uint256          bidIncrease,
-        uint256          bidDuration,
-        uint256          auctionDuration,
-        uint256          liquidationRatio
-    ) public {
-        addNewCollateral(
-            ilk,
-            addresses,
-            liquidatable,
-            oracleSettings,
-            ilkDebtCeiling,
-            minVaultAmount,
-            maxLiquidationAmount,
-            liquidationPenalty,
-            ilkStabilityFee,
-            bidIncrease,
-            bidDuration,
-            auctionDuration,
-            liquidationRatio
-        );
-    }
-    */
 
     function addNewCollateral_test(
         bytes32          ilk,
@@ -338,11 +305,7 @@ contract DssTestAction is DssAction {
             amounts[8]            // liquidationRatio
         );
 
-        addNewCollateral(
-            co
-        );
+        addNewCollateral(co);
     }
 
-    // // Abstract enforcement of required execute() function
-    // function execute() external override {}
 }
