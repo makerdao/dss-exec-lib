@@ -176,8 +176,9 @@ addNewCollateral(XMPL_A);
 - `join`:                 Address of GemJoin contract
 - `flip`:                 Address of Flip contract
 - `pip`:                  Address of Pip contract
-- `liquidatable`:         Boolean indicating whether liquidations are enabled for collateral
-- `oracleSettings`:       Boolean array indicating whether: [pip address used is an OSM contract, median is src in osm]
+- `isLiquidatable`:         Boolean indicating whether liquidations are enabled for collateral
+- `isOsm`:                Boolean indicating whether pip address used is an OSM contract
+- `whitelistOsm`:         Boolean indicating whether median is src in OSM.
 - `ilkDebtCeiling`:       Debt ceiling for new collateral
 - `minVaultAmount`:       Minimum DAI vault amount required for new collateral
 - `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
