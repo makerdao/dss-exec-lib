@@ -279,6 +279,12 @@ contract DssTestAction is DssAction {
     /*** Collateral Onboarding ***/
     /*****************************/
 
+    function addCollateralBase_test(
+        bytes32 ilk, address gem, address join, address flip, address pip
+    ) public {
+        addCollateralBase(ilk, gem, join, flip, pip);
+    }
+
     function addNewCollateral_test(
         bytes32          ilk,
         address[] memory addresses,
