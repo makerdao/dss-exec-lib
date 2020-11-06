@@ -420,17 +420,18 @@ contract DssAction {
     /*** Collateral Onboarding ***/
     /*****************************/
 
-    function addNewCollateral(CollateralOpts memory co) internal {
-        // Add the collateral to the system.
+    // Minimum actions to onboard a collateral to the system with 0 line.
+    function addCollateralBase(bytes32 ilk, address gem, address join, address flip, address pip) internal {
         libCall(
             "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
-            vat(), cat(), jug(), end(), spot(), reg(),
-            co.ilk,
-            co.gem,
-            co.join,
-            co.flip,
-            co.pip
+            vat(), cat(), jug(), end(), spot(), reg(), ilk, gem, join, flip, pip
         );
+    }
+
+    // Complete collateral onboarding logic.
+    function addNewCollateral(CollateralOpts memory co) internal {
+        // Add the collateral to the system.
+        addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
 
         // Allow FlipperMom to access to the ilk Flipper
         authorize(co.flip, flipperMom());

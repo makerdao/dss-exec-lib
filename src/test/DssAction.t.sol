@@ -765,125 +765,37 @@ contract ActionTest is DSTest {
     /*****************************/
     /*** Collateral Onboarding ***/
     /*****************************/
-    /*
-    function collateralOnboardingTest(bool liquidatable, bool isOsm, bool medianSrc) internal {
+
+    function test_collateralOnboardingBase() public {
         bytes32 ilk = "silver";
 
-        DSToken token     = new DSToken("silver");
+        DSToken token     = new DSToken(ilk);
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
         Flipper tokenFlip = new Flipper(address(vat), address(cat), ilk);
-        DSValue tokenPip  = new DSValue();
-        OSM     tokenOsm;
+        address tokenPip  = address(new DSValue());
 
-        if (isOsm) {
-            tokenOsm = medianSrc ? new OSM(address(median)) : new OSM(address(tokenPip));
-            tokenOsm.rely(address(action));
-        }
-
+        tokenPip = address(new OSM(address(tokenPip)));
+        OSM(tokenPip).rely(address(action));
         tokenFlip.rely(address(action));
         tokenJoin.rely(address(action));
         tokenFlip.deny(address(this));
         tokenJoin.deny(address(this));
 
-        {
-            address[] memory addresses = new address[](4);
-            addresses[0] = address(token);
-            addresses[1] = address(tokenJoin);
-            addresses[2] = address(tokenFlip);
-            addresses[3] = isOsm ? address(tokenOsm) : address(tokenPip);
-
-            bool[] memory oracleSettings = new bool[](2);
-            oracleSettings[0] = isOsm;
-            oracleSettings[1] = medianSrc;
-
-            uint256 globalLine = vat.Line();
-
-            action.addNewCollateral_test(
-                ilk,
-                addresses,
-                liquidatable,
-                oracleSettings,
-                100 * MILLION,                 // ilkDebtCeiling
-                100,                           // minVaultAmount
-                50 * THOUSAND,                 // maxLiquidationAmount
-                1300,                          // liquidationPenalty
-                1000000001243680656318820312,  // ilkStabilityFee
-                500,                           // bidIncrease
-                6 hours,                       // bidDuration
-                6 hours,                       // auctionDuration
-                15000                          // liquidationRatio
-            );
-
-            assertEq(vat.Line(), globalLine + 100 * MILLION * RAD);
-        }
+        action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenFlip), tokenPip);
 
         assertEq(vat.wards(address(tokenJoin)), 1);
         assertEq(cat.wards(address(tokenFlip)), 1);
 
         assertEq(tokenFlip.wards(address(end)),        1);
-        assertEq(tokenFlip.wards(address(flipperMom)), 1);
 
-        if (!liquidatable) assertEq(tokenFlip.wards(address(cat)), 0);
-        else               assertEq(tokenFlip.wards(address(cat)), 1);
+        (,, uint256 _dec, address _gem, address _pip, address _join, address _flip) = reg.info(ilk);
 
-        if (isOsm) {
-            assertEq(tokenOsm.wards(address(osmMom)), 1);
-            assertEq(tokenOsm.bud(address(spot)),     1);
-            assertEq(tokenOsm.bud(address(end)),      1);
-
-            if (medianSrc) assertEq(median.bud(address(tokenOsm)),   1);
-
-            assertEq(osmMom.osms(ilk), address(tokenOsm));
-        }
-
-        {
-            (,,, uint256 line, uint256 dust) = vat.ilks(ilk);
-            (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
-            assertEq(line, 100 * MILLION * RAD);
-            assertEq(dust, 100 * RAD);
-            assertEq(dunk, 50 * THOUSAND * RAD);
-            assertEq(chop, 113 ether / 100);  // WAD pct 113%
-
-            (uint256 duty, uint256 rho) = jug.ilks(ilk);
-            assertEq(duty, 1000000001243680656318820312);
-            assertEq(rho, START_TIME);
-        }
-
-        {
-            assertEq(tokenFlip.beg(), 5 * WAD / 100); // WAD pct
-            assertEq(uint256(tokenFlip.ttl()), 6 hours);
-            assertEq(uint256(tokenFlip.tau()), 6 hours);
-
-            (, uint256 mat) = spot.ilks(ilk);
-            assertEq(mat, ray(150 ether / 100)); // RAY pct
-
-            bytes32[] memory ilkList = reg.list();
-            assertEq(ilkList[ilkList.length - 1], ilk);
-        }
+        assertEq(_dec, 18);
+        assertEq(_gem, address(token));
+        assertEq(_pip, address(tokenPip));
+        assertEq(_join, address(tokenJoin));
+        assertEq(_flip, address(tokenFlip));
     }
-
-
-
-    function test_addNewCollateral_case1() public {
-        collateralOnboardingTest(true, true, true);      // Liquidations: ON,  PIP == OSM, osmSrc == median
-    }
-    function test_addNewCollateral_case2() public {
-        collateralOnboardingTest(true, true, false);     // Liquidations: ON,  PIP == OSM, osmSrc != median
-    }
-    function test_addNewCollateral_case3() public {
-        collateralOnboardingTest(true, false, false);    // Liquidations: ON,  PIP != OSM, osmSrc != median
-    }
-    function test_addNewCollateral_case4() public {
-        collateralOnboardingTest(false, true, true);     // Liquidations: OFF, PIP == OSM, osmSrc == median
-    }
-    function test_addNewCollateral_case5() public {
-        collateralOnboardingTest(false, true, false);    // Liquidations: OFF, PIP == OSM, osmSrc != median
-    }
-    function test_addNewCollateral_case6() public {
-        collateralOnboardingTest(false, false, false);   // Liquidations: OFF, PIP != OSM, osmSrc != median
-    }
-    */
-
 
     function collateralOnboardingTest(bool liquidatable, bool isOsm, bool medianSrc) internal {
 
