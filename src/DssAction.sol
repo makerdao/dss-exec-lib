@@ -419,6 +419,8 @@ contract DssAction {
     /*****************************/
     /*** Collateral Onboarding ***/
     /*****************************/
+
+    // Minimum actions to onboard a collateral to the system with 0 line.
     function addCollateralBase(bytes32 ilk, address gem, address join, address flip, address pip) internal {
         libCall(
             "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
@@ -426,6 +428,7 @@ contract DssAction {
         );
     }
 
+    // Complete collateral onboarding logic.
     function addNewCollateral(CollateralOpts memory co) internal {
         // Add the collateral to the system.
         addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
