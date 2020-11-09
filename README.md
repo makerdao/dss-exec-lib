@@ -146,7 +146,11 @@ In order to onboard new collateral to the Maker protocol, the following must be 
     - Deny the deployer address
 - Deploy a Pip contract
 
-Once these actions are done, add the following code (below is an example) to the `execute()` function in the spell.
+Once these actions are done, add the following code (below is an example) to the `execute()` function in the spell. The `setChangelogAddress` function calls are required to add the collateral to the on-chain changelog. They must follow the following convention:
+- GEM: `TOKEN`
+- JOIN: `MCD_JOIN_TOKEN`
+- FLIP: `MCD_FLIP_TOKEN`
+- PIP: `PIP_TOKEN`
 
 ```js
 CollateralOpts memory XMPL_A = CollateralOpts({
@@ -170,6 +174,11 @@ CollateralOpts memory XMPL_A = CollateralOpts({
 });
 
 addNewCollateral(XMPL_A);
+
+setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
+setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+setChangelogAddress("MCD_JOIN_XMPL", 0xa30925910067a2d9eB2a7358c017E6075F660842);
+setChangelogAddress("MCD_FLIP_XMPL", 0x32c6DF17f8E94694977aa41A595d8dc583836A51);
 ```
 - `ilk`:                  Collateral type
 - `gem`:                  Address of collateral token
