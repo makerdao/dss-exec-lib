@@ -137,38 +137,66 @@ Below is an outline of all functions used in the library.
 - `allowOSMFreeze(address _osm, bytes32 _ilk)`: Add OSM address to OSM mom, allowing it to be frozen by governance.
 
 ### Collateral Onboarding
-```
-function addNewCollateral(
-    bytes32          _ilk,
-    address[] memory _addresses,
-    bool             _liquidatable,
-    bool[] memory    _oracleSettings,
-    uint256          _ilkDebtCeiling,
-    uint256          _minVaultAmount,
-    uint256          _maxLiquidationAmount,
-    uint256          _liquidationPenalty,
-    uint256          _ilkStabilityFee,
-    uint256          _bidIncrease,
-    uint256          _bidDuration,
-    uint256          _auctionDuration,
-    uint256          _liquidationRatio
-)
-```
-- Adds new collateral to MCD following standard collateral onboarding procedure.
-- `_ilk`:                  Collateral type
-- `_addresses`:            Array of contract addresses: [tokenAddress, join, flip, pip]
-- `_liquidatable`:         Boolean indicating whether liquidations are enabled for collateral
-- `_oracleSettings`:       Boolean array indicating whether: [pip address used is an OSM contract, median is src in osm]
-- `_ilkDebtCeiling`:       Debt ceiling for new collateral
-- `_minVaultAmount`:       Minimum DAI vault amount required for new collateral
-- `_maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
-- `_liquidationPenalty`:   Percent liquidation penalty for new collateral [ex. 13.5% == 13500]
-- `_ilkStabilityFee`:      Percent stability fee for new collateral       [ex. 4% == 1000000001243680656318820312]
-- `_bidIncrease`:          Percent bid increase for new collateral        [ex. 13.5% == 13500]
-- `_bidDuration`:          Bid period duration for new collateral
-- `_auctionDuration`:      Total auction duration for new collateral
-- `_liquidationRatio`:     Percent liquidation ratio for new collateral   [ex. 150% == 150000]
+In order to onboard new collateral to the Maker protocol, the following must be done before the spell is prepared:
+- Deploy a GemJoin contract
+    - Rely the `MCD_PAUSE_PROXY` address
+    - Deny the deployer address
+- Deploy a Flip contract
+    - Rely the `MCD_PAUSE_PROXY` address
+    - Deny the deployer address
+- Deploy a Pip contract
 
+Once these actions are done, add the following code (below is an example) to the `execute()` function in the spell. The `setChangelogAddress` function calls are required to add the collateral to the on-chain changelog. They must follow the following convention:
+- GEM: `TOKEN`
+- JOIN: `MCD_JOIN_TOKEN`
+- FLIP: `MCD_FLIP_TOKEN`
+- PIP: `PIP_TOKEN`
+
+```js
+CollateralOpts memory XMPL_A = CollateralOpts({
+    ilk:                   "XMPL-A",
+    gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
+    join:                  0xa30925910067a2d9eB2a7358c017E6075F660842,
+    flip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
+    pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, 
+    isLiquidatable:        true,
+    isOSM:                 true,
+    whitelistOSM:          true,
+    ilkDebtCeiling:        3 * MILLION,
+    minVaultAmount:        100,
+    maxLiquidationAmount:  50000,
+    liquidationPenalty:    1300,
+    ilkStabilityFee:       1000000000705562181084137268,
+    bidIncrease:           300,
+    bidDuration:           6 hours,
+    auctionDuration:       6 hours,
+    liquidationRatio:      15000
+});
+
+addNewCollateral(XMPL_A);
+
+setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
+setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+setChangelogAddress("MCD_JOIN_XMPL", 0xa30925910067a2d9eB2a7358c017E6075F660842);
+setChangelogAddress("MCD_FLIP_XMPL", 0x32c6DF17f8E94694977aa41A595d8dc583836A51);
+```
+- `ilk`:                  Collateral type
+- `gem`:                  Address of collateral token
+- `join`:                 Address of GemJoin contract
+- `flip`:                 Address of Flip contract
+- `pip`:                  Address of Pip contract
+- `isLiquidatable`:         Boolean indicating whether liquidations are enabled for collateral
+- `isOsm`:                Boolean indicating whether pip address used is an OSM contract
+- `whitelistOsm`:         Boolean indicating whether median is src in OSM.
+- `ilkDebtCeiling`:       Debt ceiling for new collateral
+- `minVaultAmount`:       Minimum DAI vault amount required for new collateral
+- `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
+- `liquidationPenalty`:   Percent liquidation penalty for new collateral [ex. 13.5% == 1350]
+- `ilkStabilityFee`:      Percent stability fee for new collateral       [ex. 4% == 1000000001243680656318820312]
+- `bidIncrease`:          Percent bid increase for new collateral        [ex. 13.5% == 1350]
+- `bidDuration`:          Bid period duration for new collateral
+- `auctionDuration`:      Total auction duration for new collateral
+- `liquidationRatio`:     Percent liquidation ratio for new collateral   [ex. 150% == 15000]
 
 ## Testing
 
