@@ -57,8 +57,8 @@ contract DssExec {
         action      = _spellAction;
 
         sig = abi.encodeWithSignature("execute()");
-        bytes32 _tag;
-        address _action = _spellAction;
+        bytes32 _tag;                    // Required for assembly access
+        address _action = _spellAction;  // Required for assembly access
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
     }
