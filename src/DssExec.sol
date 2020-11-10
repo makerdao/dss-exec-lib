@@ -44,7 +44,7 @@ contract DssExec {
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
     // Hash: seth keccak -- "$(wget https://<executive-vote-canonical-post> -q -O - 2>/dev/null)"
-    string                 public description;
+    string                  public description;
 
     // @param _description  A string description of the spell
     // @param _expiration   The timestamp this spell will expire. (Ex. now + 30 days)
