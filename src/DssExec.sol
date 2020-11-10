@@ -31,15 +31,15 @@ interface Changelog {
 
 contract DssExec {
 
-    Changelog      public log   = Changelog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
-    PauseAbstract  public pause = PauseAbstract(log.getAddress("MCD_PAUSE"));
-    address        public action;
-    bytes32        public tag;
-    uint256        public eta;
-    bytes          public sig;
-    uint256        public expiration;
-    bool           public done;
-    bool           public officeHours;
+    Changelog      public           log   = Changelog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
+    PauseAbstract  public           pause = PauseAbstract(log.getAddress("MCD_PAUSE"));
+    uint256        public           eta;
+    bytes          public           sig;
+    bool           public           done;
+    bytes32        immutable public tag;
+    address        immutable public action;
+    uint256        immutable public expiration;
+    bool           immutable public officeHours;
 
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
@@ -57,9 +57,8 @@ contract DssExec {
         action      = _spellAction;
 
         sig = abi.encodeWithSignature("execute()");
-        action = address(action);
         bytes32 _tag;
-        address _action = action;
+        address _action = _spellAction;
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
     }
