@@ -140,6 +140,8 @@ contract DssLibExecTest is DSTest, DSMath {
     Rates rates;
 
     DssExec spell;
+    DssExecFactory factory;
+    DssAction action;
     address execlib;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
@@ -206,16 +208,16 @@ contract DssLibExecTest is DSTest, DSMath {
         execlib = address(new DssExecLib()); // This would be deployed only once
 
         // The ExecLib factory can exist independently on-chain
-        DssExecFactory _factory = new DssExecFactory();
+        factory = new DssExecFactory();
 
         // Only an action needs to be crafted, it can be passed to the factory which is already deployed.
-        DssAction _action = new DssLibSpellAction(execlib);
+        action = new DssLibSpellAction(execlib);
 
-        address _factorySpell = _factory.newExec(
+        address _factorySpell = factory.newExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
             true,                                       // OfficeHours enabled
-            address(_action)
+            address(action)
         );
 
         spell = DssExec(_factorySpell);
@@ -574,5 +576,14 @@ contract DssLibExecTest is DSTest, DSMath {
 
     function testExecFactoryDeployCost() public {
         new DssExecFactory();
+    }
+
+    function testExecFactoryNewExecDeployCost() public {
+        factory.newExec(
+            "A test dss exec spell",                    // Description
+            now + 30 days,                              // Expiration
+            true,                                       // OfficeHours enabled
+            address(action)
+        );
     }
 }
