@@ -31,26 +31,27 @@ interface Changelog {
 
 contract DssExec {
 
-    Changelog      public           log   = Changelog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
-    PauseAbstract  public           pause = PauseAbstract(log.getAddress("MCD_PAUSE"));
-    uint256        public           eta;
-    bytes          public           sig;
-    bool           public           done;
-    bytes32        immutable public tag;
-    address        immutable public action;
-    uint256        immutable public expiration;
-    bool           immutable public officeHours;
+    Changelog      constant public log   = Changelog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
+    uint256                 public eta;
+    bytes                   public sig;
+    bool                    public done;
+    bytes32       immutable public tag;
+    address       immutable public action;
+    uint256       immutable public expiration;
+    bool          immutable public officeHours;
+    PauseAbstract immutable public pause;
 
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
     // Hash: seth keccak -- "$(wget https://<executive-vote-canonical-post> -q -O - 2>/dev/null)"
-    string          public description;
+    string                  public description;
 
     // @param _description  A string description of the spell
     // @param _expiration   The timestamp this spell will expire. (Ex. now + 30 days)
     // @param _officeHours  Limits the executive cast time to office hours (true for limit)
     // @param _spellAction  The address of the spell action
     constructor(string memory _description, uint256 _expiration, bool _officeHours, address _spellAction) public {
+        pause       = PauseAbstract(log.getAddress("MCD_PAUSE"));
         description = _description;
         expiration  = _expiration;
         officeHours = _officeHours;
