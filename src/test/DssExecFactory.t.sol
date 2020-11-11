@@ -202,15 +202,20 @@ contract DssLibExecTest is DSTest, DSMath {
         hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
+        // ExecLib lives on chain and provides business logic
         execlib = address(new DssExecLib()); // This would be deployed only once
 
+        // The ExecLib factory can exist independently on-chain
         DssExecFactory _factory = new DssExecFactory();
+
+        // Only an action needs to be crafted, it can be passed to the factory which is already deployed.
+        DssAction _action = new DssLibSpellAction(execlib);
 
         address _factorySpell = _factory.newExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
             true,                                       // OfficeHours enabled
-            address(new DssLibSpellAction(execlib))
+            address(_action)
         );
 
         spell = DssExec(_factorySpell);
