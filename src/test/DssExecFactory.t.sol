@@ -235,7 +235,7 @@ contract DssLibExecTest is DSTest, DSMath {
             vow_bump:     10000,           // In whole Dai units
             vow_hump:     4 * MILLION,     // In whole Dai units
             cat_box:      15 * MILLION,    // In whole Dai units
-            ilk_count:    16               // Num expected in system
+            ilk_count:    19               // Num expected in system
         });
 
         //
@@ -243,7 +243,7 @@ contract DssLibExecTest is DSTest, DSMath {
         //
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         10 * MILLION,    // In whole Dai units
-            dust:         100,             // In whole Dai units
+            dust:         500,             // In whole Dai units
             pct:          200,             // In basis points
             chop:         1300,            // In basis points
             dunk:         50 * THOUSAND,   // In whole Dai units
@@ -256,7 +256,7 @@ contract DssLibExecTest is DSTest, DSMath {
         // New collateral
         afterSpell.collaterals["XMPL-A"] = CollateralValues({
             line:         3 * MILLION,     // In whole Dai units
-            dust:         100,             // In whole Dai units
+            dust:         500,             // In whole Dai units
             pct:          225,             // In basis points
             chop:         1300,            // In basis points
             dunk:         50 * THOUSAND,   // In whole Dai units
@@ -574,8 +574,18 @@ contract DssLibExecTest is DSTest, DSMath {
         assertEq(flipXMPLA.kicks(), 1);
     }
 
-    function testExecFactoryDeployCost() public {
-        new DssExecFactory();
+    function testExecFactoryWeeklyDeploy() public {
+        DssExecFactory fac = new DssExecFactory();
+        DssExec spl = DssExec(fac.newWeeklyExec("A test dss exec spell", address(action)));
+        assertEq(spl.expiration(), now + 30 days);
+        assertTrue(spl.officeHours());
+    }
+
+    function testExecFactoryMonthlyDeploy() public {
+        DssExecFactory fac = new DssExecFactory();
+        DssExec spl = DssExec(fac.newMonthlyExec("A test dss exec spell", address(action)));
+        assertEq(spl.expiration(), now + 4 days);
+        assertTrue(spl.officeHours());
     }
 
     function testExecFactoryNewExecDeployCost() public {
