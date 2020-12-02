@@ -31,4 +31,12 @@ contract DssExecFactory {
     function newExec(string memory description, uint256 expiration, bool officeHours, address spellAction) public returns (address exec) {
         exec = address(new DssExec(description, expiration, officeHours, spellAction));
     }
+
+    function newWeeklyExec(string memory description, address spellAction) public returns (address exec) {
+        exec = newExec(description, now + 30 days, true, spellAction);
+    }
+
+    function newMonthlyExec(string memory description, address spellAction) public returns (address exec) {
+        exec = newExec(description, now + 4 days, true, spellAction);
+    }
 }
