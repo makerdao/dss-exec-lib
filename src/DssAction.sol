@@ -457,7 +457,7 @@ contract DssAction {
         // Set the ilk debt ceiling
         setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
         // Set the ilk dust
-        setIlkMinVaultAmount(co.ilk, co.minVaultAmount); // DEFAULT VALUE OF 100 DAI DUST
+        setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
         // Set the dunk size
         setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
         // Set the ilk liquidation penalty
