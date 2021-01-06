@@ -229,24 +229,27 @@ contract DssLibExecTest is DSTest, DSMath {
             dsr_rate:     0,               // In basis points
             vat_Line:     1500 * MILLION,  // In whole Dai units
             pause_delay:  pause.delay(),   // In seconds
-            vow_wait:     156 hours,       // In seconds
-            vow_dump:     250,             // In whole Dai units
-            vow_sump:     50000,           // In whole Dai units
-            vow_bump:     10000,           // In whole Dai units
-            vow_hump:     4 * MILLION,     // In whole Dai units
-            cat_box:      15 * MILLION,    // In whole Dai units
+            vow_wait:     vow.wait(),      // In seconds
+            vow_dump:     vow.dump()/WAD,  // In whole Dai units
+            vow_sump:     vow.sump()/RAD,  // In whole Dai units
+            vow_bump:     vow.bump()/RAD,  // In whole Dai units
+            vow_hump:     vow.hump()/RAD,  // In whole Dai units
+            cat_box:      cat.box()/RAD,   // In whole Dai units
             ilk_count:    reg.count() + 1  // Num expected in system
         });
 
         //
         // Test for all collateral based changes here
         //
+        (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust) = vat.ilks("ETH-A");
+        (, uint256 chop, uint256 dunk) = cat.ilks("ETH-A");
+        (uint256 duty,)  = jug.ilks("ETH-A");
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         10 * MILLION,    // In whole Dai units
-            dust:         500,             // In whole Dai units
-            pct:          250,             // In basis points
+            dust:         dust/RAD,        // In whole Dai units
+            pct:          duty,             // In basis points
             chop:         1300,            // In basis points
-            dunk:         50 * THOUSAND,   // In whole Dai units
+            dunk:         dunk/RAD,        // In whole Dai units
             mat:          15000,           // In basis points
             beg:          300,             // In basis points
             ttl:          6 hours,         // In seconds
@@ -428,13 +431,20 @@ contract DssLibExecTest is DSTest, DSMath {
     function checkCollateralValues(bytes32 ilk, SystemValues storage values) internal {
         (uint duty,)  = jug.ilks(ilk);
 
-        assertEq(duty, rates.rates(values.collaterals[ilk].pct));
+        uint256 normRate;
+        if (values.collaterals[ilk].pct > WAD) {
+            // Actual rate assigned
+            normRate = values.collaterals[ilk].pct;
+        } else {
+            // basis points used
+            assertTrue(values.collaterals[ilk].pct < THOUSAND * THOUSAND);   // check value lt 1000%
+            normRate = rates.rates(values.collaterals[ilk].pct);
+            assertTrue(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(rates.rates(values.collaterals[ilk].pct))) <= TOLERANCE);
+        }
         // make sure duty is less than 1000% APR
         // bc -l <<< 'scale=27; e( l(10.00)/(60 * 60 * 24 * 365) )'
         // 1000000073014496989316680335
         assertTrue(duty >= RAY && duty < 1000000073014496989316680335);  // gt 0 and lt 1000%
-        assertTrue(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(rates.rates(values.collaterals[ilk].pct))) <= TOLERANCE);
-        assertTrue(values.collaterals[ilk].pct < THOUSAND * THOUSAND);   // check value lt 1000%
         {
         (,,, uint line, uint dust) = vat.ilks(ilk);
         // Convert whole Dai units to expected RAD
