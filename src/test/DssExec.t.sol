@@ -106,7 +106,7 @@ contract DssLibExecTest is DSTest, DSMath {
     // MAINNET ADDRESSES
     PauseAbstract        pause = PauseAbstract(      0xbE286431454714F511008713973d3B053A2d38f3);
     address         pauseProxy =                     0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB;
-    DSChiefAbstract      chief = DSChiefAbstract(    0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
+    DSChiefAbstract      chief = DSChiefAbstract(    0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
     VatAbstract            vat = VatAbstract(        0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
     VowAbstract            vow = VowAbstract(        0xA950524441892A31ebddF91d3cEEFa04Bf454466);
     CatAbstract            cat = CatAbstract(        0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
@@ -216,14 +216,14 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell = SystemValues({
             dsr_rate:     0,               // In basis points
             vat_Line:     1500 * MILLION,  // In whole Dai units
-            pause_delay:  72 hours,        // In seconds
+            pause_delay:  pause.delay(),   // In seconds
             vow_wait:     156 hours,       // In seconds
             vow_dump:     250,             // In whole Dai units
             vow_sump:     50000,           // In whole Dai units
             vow_bump:     10000,           // In whole Dai units
             vow_hump:     4 * MILLION,     // In whole Dai units
             cat_box:      15 * MILLION,    // In whole Dai units
-            ilk_count:    19               // Num expected in system
+            ilk_count:    reg.count() + 1  // Num expected in system
         });
 
         //
@@ -232,7 +232,7 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         10 * MILLION,    // In whole Dai units
             dust:         500,             // In whole Dai units
-            pct:          200,             // In basis points
+            pct:          250,             // In basis points
             chop:         1300,            // In basis points
             dunk:         50 * THOUSAND,   // In whole Dai units
             mat:          15000,           // In basis points
