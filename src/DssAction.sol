@@ -80,6 +80,7 @@ contract DssAction {
     function osmMom()     public view returns (address) { return getChangelogAddress("OSM_MOM"); }
     function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
     function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
+    function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
 
     function getChangelogAddress(bytes32 _key) public view returns (address) {
         return ChainlogLike(LOG).getAddress(_key);
@@ -117,6 +118,10 @@ contract DssAction {
 
     function libCall(string memory sig, bytes32 what, uint256 num) internal {
         _dcall(abi.encodeWithSignature(sig, what, num));
+    }
+
+    function libCall(string memory sig, address mcd_addr, bytes32 what, uint256 num1, uint256 num2, uint256 num3) internal {
+        _dcall(abi.encodeWithSignature(sig, mcd_addr, what, num1, num2, num3));
     }
 
     function libCall(string memory sig, bytes32 what, address addr) internal {
@@ -326,6 +331,18 @@ contract DssAction {
         libCall("decreaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, true);
     }
 
+    function setIlkAutoLineParameters(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) internal {
+        libCall("setIlkAutoLineParameters(address,bytes32,uint256,uint256,uint256)", autoLine(), ilk, amount, gap, ttl);
+    }
+
+    function setIlkAutoLineDebtCeiling(bytes32 ilk, uint256 amount) internal {
+        libCall("setIlkAutoLineDebtCeiling(address,bytes32,uint256)", autoLine(), ilk, amount);
+    }
+
+    function removeIlkFromAutoLine(bytes32 ilk) internal {
+        libCall("removeIlkFromAutoLine(address,bytes32)", autoLine(), ilk);
+    }
+
     function setIlkMinVaultAmount(bytes32 ilk, uint256 amount) internal {
         libCall("setIlkMinVaultAmount(address,bytes32,uint256)", vat(), ilk, amount);
     }
@@ -421,10 +438,10 @@ contract DssAction {
     /*****************************/
 
     // Minimum actions to onboard a collateral to the system with 0 line.
-    function addCollateralBase(bytes32 ilk, address gem, address join, address flip, address pip) internal {
+    function addCollateralBase(bytes32 ilk, address gem, address join, address flipper, address pip) internal {
         libCall(
             "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
-            vat(), cat(), jug(), end(), spot(), reg(), ilk, gem, join, flip, pip
+            vat(), cat(), jug(), end(), spot(), reg(), ilk, gem, join, flipper, pip
         );
     }
 
