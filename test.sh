@@ -4,7 +4,7 @@ set -e
 [[ "$ETH_RPC_URL" && "$(seth chain)" == "ethlive"  ]] || { echo "Please set a mainnet ETH_RPC_URL"; exit 1;  }
 
 # SOLC_FLAGS="--optimize --optimize-runs 1" dapp --use solc:0.6.7 build
-dapp --use solc:0.6.7 build
+dapp --use solc:0.6.11 build
 
 export DAPP_TEST_TIMESTAMP=$(seth block latest timestamp)
 export DAPP_TEST_NUMBER=$(seth block latest number)

@@ -461,10 +461,12 @@ contract DssExecLib {
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _amount The Maximum value (ex. 100m DAI amount == 100000000)
         @param _gap    The amount of Dai per step (ex. 5m Dai == 5000000)
-        @param _ttl    The amount of time
+        @param _ttl    The amount of time (in seconds)
     */
     function setIlkAutoLineParameters(address _iam, bytes32 _ilk, uint256 _amount, uint256 _gap, uint256 _ttl) public {
-        IAMLike(_iam).setIlk(_ilk, _amount * MathLib.RAD, _gap, _ttl);
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-auto-line-amount-precision"
+        require(_gap < MathLib.WAD);  // "LibDssExec/incorrect-auto-line-gap-precision"
+        IAMLike(_iam).setIlk(_ilk, _amount * MathLib.RAD, _gap * MathLib.RAD, _ttl);
     }
     /**
         @dev Set the debt ceiling for an ilk in the "MCD_IAM_AUTO_LINE" auto-line without updating the time values
@@ -474,6 +476,7 @@ contract DssExecLib {
     */
     function setIlkAutoLineDebtCeiling(address _iam, bytes32 _ilk, uint256 _amount) public {
         (, uint256 gap, uint48 ttl,,) = IAMLike(_iam).ilks(_ilk);
+        require(gap != 0 && ttl != 0);  // "LibDssExec/auto-line-not-configured"
         IAMLike(_iam).setIlk(_ilk, _amount * MathLib.RAD, uint256(gap), uint256(ttl));
     }
     /**
