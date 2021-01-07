@@ -240,6 +240,7 @@ contract ActionTest is DSTest {
         osmMom     = new OsmMom();
         govGuard   = new MkrAuthority();
         flipperMom = new FlipperMom(address(cat));
+        autoLine   = new MCD
 
         median = new Median();
 
@@ -544,6 +545,13 @@ contract ActionTest is DSTest {
         action.setIlkDebtCeiling_test("gold", 100 * MILLION); // Setup
 
         action.decreaseIlkDebtCeiling_test("gold", 101 * MILLION); // Fail
+    }
+
+    function test_setIlkAutoLineParameters() public {
+        action.setIlkAutoLineParameters_test("gold", 150 * MILLION, 5 * MILLION, 10000); // Setup
+
+
+
     }
 
     function test_setIlkMinVaultAmount() public {

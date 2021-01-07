@@ -459,8 +459,8 @@ contract DssExecLib {
         @dev Set the parameters for an ilk in the "MCD_IAM_AUTO_LINE" auto-line
         @param _iam    The address of the Vat core accounting contract
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
-        @param _gap    The amount of time
+        @param _amount The Maximum value (ex. 100m DAI amount == 100000000)
+        @param _gap    The amount of Dai per step (ex. 5m Dai == 5000000)
         @param _ttl    The amount of time
     */
     function setIlkAutoLineParameters(address _iam, bytes32 _ilk, uint256 _amount, uint256 _gap, uint256 _ttl) public {
