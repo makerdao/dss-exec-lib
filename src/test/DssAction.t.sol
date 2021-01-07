@@ -33,6 +33,7 @@ import {OSM}              from 'osm/osm.sol';
 import {OsmAbstract}      from "dss-interfaces/Interfaces.sol";
 import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
+import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 
 import {Vat}              from 'dss/vat.sol';
 import {Cat}              from 'dss/cat.sol';
@@ -76,6 +77,7 @@ contract ActionTest is DSTest {
     OsmMom       osmMom;
     MkrAuthority govGuard;
     FlipperMom flipperMom;
+    DssAutoLine autoLine;
 
     ChainLog log;
 
@@ -236,10 +238,14 @@ contract ActionTest is DSTest {
         flap.rely(address(vow));
         flop.rely(address(vow));
 
+
         reg        = new IlkRegistry(address(vat), address(cat), address(spot));
         osmMom     = new OsmMom();
         govGuard   = new MkrAuthority();
         flipperMom = new FlipperMom(address(cat));
+
+        autoLine   = new DssAutoLine(address(vat));
+        vat.rely(address(autoLine));
 
         median = new Median();
 
@@ -251,19 +257,20 @@ contract ActionTest is DSTest {
 
         log = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
 
-        log.setAddress("MCD_VAT",      address(vat));
-        log.setAddress("MCD_CAT",      address(cat));
-        log.setAddress("MCD_JUG",      address(jug));
-        log.setAddress("MCD_POT",      address(pot));
-        log.setAddress("MCD_VOW",      address(vow));
-        log.setAddress("MCD_SPOT",     address(spot));
-        log.setAddress("MCD_FLAP",     address(flap));
-        log.setAddress("MCD_FLOP",     address(flop));
-        log.setAddress("MCD_END",      address(end));
-        log.setAddress("ILK_REGISTRY", address(reg));
-        log.setAddress("OSM_MOM",      address(osmMom));
-        log.setAddress("GOV_GUARD",    address(govGuard));
-        log.setAddress("FLIPPER_MOM",  address(flipperMom));
+        log.setAddress("MCD_VAT",           address(vat));
+        log.setAddress("MCD_CAT",           address(cat));
+        log.setAddress("MCD_JUG",           address(jug));
+        log.setAddress("MCD_POT",           address(pot));
+        log.setAddress("MCD_VOW",           address(vow));
+        log.setAddress("MCD_SPOT",          address(spot));
+        log.setAddress("MCD_FLAP",          address(flap));
+        log.setAddress("MCD_FLOP",          address(flop));
+        log.setAddress("MCD_END",           address(end));
+        log.setAddress("ILK_REGISTRY",      address(reg));
+        log.setAddress("OSM_MOM",           address(osmMom));
+        log.setAddress("GOV_GUARD",         address(govGuard));
+        log.setAddress("FLIPPER_MOM",       address(flipperMom));
+        log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
 
         lib = new DssExecLib();
 
@@ -282,6 +289,7 @@ contract ActionTest is DSTest {
         flop.rely(address(action));
         median.rely(address(action));
         log.rely(address(action));
+        autoLine.rely(address(action));
 
         flipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
@@ -544,6 +552,36 @@ contract ActionTest is DSTest {
         action.setIlkDebtCeiling_test("gold", 100 * MILLION); // Setup
 
         action.decreaseIlkDebtCeiling_test("gold", 101 * MILLION); // Fail
+    }
+
+    function test_setIlkAutoLineParameters() public {
+        action.setIlkAutoLineParameters_test("gold", 150 * MILLION, 5 * MILLION, 10000); // Setup
+
+        (,,, uint256 line,) = vat.ilks("gold");
+        assertEq(line, 1000 * RAD); // does not change line
+
+        autoLine.exec("gold");
+        (,,, line,) = vat.ilks("gold");
+        assertEq(line, 5 * MILLION * RAD); // Change to match the gap
+    }
+
+    function test_setIlkAutoLineDebtCeiling() public {
+        action.setIlkAutoLineParameters_test("gold", 1, 5 * MILLION, 10000); // gap and ttl must be configured already
+        action.setIlkAutoLineDebtCeiling_test("gold", 150 * MILLION); // Setup
+
+        (,,, uint256 line,) = vat.ilks("gold");
+        assertEq(line, 1000 * RAD); // does not change line
+
+        autoLine.exec("gold");
+        (,,, line,) = vat.ilks("gold");
+        assertEq(line, 5 * MILLION * RAD); // Change to match the gap
+    }
+
+    function test_setRemoveIlkFromAutoLine() public {
+        action.setIlkAutoLineParameters_test("gold", 100 * MILLION, 5 * MILLION, 10000); // gap and ttl must be configured already
+        action.removeIlkFromAutoLine_test("gold");
+
+        assertEq(autoLine.exec("gold"), 1000 * RAD);
     }
 
     function test_setIlkMinVaultAmount() public {

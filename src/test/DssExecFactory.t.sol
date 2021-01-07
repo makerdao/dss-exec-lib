@@ -107,7 +107,7 @@ contract DssLibExecTest is DSTest, DSMath {
     // MAINNET ADDRESSES
     PauseAbstract        pause = PauseAbstract(      0xbE286431454714F511008713973d3B053A2d38f3);
     address         pauseProxy =                     0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB;
-    DSChiefAbstract      chief = DSChiefAbstract(    0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
+    DSChiefAbstract      chief = DSChiefAbstract(    0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
     VatAbstract            vat = VatAbstract(        0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
     VowAbstract            vow = VowAbstract(        0xA950524441892A31ebddF91d3cEEFa04Bf454466);
     CatAbstract            cat = CatAbstract(        0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
@@ -125,7 +125,7 @@ contract DssLibExecTest is DSTest, DSMath {
     // XMPL-A specific
     GemAbstract           xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
     GemJoinAbstract  joinXMPLA = GemJoinAbstract(    0xa30925910067a2d9eB2a7358c017E6075F660842);
-    OsmAbstract         pipXMPL = OsmAbstract(       0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+    OsmAbstract        pipXMPL = OsmAbstract(       0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
     FlipAbstract     flipXMPLA = FlipAbstract(       0x32c6DF17f8E94694977aa41A595d8dc583836A51);
     MedianAbstract    medXMPLA = MedianAbstract(     0xcCe92282d9fe310F4c232b0DA9926d5F24611C7B);
 
@@ -228,25 +228,28 @@ contract DssLibExecTest is DSTest, DSMath {
         afterSpell = SystemValues({
             dsr_rate:     0,               // In basis points
             vat_Line:     1500 * MILLION,  // In whole Dai units
-            pause_delay:  72 hours,        // In seconds
-            vow_wait:     156 hours,       // In seconds
-            vow_dump:     250,             // In whole Dai units
-            vow_sump:     50000,           // In whole Dai units
-            vow_bump:     10000,           // In whole Dai units
-            vow_hump:     4 * MILLION,     // In whole Dai units
-            cat_box:      15 * MILLION,    // In whole Dai units
-            ilk_count:    19               // Num expected in system
+            pause_delay:  pause.delay(),   // In seconds
+            vow_wait:     vow.wait(),      // In seconds
+            vow_dump:     vow.dump()/WAD,  // In whole Dai units
+            vow_sump:     vow.sump()/RAD,  // In whole Dai units
+            vow_bump:     vow.bump()/RAD,  // In whole Dai units
+            vow_hump:     vow.hump()/RAD,  // In whole Dai units
+            cat_box:      cat.box()/RAD,   // In whole Dai units
+            ilk_count:    reg.count() + 1  // Num expected in system
         });
 
         //
         // Test for all collateral based changes here
         //
+        (,,,, uint256 _dust) = vat.ilks("ETH-A");
+        (,, uint256 _dunk) = cat.ilks("ETH-A");
+        (uint256 _duty,)  = jug.ilks("ETH-A");
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         10 * MILLION,    // In whole Dai units
-            dust:         500,             // In whole Dai units
-            pct:          200,             // In basis points
+            dust:         _dust/RAD,       // In whole Dai units
+            pct:          _duty,           // In basis points
             chop:         1300,            // In basis points
-            dunk:         50 * THOUSAND,   // In whole Dai units
+            dunk:         _dunk/RAD,       // In whole Dai units
             mat:          15000,           // In basis points
             beg:          300,             // In basis points
             ttl:          6 hours,         // In seconds
@@ -423,21 +426,25 @@ contract DssLibExecTest is DSTest, DSMath {
             uint normalizedBox = values.cat_box * RAD;
             assertEq(cat.box(), normalizedBox);
         }
-
-        // check number of ilks
-        assertEq(reg.count(), values.ilk_count);
     }
 
     function checkCollateralValues(bytes32 ilk, SystemValues storage values) internal {
         (uint duty,)  = jug.ilks(ilk);
 
-        assertEq(duty, rates.rates(values.collaterals[ilk].pct));
+        uint256 normRate;
+        if (values.collaterals[ilk].pct > WAD) {
+            // Actual rate assigned
+            normRate = values.collaterals[ilk].pct;
+        } else {
+            // basis points used
+            assertTrue(values.collaterals[ilk].pct < THOUSAND * THOUSAND);   // check value lt 1000%
+            normRate = rates.rates(values.collaterals[ilk].pct);
+            assertTrue(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(rates.rates(values.collaterals[ilk].pct))) <= TOLERANCE);
+        }
         // make sure duty is less than 1000% APR
         // bc -l <<< 'scale=27; e( l(10.00)/(60 * 60 * 24 * 365) )'
         // 1000000073014496989316680335
         assertTrue(duty >= RAY && duty < 1000000073014496989316680335);  // gt 0 and lt 1000%
-        assertTrue(diffCalc(expectedRate(values.collaterals[ilk].pct), yearlyYield(rates.rates(values.collaterals[ilk].pct))) <= TOLERANCE);
-        assertTrue(values.collaterals[ilk].pct < THOUSAND * THOUSAND);   // check value lt 1000%
         {
         (,,, uint line, uint dust) = vat.ilks(ilk);
         // Convert whole Dai units to expected RAD

@@ -34,3 +34,6 @@
 [submodule "lib/osm"]
 	path = lib/osm
 	url = https://github.com/makerdao/osm
+[submodule "lib/dss-auto-line"]
+	path = lib/dss-auto-line
+	url = https://github.com/makerdao/dss-auto-line

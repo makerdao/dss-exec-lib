@@ -184,6 +184,18 @@ contract DssTestAction is DssAction {
         decreaseIlkDebtCeiling(ilk, amount);
     }
 
+    function setIlkAutoLineParameters_test(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) public {
+        setIlkAutoLineParameters(ilk, amount, gap, ttl);
+    }
+
+    function setIlkAutoLineDebtCeiling_test(bytes32 ilk, uint256 amount) public {
+        setIlkAutoLineDebtCeiling(ilk, amount);
+    }
+
+    function removeIlkFromAutoLine_test(bytes32 ilk) public {
+        removeIlkFromAutoLine(ilk);
+    }
+
     function setIlkMinVaultAmount_test(bytes32 ilk, uint256 amount) public {
         setIlkMinVaultAmount(ilk, amount);
     }

@@ -104,6 +104,13 @@ interface ChainlogLike {
     function removeAddress(bytes32) external;
 }
 
+interface IAMLike {
+    function ilks(bytes32) external view returns (uint256,uint256,uint48,uint48,uint48);
+    function setIlk(bytes32,uint256,uint256,uint256) external;
+    function remIlk(bytes32) external;
+    function exec(bytes32) external returns (uint256);
+}
+
 
 contract DssExecLib {
 
@@ -447,6 +454,38 @@ contract DssExecLib {
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
         setIlkDebtCeiling(_vat, _ilk, MathLib.sub(line_ / MathLib.RAD, _amount));
         if (_global) { decreaseGlobalDebtCeiling(_vat, _amount); }
+    }
+    /**
+        @dev Set the parameters for an ilk in the "MCD_IAM_AUTO_LINE" auto-line
+        @param _iam    The address of the Vat core accounting contract
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The Maximum value (ex. 100m DAI amount == 100000000)
+        @param _gap    The amount of Dai per step (ex. 5m Dai == 5000000)
+        @param _ttl    The amount of time (in seconds)
+    */
+    function setIlkAutoLineParameters(address _iam, bytes32 _ilk, uint256 _amount, uint256 _gap, uint256 _ttl) public {
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-auto-line-amount-precision"
+        require(_gap < MathLib.WAD);  // "LibDssExec/incorrect-auto-line-gap-precision"
+        IAMLike(_iam).setIlk(_ilk, _amount * MathLib.RAD, _gap * MathLib.RAD, _ttl);
+    }
+    /**
+        @dev Set the debt ceiling for an ilk in the "MCD_IAM_AUTO_LINE" auto-line without updating the time values
+        @param _iam    The address of the Vat core accounting contract
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function setIlkAutoLineDebtCeiling(address _iam, bytes32 _ilk, uint256 _amount) public {
+        (, uint256 gap, uint48 ttl,,) = IAMLike(_iam).ilks(_ilk);
+        require(gap != 0 && ttl != 0);  // "LibDssExec/auto-line-not-configured"
+        IAMLike(_iam).setIlk(_ilk, _amount * MathLib.RAD, uint256(gap), uint256(ttl));
+    }
+    /**
+        @dev Remove an ilk in the "MCD_IAM_AUTO_LINE" auto-line
+        @param _iam    The address of the MCD_IAM_AUTO_LINE core accounting contract
+        @param _ilk    The ilk to remove (ex. bytes32("ETH-A"))
+    */
+    function removeIlkFromAutoLine(address _iam, bytes32 _ilk) public {
+        IAMLike(_iam).remIlk(_ilk);
     }
     /**
         @dev Set a collateral minimum vault amount. Amount will be converted to the correct internal precision.
