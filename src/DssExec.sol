@@ -29,6 +29,10 @@ interface Changelog {
     function getAddress(bytes32) external view returns (address);
 }
 
+interface SpellAction {
+    function officeHours() external view returns (bool);
+}
+
 contract DssExec {
 
     Changelog      constant public log   = Changelog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
@@ -38,7 +42,6 @@ contract DssExec {
     bytes32       immutable public tag;
     address       immutable public action;
     uint256       immutable public expiration;
-    bool          immutable public officeHours;
     PauseAbstract immutable public pause;
 
     // Provides a descriptive tag for bot consumption
@@ -46,15 +49,17 @@ contract DssExec {
     // Hash: seth keccak -- "$(wget https://<executive-vote-canonical-post> -q -O - 2>/dev/null)"
     string                  public description;
 
+    function officeHours() external view returns (bool) {
+        return SpellAction(action).officeHours();
+    }
+
     // @param _description  A string description of the spell
     // @param _expiration   The timestamp this spell will expire. (Ex. now + 30 days)
-    // @param _officeHours  Limits the executive cast time to office hours (true for limit)
     // @param _spellAction  The address of the spell action
-    constructor(string memory _description, uint256 _expiration, bool _officeHours, address _spellAction) public {
+    constructor(string memory _description, uint256 _expiration, address _spellAction) public {
         pause       = PauseAbstract(log.getAddress("MCD_PAUSE"));
         description = _description;
         expiration  = _expiration;
-        officeHours = _officeHours;
         action      = _spellAction;
 
         sig = abi.encodeWithSignature("execute()");
@@ -64,16 +69,6 @@ contract DssExec {
         tag = _tag;
     }
 
-    modifier limited {
-        if(officeHours) {
-            uint day = (now / 1 days + 3) % 7;
-            require(day < 5, "Can only be cast on a weekday");
-            uint hour = now / 1 hours % 24;
-            require(hour >= 14 && hour < 21, "Outside office hours");
-        }
-        _;
-    }
-
     function schedule() public {
         require(now <= expiration, "This contract has expired");
         require(eta == 0, "This spell has already been scheduled");
@@ -81,7 +76,7 @@ contract DssExec {
         pause.plot(action, tag, sig, eta);
     }
 
-    function cast() limited public {
+    function cast() public {
         require(!done, "spell-already-cast");
         done = true;
         pause.exec(action, tag, sig, eta);

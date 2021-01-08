@@ -26,17 +26,16 @@ contract DssExecFactory {
     //
     // @param description  A string description of the spell
     // @param expiration   The timestamp this spell will expire. (Ex. now + 30 days)
-    // @param officeHours  Limits the executive cast time to office hours (true for limit)
     // @param spellAction  The address of the spell action contract (DssAction)
-    function newExec(string memory description, uint256 expiration, bool officeHours, address spellAction) public returns (address exec) {
-        exec = address(new DssExec(description, expiration, officeHours, spellAction));
+    function newExec(string memory description, uint256 expiration, address spellAction) public returns (address exec) {
+        exec = address(new DssExec(description, expiration, spellAction));
     }
 
     function newWeeklyExec(string memory description, address spellAction) public returns (address exec) {
-        exec = newExec(description, now + 30 days, true, spellAction);
+        exec = newExec(description, now + 30 days, spellAction);
     }
 
     function newMonthlyExec(string memory description, address spellAction) public returns (address exec) {
-        exec = newExec(description, now + 4 days, true, spellAction);
+        exec = newExec(description, now + 4 days, spellAction);
     }
 }
