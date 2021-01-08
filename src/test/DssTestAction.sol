@@ -24,7 +24,9 @@ import "../DssAction.sol";
 
 contract DssTestAction is DssAction {
 
-    constructor(address lib) DssAction(lib) public {}
+    constructor(address lib, bool ofcHrs) DssAction(lib, ofcHrs) public {}
+
+    function actions() public override {}
 
     /**********************/
     /*** Authorizations ***/

@@ -52,16 +52,39 @@ interface OracleLike {
     function diss(address[] calldata) external;
 }
 
-contract DssAction {
+abstract contract DssAction {
 
     address public immutable lib;
+    bool    public immutable officeHours;
 
     // Changelog address applies to MCD deployments on
     //        mainnet, kovan, rinkeby, ropsten, and goerli
     address constant public LOG = 0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F;
 
-    constructor(address lib_) public {
+    constructor(address lib_, bool officeHours_) public {
         lib = lib_;
+        officeHours = officeHours_;
+    }
+
+    // DssExec calls execute. We limit this function subject to officeHours modifier.
+    function execute() external limited {
+        actions();
+    }
+
+    // DssAction developer must override `actions()` and place all actions to be called inside.
+    //   The DssExec function will call this subject to the officeHours limiter
+    //   By keeping this function public we allow simulations of `execute()` on the actions outside of the cast time.
+    function actions() public virtual;
+
+    // Modifier required to
+    modifier limited {
+        if (officeHours) {
+            uint day = (block.timestamp / 1 days + 3) % 7;
+            require(day < 5, "Can only be cast on a weekday");
+            uint hour = block.timestamp / 1 hours % 24;
+            require(hour >= 14 && hour < 21, "Outside office hours");
+        }
+        _;
     }
 
     /****************************/

@@ -274,7 +274,7 @@ contract ActionTest is DSTest {
 
         lib = new DssExecLib();
 
-        action = new DssTestAction(address(lib));
+        action = new DssTestAction(address(lib), true);
 
         init_collateral("gold", address(action));
 

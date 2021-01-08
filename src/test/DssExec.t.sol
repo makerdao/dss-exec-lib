@@ -41,11 +41,11 @@ interface Hevm {
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
 
     // This can be hardcoded away later or can use the chain-log
-    constructor(address lib) DssAction(lib) public {}
+    constructor(address lib, bool ofcHrs) DssAction(lib, ofcHrs) public {}
 
     uint256 constant MILLION  = 10 ** 6;
 
-    function execute() external {
+    function actions() public override {
         CollateralOpts memory XMPL_A = CollateralOpts({
             ilk:                   "XMPL-A",
             gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
@@ -206,8 +206,7 @@ contract DssLibExecTest is DSTest, DSMath {
         spell = new DssExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
-            true,                                       // OfficeHours enabled
-            address(new DssLibSpellAction(execlib))
+            address(new DssLibSpellAction(execlib, true))
         );
 
         //
@@ -581,8 +580,7 @@ contract DssLibExecTest is DSTest, DSMath {
         new DssExec(
             "Basic Spell",                              // Description
             now + 30 days,                              // Expiration
-            true,                                       // OfficeHours enabled
-            address(new DssLibSpellAction(execlib))
+            address(new DssLibSpellAction(execlib, true))
         );
     }
 }
