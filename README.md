@@ -23,12 +23,11 @@ import {DssAction} from "lib/dss-exec-lib/src/DssAction.sol";
 
 contract SpellAction is DssAction {
 
-    // This can be hardcoded away later or can use the chain-log
-    constructor(address lib) DssAction(lib) public {}
+    constructor(address lib, bool officeHours) DssAction(lib, officeHours) public {}
 
     uint256 constant MILLION  = 10 ** 6;
 
-    function execute() external {
+    function actions() public override {
         setGlobalDebtCeiling(1500 * MILLION);
         setIlkDebtCeiling("ETH-A", 10 * MILLION);
     }
@@ -37,13 +36,16 @@ contract SpellAction is DssAction {
 
 The `SpellAction.sol` file must always inherit `DssAction` from `lib/dss-exec-lib`.
 
+The developer must override the `actions()` function and place all spell actions within. This is called by the `execute()` function in the pause, which is subject to an optional limiter for office hours.
+
+*Note:* All variables within the SpellAction MUST be defined as constants, or assigned at runtime inside of the `actions()` function. Variable memory storage is not available within a Spell Action due to the underlying delegatecall mechanisms.
+
 The spell itself is deployed as follows:
 
 ```js
 new DssExec(
     "A test dss exec spell",           // Description
     now + 30 days,                     // Expiration
-    true,                              // OfficeHours enabled
     address(new SpellAction(execlib))
 );
 ```
@@ -158,7 +160,7 @@ CollateralOpts memory XMPL_A = CollateralOpts({
     gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
     join:                  0xa30925910067a2d9eB2a7358c017E6075F660842,
     flip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
-    pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, 
+    pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a,
     isLiquidatable:        true,
     isOSM:                 true,
     whitelistOSM:          true,

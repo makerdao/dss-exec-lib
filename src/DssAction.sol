@@ -66,6 +66,16 @@ abstract contract DssAction {
         officeHours = officeHours_;
     }
 
+    // DssExec calls execute. We limit this function subject to officeHours modifier.
+    function execute() external limited {
+        actions();
+    }
+
+    // DssAction developer must override `actions()` and place all actions to be called inside.
+    //   The DssExec function will call this subject to the officeHours limiter
+    //   By keeping this function public we allow simulations of `execute()` on the actions outside of the cast time.
+    function actions() public virtual;
+
     // Modifier required to
     modifier limited {
         if (officeHours) {
@@ -76,10 +86,6 @@ abstract contract DssAction {
         }
         _;
     }
-
-    // Execute function is required in all DssAction implementaitons.
-    //   Add `limited` modifier to enforce officeHours
-    function execute() external virtual;
 
     /****************************/
     /*** Core Address Helpers ***/

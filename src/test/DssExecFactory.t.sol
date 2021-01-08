@@ -46,7 +46,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
 
     uint256 constant MILLION  = 10 ** 6;
 
-    function execute() external override {
+    function actions() public override {
         CollateralOpts memory XMPL_A = CollateralOpts({
             ilk:                   "XMPL-A",
             gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
