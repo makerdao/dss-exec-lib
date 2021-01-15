@@ -339,13 +339,13 @@ contract DssExecLib {
     }
     /**
         @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is pct * WAD / 100,000
+        @dev Equation used for conversion is (1 + pct / 10,000) * WAD
         @param _flop   The address of the Flopper core contract
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinDebtAuctionBidIncrease(address _flop, uint256 _pct_bps) public {
         require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(_flop).file("beg", MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND));
+        Fileable(_flop).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
     }
     /**
         @dev Set bid duration for debt auctions.
@@ -531,13 +531,13 @@ contract DssExecLib {
     }
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is pct * WAD / 100,000
+        @dev Equation used for conversion is (1 + pct / 10,000) * WAD
         @param _flip   The address of the ilk's flip core accounting contract
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setIlkMinAuctionBidIncrease(address _flip, uint256 _pct_bps) public {
         require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(_flip).file("beg", MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND));
+        Fileable(_flip).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
     }
     /**
         @dev Set bid duration for a collateral type.
