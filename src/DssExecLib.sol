@@ -520,7 +520,7 @@ contract DssExecLib {
     }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is pct * RAY / 100,000
+        @dev Equation used for conversion is pct * RAY / 10,000
         @param _spot   The address of the Spot core accounting contract
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
