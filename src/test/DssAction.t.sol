@@ -449,7 +449,7 @@ contract ActionTest is DSTest {
 
     function test_setMinSurplusAuctionBidIncrease() public {
         action.setMinSurplusAuctionBidIncrease_test(525); // 5.25%
-        assertEq(flap.beg(), 5.25 ether / 100); // WAD pct
+        assertEq(flap.beg(), 1 ether + 5.25 ether / 100); // (1 + pct) * WAD
     }
 
     function test_setSurplusAuctionBidDuration() public {

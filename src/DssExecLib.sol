@@ -293,7 +293,7 @@ contract DssExecLib {
     */
     function setMinSurplusAuctionBidIncrease(address _flap, uint256 _pct_bps) public {
         require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(_flap).file("beg", MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND));
+        Fileable(_flap).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
     }
     /**
         @dev Set bid duration for surplus auctions.
