@@ -527,6 +527,7 @@ contract DssExecLib {
     */
     function setIlkLiquidationRatio(address _spot, bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < 100 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-mat-precision" // Fails if pct >= 1000%
+        require(_pct_bps >= 10 * MathLib.THOUSAND); // the liquidation ratio has to be bigger or equal to 100%
         Fileable(_spot).file(_ilk, "mat", MathLib.rdiv(_pct_bps, 10 * MathLib.THOUSAND));
     }
     /**
