@@ -119,6 +119,12 @@ abstract contract DssAction {
         require(ok, "fail");
     }
 
+    function _dcallretaddr(bytes memory data) internal returns (address) {
+        (bool ok, bytes memory returnValue) = lib.delegatecall(data);
+        require(ok, "fail");
+        return abi.decode(returnValue, (address));
+    }
+
     function libCall(string memory sig, address addr, address addr2) internal {
         _dcall(abi.encodeWithSignature(sig, addr, addr2));
     }
@@ -195,6 +201,18 @@ abstract contract DssAction {
         string memory sig, address _vat, address _cat, address _jug, address _end, address _spot, address _reg, bytes32 _ilk, address _gem, address _join, address _flip, address _pip
     ) internal {
         _dcall(abi.encodeWithSignature(sig, _vat, _cat, _jug, _end, _spot, _reg, _ilk, _gem, _join, _flip, _pip));
+    }
+
+    function libCallReturnAddress(
+        string memory sig, address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration
+    ) internal returns (address) {
+        return _dcallretaddr(abi.encodeWithSignature(sig, _target, _what, _start, _end, _duration));
+    }
+
+    function libCallReturnAddress(
+        string memory sig, address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration
+    ) internal returns (address) {
+        return _dcallretaddr(abi.encodeWithSignature(sig, _target, _ilk, _what, _start, _end, _duration));
     }
 
     /****************************/
@@ -517,5 +535,15 @@ abstract contract DssAction {
 
         // Update ilk spot value in Vat
         updateCollateralPrice(co.ilk);
+    }
+
+    /************/
+    /*** Misc ***/
+    /************/
+    function linearInterpolation(address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) internal returns (address) {
+        return libCallReturnAddress("linearInterpolation(address,bytes32,uint256,uint256,uint256)", _target, _what, _start, _end, _duration);
+    }
+    function linearInterpolation(address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) internal returns (address) {
+        return libCallReturnAddress("linearInterpolation(address,bytes32,bytes32,uint256,uint256,uint256)", _target, _ilk, _what, _start, _end, _duration);
     }
 }

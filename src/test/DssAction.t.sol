@@ -51,6 +51,8 @@ import "../CollateralOpts.sol";
 import {DssTestAction}    from './DssTestAction.sol';
 import {DssExecLib}       from '../DssExecLib.sol';
 
+import "../utils/Lerp.sol";
+
 interface Hevm {
     function warp(uint256) external;
     function store(address,bytes32,bytes32) external;
@@ -953,5 +955,69 @@ contract ActionTest is DSTest {
     }
     function test_addNewCollateral_case6() public {
         collateralOnboardingTest(false, false, false);   // Liquidations: OFF, PIP != OSM, osmSrc != median
+    }
+
+    /************/
+    /*** Misc ***/
+    /************/
+
+    function test_lerp_Line() public {
+        Lerp lerp = Lerp(action.linearInterpolation_test(address(vat), "Line", rad(2400 ether), rad(0 ether), 1 days));
+        assertEq(lerp.what(), "Line");
+        assertEq(lerp.start(), rad(2400 ether));
+        assertEq(lerp.end(), rad(0 ether));
+        assertEq(lerp.duration(), 1 days);
+        assertTrue(lerp.started());
+        assertTrue(!lerp.done());
+        assertEq(lerp.startTime(), block.timestamp);
+        assertEq(vat.Line(), rad(2400 ether));
+        hevm.warp(now + 1 hours);
+        assertEq(vat.Line(), rad(2400 ether));
+        lerp.tick();
+        assertEq(vat.Line(), rad(2300 ether + 1600));   // Small amount at the end is rounding errors
+        hevm.warp(now + 1 hours);
+        lerp.tick();
+        assertEq(vat.Line(), rad(2200 ether + 800));
+        hevm.warp(now + 6 hours);
+        lerp.tick();
+        assertEq(vat.Line(), rad(1600 ether + 800));
+        hevm.warp(now + 1 days);
+        assertEq(vat.Line(), rad(1600 ether + 800));
+        lerp.tick();
+        assertEq(vat.Line(), rad(0 ether));
+        assertTrue(lerp.done());
+        assertEq(vat.wards(address(lerp)), 0);
+    }
+    function test_lerp_max_values() public {
+        // Reduce to reasonable numbers
+        uint256 start = 10 ** 59;
+        uint256 end = 10 ** 59 - 1;
+        uint256 duration = 365 days;
+        uint256 deltaTime = 365 days - 1;   // This will set t at it's max value just under 1 WAD
+
+        Lerp lerp = Lerp(action.linearInterpolation_test(address(vat), "Line", start, end, duration));
+        hevm.warp(now + deltaTime);
+        lerp.tick();
+        assertEq(vat.Line(), end);
+    }
+    function test_lerp_bounds_fuzz(uint256 start, uint256 end, uint256 duration, uint256 deltaTime) public {
+        // Reduce to reasonable numbers
+        start = start % 10 ** 59;
+        end = end % 10 ** 59;
+        duration = duration % (365 days);
+        deltaTime = deltaTime % (500 days);
+
+        // Constructor revert cases
+        if (start == end) return;
+        if (duration == 0) return;
+        if (deltaTime == 0) return;
+
+        Lerp lerp = Lerp(action.linearInterpolation_test(address(vat), "Line", start, end, duration));
+        hevm.warp(now + deltaTime);
+        lerp.tick();
+        uint256 Line = vat.Line();
+        uint256 low = end > start ? start : end;
+        uint256 high = end > start ? end : start;
+        assertTrue(Line >= low && Line <= high);
     }
 }

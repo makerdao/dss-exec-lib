@@ -328,4 +328,14 @@ contract DssTestAction is DssAction {
         addNewCollateral(co);
     }
 
+    /************/
+    /*** Misc ***/
+    /************/
+    function linearInterpolation_test(address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        return linearInterpolation(_target, _what, _start, _end, _duration);
+    }
+    function linearInterpolation_test(address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        return linearInterpolation(_target, _ilk, _what, _start, _end, _duration);
+    }
+
 }

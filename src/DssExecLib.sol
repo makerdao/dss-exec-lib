@@ -19,6 +19,7 @@
 pragma solidity ^0.6.7;
 
 import "./MathLib.sol";
+import "./utils/Lerp.sol";
 
 interface Initializable {
     function init(bytes32) external;
@@ -830,5 +831,38 @@ contract DssExecLib {
 
         // Add new ilk to the IlkRegistry
         RegistryLike(_reg).add(_join);
+    }
+
+    /************/
+    /*** Misc ***/
+    /************/
+    /**
+        @dev Initiate linear interpolation on an administrative value over time.
+        @param _target      The target contract
+        @param _what        The target parameter to adjust
+        @param _start       The start value for the target parameter
+        @param _end         The end value for the target parameter
+        @param _duration    The duration of the interpolation
+    */
+    function linearInterpolation(address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        Lerp lerp = new Lerp(_target, _what, _start, _end, _duration);
+        Authorizable(_target).rely(address(lerp));
+        lerp.init();
+        return address(lerp);
+    }
+    /**
+        @dev Initiate linear interpolation on an administrative value over time.
+        @param _target      The target contract
+        @param _ilk         The ilk to target
+        @param _what        The target parameter to adjust
+        @param _start       The start value for the target parameter
+        @param _end         The end value for the target parameter
+        @param _duration    The duration of the interpolation
+    */
+    function linearInterpolation(address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        IlkLerp lerp = new IlkLerp(_target, _ilk, _what, _start, _end, _duration);
+        Authorizable(_target).rely(address(lerp));
+        lerp.init();
+        return address(lerp);
     }
 }
