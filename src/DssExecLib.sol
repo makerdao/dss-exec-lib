@@ -366,12 +366,12 @@ contract DssExecLib {
     /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
         @dev MKR amount is increased by this rate every "tick" (if auction duration has passed and no one has bid on the MKR)
-        @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 50% to 150% WAD needed for pad)
+        @dev Equation used for conversion is (1 + pct / 10,000) * WAD
         @param _flop   The address of the Flopper core contract
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setDebtAuctionMKRIncreaseRate(address _flop, uint256 _pct_bps) public {
-        Fileable(_flop).file("pad", MathLib.wdiv(MathLib.add(_pct_bps, 10 * MathLib.THOUSAND), 10 * MathLib.THOUSAND));
+        Fileable(_flop).file("pad", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
     }
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
@@ -499,14 +499,14 @@ contract DssExecLib {
     }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is (pct + 100,000) * WAD / 100,000 (ex. changes 13% to 113% WAD needed for chop)
+        @dev Equation used for conversion is (1 + pct / 10,000) * WAD
         @param _cat    The address of the Cat core accounting contract (will need to revisit for LIQ-2.0)
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
     function setIlkLiquidationPenalty(address _cat, bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(_cat).file(_ilk, "chop", MathLib.wdiv(MathLib.add(_pct_bps, 10 * MathLib.THOUSAND), 10 * MathLib.THOUSAND));
+        Fileable(_cat).file(_ilk, "chop", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
     }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
