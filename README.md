@@ -44,9 +44,9 @@ The spell itself is deployed as follows:
 
 ```js
 new DssExec(
-    "A test dss exec spell",           // Description
-    now + 30 days,                     // Expiration
-    address(new SpellAction(execlib))
+    "A test dss exec spell",                // Description
+    now + 30 days,                          // Expiration
+    address(new SpellAction(execlib, true)) // true = officeHours on
 );
 ```
 
