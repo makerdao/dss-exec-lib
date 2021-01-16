@@ -19,7 +19,6 @@
 pragma solidity ^0.6.7;
 
 import "./MathLib.sol";
-import "./utils/Lerp.sol";
 
 interface Initializable {
     function init(bytes32) external;
@@ -110,6 +109,15 @@ interface IAMLike {
     function setIlk(bytes32,uint256,uint256,uint256) external;
     function remIlk(bytes32) external;
     function exec(bytes32) external returns (uint256);
+}
+
+interface LerpFactoryLike {
+    function newLerp(address target_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) external returns (address);
+    function newIlkLerp(address target_, bytes32 ilk_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) external returns (address);
+}
+
+interface LerpLike {
+    function init() external;
 }
 
 
@@ -838,20 +846,22 @@ contract DssExecLib {
     /************/
     /**
         @dev Initiate linear interpolation on an administrative value over time.
+        @param _factory     The lerp factory contract
         @param _target      The target contract
         @param _what        The target parameter to adjust
         @param _start       The start value for the target parameter
         @param _end         The end value for the target parameter
         @param _duration    The duration of the interpolation
     */
-    function linearInterpolation(address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
-        Lerp lerp = new Lerp(_target, _what, _start, _end, _duration);
-        Authorizable(_target).rely(address(lerp));
-        lerp.init();
-        return address(lerp);
+    function linearInterpolation(address _factory, address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        address lerp = LerpFactoryLike(_factory).newLerp(_target, _what, _start, _end, _duration);
+        Authorizable(_target).rely(lerp);
+        LerpLike(lerp).init();
+        return lerp;
     }
     /**
         @dev Initiate linear interpolation on an administrative value over time.
+        @param _factory     The lerp factory contract
         @param _target      The target contract
         @param _ilk         The ilk to target
         @param _what        The target parameter to adjust
@@ -859,10 +869,10 @@ contract DssExecLib {
         @param _end         The end value for the target parameter
         @param _duration    The duration of the interpolation
     */
-    function linearInterpolation(address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
-        IlkLerp lerp = new IlkLerp(_target, _ilk, _what, _start, _end, _duration);
-        Authorizable(_target).rely(address(lerp));
-        lerp.init();
-        return address(lerp);
+    function linearInterpolation(address _factory, address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        address lerp = LerpFactoryLike(_factory).newIlkLerp(_target, _ilk, _what, _start, _end, _duration);
+        Authorizable(_target).rely(lerp);
+        LerpLike(lerp).init();
+        return lerp;
     }
 }

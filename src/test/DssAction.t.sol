@@ -30,7 +30,8 @@ import {IlkRegistry}      from "ilk-registry/IlkRegistry.sol";
 import {FlipperMom}       from "flipper-mom/FlipperMom.sol";
 import {Median}           from "median/median.sol";
 import {OSM}              from 'osm/osm.sol';
-import {OsmAbstract}      from "dss-interfaces/Interfaces.sol";
+import {OsmAbstract,
+        LerpAbstract}     from "dss-interfaces/Interfaces.sol";
 import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
@@ -50,8 +51,6 @@ import {Spotter}          from 'dss/spot.sol';
 import "../CollateralOpts.sol";
 import {DssTestAction}    from './DssTestAction.sol';
 import {DssExecLib}       from '../DssExecLib.sol';
-
-import "../utils/Lerp.sol";
 
 interface Hevm {
     function warp(uint256) external;
@@ -962,7 +961,8 @@ contract ActionTest is DSTest {
     /************/
 
     function test_lerp_Line() public {
-        Lerp lerp = Lerp(action.linearInterpolation_test(address(vat), "Line", rad(2400 ether), rad(0 ether), 1 days));
+        // TODO - need to update dss-interfaces and add factory contract
+        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test(address(0x0), address(vat), "Line", rad(2400 ether), rad(0 ether), 1 days));
         assertEq(lerp.what(), "Line");
         assertEq(lerp.start(), rad(2400 ether));
         assertEq(lerp.end(), rad(0 ether));
@@ -987,37 +987,5 @@ contract ActionTest is DSTest {
         assertEq(vat.Line(), rad(0 ether));
         assertTrue(lerp.done());
         assertEq(vat.wards(address(lerp)), 0);
-    }
-    function test_lerp_max_values() public {
-        // Reduce to reasonable numbers
-        uint256 start = 10 ** 59;
-        uint256 end = 10 ** 59 - 1;
-        uint256 duration = 365 days;
-        uint256 deltaTime = 365 days - 1;   // This will set t at it's max value just under 1 WAD
-
-        Lerp lerp = Lerp(action.linearInterpolation_test(address(vat), "Line", start, end, duration));
-        hevm.warp(now + deltaTime);
-        lerp.tick();
-        assertEq(vat.Line(), end);
-    }
-    function test_lerp_bounds_fuzz(uint256 start, uint256 end, uint256 duration, uint256 deltaTime) public {
-        // Reduce to reasonable numbers
-        start = start % 10 ** 59;
-        end = end % 10 ** 59;
-        duration = duration % (365 days);
-        deltaTime = deltaTime % (500 days);
-
-        // Constructor revert cases
-        if (start == end) return;
-        if (duration == 0) return;
-        if (deltaTime == 0) return;
-
-        Lerp lerp = Lerp(action.linearInterpolation_test(address(vat), "Line", start, end, duration));
-        hevm.warp(now + deltaTime);
-        lerp.tick();
-        uint256 Line = vat.Line();
-        uint256 low = end > start ? start : end;
-        uint256 high = end > start ? end : start;
-        assertTrue(Line >= low && Line <= high);
     }
 }

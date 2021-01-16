@@ -204,15 +204,15 @@ abstract contract DssAction {
     }
 
     function libCallReturnAddress(
-        string memory sig, address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration
+        string memory sig, address _factory, address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration
     ) internal returns (address) {
-        return _dcallretaddr(abi.encodeWithSignature(sig, _target, _what, _start, _end, _duration));
+        return _dcallretaddr(abi.encodeWithSignature(sig, _factory, _target, _what, _start, _end, _duration));
     }
 
     function libCallReturnAddress(
-        string memory sig, address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration
+        string memory sig, address _factory, address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration
     ) internal returns (address) {
-        return _dcallretaddr(abi.encodeWithSignature(sig, _target, _ilk, _what, _start, _end, _duration));
+        return _dcallretaddr(abi.encodeWithSignature(sig, _factory, _target, _ilk, _what, _start, _end, _duration));
     }
 
     /****************************/
@@ -540,10 +540,10 @@ abstract contract DssAction {
     /************/
     /*** Misc ***/
     /************/
-    function linearInterpolation(address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) internal returns (address) {
-        return libCallReturnAddress("linearInterpolation(address,bytes32,uint256,uint256,uint256)", _target, _what, _start, _end, _duration);
+    function linearInterpolation(address _factory, address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) internal returns (address) {
+        return libCallReturnAddress("linearInterpolation(address,address,bytes32,uint256,uint256,uint256)", _factory, _target, _what, _start, _end, _duration);
     }
-    function linearInterpolation(address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) internal returns (address) {
-        return libCallReturnAddress("linearInterpolation(address,bytes32,bytes32,uint256,uint256,uint256)", _target, _ilk, _what, _start, _end, _duration);
+    function linearInterpolation(address _factory, address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) internal returns (address) {
+        return libCallReturnAddress("linearInterpolation(address,address,bytes32,bytes32,uint256,uint256,uint256)", _factory, _target, _ilk, _what, _start, _end, _duration);
     }
 }
