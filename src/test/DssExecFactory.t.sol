@@ -69,7 +69,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         addNewCollateral(XMPL_A);
 
         setIlkDebtCeiling("ETH-A", 10 * MILLION);
-        setGlobalDebtCeiling(1500 * MILLION);
+        setGlobalDebtCeiling(2000 * MILLION);
     }
 }
 
@@ -226,7 +226,7 @@ contract DssLibExecTest is DSTest, DSMath {
         //
         afterSpell = SystemValues({
             dsr_rate:     0,               // In basis points
-            vat_Line:     1500 * MILLION,  // In whole Dai units
+            vat_Line:     2000 * MILLION,  // In whole Dai units
             pause_delay:  pause.delay(),   // In seconds
             vow_wait:     vow.wait(),      // In seconds
             vow_dump:     vow.dump()/WAD,  // In whole Dai units
