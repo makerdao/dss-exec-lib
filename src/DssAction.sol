@@ -119,83 +119,6 @@ abstract contract DssAction {
         require(ok, "fail");
     }
 
-    function libCall(string memory sig, address addr, address addr2) internal {
-        _dcall(abi.encodeWithSignature(sig, addr, addr2));
-    }
-
-    function libCall(string memory sig, address addr, bytes32 what, address addr2) internal {
-        _dcall(abi.encodeWithSignature(sig, addr, what, addr2));
-    }
-
-    function libCall(string memory sig, address addr, bytes32 what, bytes32 what2, address addr2) internal {
-        _dcall(abi.encodeWithSignature(sig, addr, what, what2, addr2));
-    }
-
-    function libCall(string memory sig, address addr, address[] memory arr) internal {
-        _dcall(abi.encodeWithSignature(sig, addr, arr));
-    }
-
-    function libCall(string memory sig, string memory what) internal {
-        _dcall(abi.encodeWithSignature(sig, what));
-    }
-
-    function libCall(string memory sig, bytes32 what, uint256 num) internal {
-        _dcall(abi.encodeWithSignature(sig, what, num));
-    }
-
-    function libCall(string memory sig, address mcd_addr, bytes32 what, uint256 num1, uint256 num2, uint256 num3) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, what, num1, num2, num3));
-    }
-
-    function libCall(string memory sig, bytes32 what, address addr) internal {
-        _dcall(abi.encodeWithSignature(sig, what, addr));
-    }
-
-    function libCall(string memory sig, address mcd_addr) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr));
-    }
-
-    function libCall(string memory sig, address mcd_addr, uint256 num) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, num));
-    }
-
-    function libCall(string memory sig, address mcd_addr, bytes32 what) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, what));
-    }
-
-    function libCall(string memory sig, address mcd_addr, string memory what) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, what));
-    }
-
-    function libCall(string memory sig, address mcd_addr, address addr, bytes32 what) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, addr, what));
-    }
-
-    function libCall(string memory sig, address mcd_addr, bytes32 what, uint256 num) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, what, num));
-    }
-
-    function libCall(string memory sig, address mcd_addr, bytes32 what, uint256 num, bool bool1) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, what, num, bool1));
-    }
-
-    function libCall(string memory sig, address mcd_addr, address mcd_addr2, address addr, address addr2) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, addr, addr2));
-    }
-
-    function libCall(string memory sig, address mcd_addr, address mcd_addr2, address mcd_addr3, address addr, address addr2) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, mcd_addr3, addr, addr2));
-    }
-
-    function libCall(string memory sig, address mcd_addr, address mcd_addr2, address mcd_addr3, address mcd_addr4, bytes32 what, address addr, address addr2) internal {
-        _dcall(abi.encodeWithSignature(sig, mcd_addr, mcd_addr2, mcd_addr3, mcd_addr4, what, addr, addr2));
-    }
-
-    function libCall(
-        string memory sig, address _vat, address _cat, address _jug, address _end, address _spot, address _reg, bytes32 _ilk, address _gem, address _join, address _flip, address _pip
-    ) internal {
-        _dcall(abi.encodeWithSignature(sig, _vat, _cat, _jug, _end, _spot, _reg, _ilk, _gem, _join, _flip, _pip));
-    }
 
     /****************************/
     /*** Changelog Management ***/
@@ -209,251 +132,251 @@ abstract contract DssAction {
     }
 
     function setChangelogIPFS(string memory ipfs) internal {
-        libCall("setChangelogIPFS(address,string)", LOG, ipfs);
+        _dcall(abi.encodeWithSignature("setChangelogIPFS(address,string)", LOG, ipfs));
     }
 
     function setChangelogSHA256(string memory SHA256) internal {
-        libCall("setChangelogSHA256(address,string)", LOG, SHA256);
+        _dcall(abi.encodeWithSignature("setChangelogSHA256(address,string)", LOG, SHA256));
     }
 
     /**********************/
     /*** Authorizations ***/
     /**********************/
     function authorize(address base, address ward) internal virtual {
-        libCall("authorize(address,address)", base, ward);
+        _dcall(abi.encodeWithSignature("authorize(address,address)", base, ward));
     }
 
     function deauthorize(address base, address ward) internal {
-        libCall("deauthorize(address,address)", base, ward);
+        _dcall(abi.encodeWithSignature("deauthorize(address,address)", base, ward));
     }
 
     /**************************/
     /*** Accumulating Rates ***/
     /**************************/
     function accumulateDSR() internal {
-        libCall("accumulateDSR(address)", pot());
+        _dcall(abi.encodeWithSignature("accumulateDSR(address)", pot()));
     }
 
     function accumulateCollateralStabilityFees(bytes32 ilk) internal {
-        libCall("accumulateCollateralStabilityFees(address,bytes32)", jug(), ilk);
+        _dcall(abi.encodeWithSignature("accumulateCollateralStabilityFees(address,bytes32)", jug(), ilk));
     }
 
     /*********************/
     /*** Price Updates ***/
     /*********************/
     function updateCollateralPrice(bytes32 ilk) internal {
-        libCall("updateCollateralPrice(address,bytes32)", spot(), ilk);
+        _dcall(abi.encodeWithSignature("updateCollateralPrice(address,bytes32)", spot(), ilk));
     }
 
     /****************************/
     /*** System Configuration ***/
     /****************************/
     function setContract(address base, bytes32 what, address addr) internal {
-        libCall("setContract(address,bytes32,address)", base, what, addr);
+        _dcall(abi.encodeWithSignature("setContract(address,bytes32,address)", base, what, addr));
     }
 
     function setContract(address base, bytes32 ilk, bytes32 what, address addr) internal {
-        libCall("setContract(address,bytes32,bytes32,address)", base, ilk, what, addr);
+        _dcall(abi.encodeWithSignature("setContract(address,bytes32,bytes32,address)", base, ilk, what, addr));
     }
 
     /******************************/
     /*** System Risk Parameters ***/
     /******************************/
     function setGlobalDebtCeiling(uint256 amount) internal {
-        libCall("setGlobalDebtCeiling(address,uint256)", vat(), amount);
+        _dcall(abi.encodeWithSignature("setGlobalDebtCeiling(address,uint256)", vat(), amount));
     }
 
     function increaseGlobalDebtCeiling(uint256 amount) internal {
-        libCall("increaseGlobalDebtCeiling(address,uint256)", vat(), amount);
+        _dcall(abi.encodeWithSignature("increaseGlobalDebtCeiling(address,uint256)", vat(), amount));
     }
 
     function decreaseGlobalDebtCeiling(uint256 amount) internal {
-        libCall("decreaseGlobalDebtCeiling(address,uint256)", vat(), amount);
+        _dcall(abi.encodeWithSignature("decreaseGlobalDebtCeiling(address,uint256)", vat(), amount));
     }
 
     function setDSR(uint256 rate) internal {
-        libCall("setDSR(address,uint256)", pot(), rate);
+        _dcall(abi.encodeWithSignature("setDSR(address,uint256)", pot(), rate));
     }
 
     function setSurplusAuctionAmount(uint256 amount) internal {
-        libCall("setSurplusAuctionAmount(address,uint256)", vow(), amount);
+        _dcall(abi.encodeWithSignature("setSurplusAuctionAmount(address,uint256)", vow(), amount));
     }
 
     function setSurplusBuffer(uint256 amount) internal {
-        libCall("setSurplusBuffer(address,uint256)", vow(), amount);
+        _dcall(abi.encodeWithSignature("setSurplusBuffer(address,uint256)", vow(), amount));
     }
 
     function setMinSurplusAuctionBidIncrease(uint256 pct_bps) internal {
-        libCall("setMinSurplusAuctionBidIncrease(address,uint256)", flap(), pct_bps);
+        _dcall(abi.encodeWithSignature("setMinSurplusAuctionBidIncrease(address,uint256)", flap(), pct_bps));
     }
 
     function setSurplusAuctionBidDuration(uint256 duration) internal {
-        libCall("setSurplusAuctionBidDuration(address,uint256)", flap(), duration);
+        _dcall(abi.encodeWithSignature("setSurplusAuctionBidDuration(address,uint256)", flap(), duration));
     }
 
     function setSurplusAuctionDuration(uint256 duration) internal {
-        libCall("setSurplusAuctionDuration(address,uint256)", flap(), duration);
+        _dcall(abi.encodeWithSignature("setSurplusAuctionDuration(address,uint256)", flap(), duration));
     }
 
     function setDebtAuctionDelay(uint256 duration) internal {
-        libCall("setDebtAuctionDelay(address,uint256)", vow(), duration);
+        _dcall(abi.encodeWithSignature("setDebtAuctionDelay(address,uint256)", vow(), duration));
     }
 
     function setDebtAuctionDAIAmount(uint256 amount) internal {
-        libCall("setDebtAuctionDAIAmount(address,uint256)", vow(), amount);
+        _dcall(abi.encodeWithSignature("setDebtAuctionDAIAmount(address,uint256)", vow(), amount));
     }
 
     function setDebtAuctionMKRAmount(uint256 amount) internal {
-        libCall("setDebtAuctionMKRAmount(address,uint256)", vow(), amount);
+        _dcall(abi.encodeWithSignature("setDebtAuctionMKRAmount(address,uint256)", vow(), amount));
     }
 
     function setMinDebtAuctionBidIncrease(uint256 pct_bps) internal {
-        libCall("setMinDebtAuctionBidIncrease(address,uint256)", flop(), pct_bps);
+        _dcall(abi.encodeWithSignature("setMinDebtAuctionBidIncrease(address,uint256)", flop(), pct_bps));
     }
 
     function setDebtAuctionBidDuration(uint256 duration) internal {
-        libCall("setDebtAuctionBidDuration(address,uint256)", flop(), duration);
+        _dcall(abi.encodeWithSignature("setDebtAuctionBidDuration(address,uint256)", flop(), duration));
     }
 
     function setDebtAuctionDuration(uint256 duration) internal {
-        libCall("setDebtAuctionDuration(address,uint256)", flop(), duration);
+        _dcall(abi.encodeWithSignature("setDebtAuctionDuration(address,uint256)", flop(), duration));
     }
 
     function setDebtAuctionMKRIncreaseRate(uint256 pct_bps) internal {
-        libCall("setDebtAuctionMKRIncreaseRate(address,uint256)", flop(), pct_bps);
+        _dcall(abi.encodeWithSignature("setDebtAuctionMKRIncreaseRate(address,uint256)", flop(), pct_bps));
     }
 
     function setMaxTotalDAILiquidationAmount(uint256 amount) internal {
-        libCall("setMaxTotalDAILiquidationAmount(address,uint256)", cat(), amount);
+        _dcall(abi.encodeWithSignature("setMaxTotalDAILiquidationAmount(address,uint256)", cat(), amount));
     }
 
     function setEmergencyShutdownProcessingTime(uint256 duration) internal {
-        libCall("setEmergencyShutdownProcessingTime(address,uint256)", end(), duration);
+        _dcall(abi.encodeWithSignature("setEmergencyShutdownProcessingTime(address,uint256)", end(), duration));
     }
 
     function setGlobalStabilityFee(uint256 rate) internal {
-        libCall("setGlobalStabilityFee(address,uint256)", jug(), rate);
+        _dcall(abi.encodeWithSignature("setGlobalStabilityFee(address,uint256)", jug(), rate));
     }
 
     function setDAIReferenceValue(uint256 value) internal {
-        libCall("setDAIReferenceValue(address,uint256)", spot(),value);
+        _dcall(abi.encodeWithSignature("setDAIReferenceValue(address,uint256)", spot(),value));
     }
 
     /*****************************/
     /*** Collateral Management ***/
     /*****************************/
     function setIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libCall("setIlkDebtCeiling(address,bytes32,uint256)", vat(), ilk, amount);
+        _dcall(abi.encodeWithSignature("setIlkDebtCeiling(address,bytes32,uint256)", vat(), ilk, amount));
     }
 
     function increaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libCall("increaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, true);
+        _dcall(abi.encodeWithSignature("increaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, true));
     }
 
     function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libCall("decreaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, true);
+        _dcall(abi.encodeWithSignature("decreaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, true));
     }
 
     function setIlkAutoLineParameters(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) internal {
-        libCall("setIlkAutoLineParameters(address,bytes32,uint256,uint256,uint256)", autoLine(), ilk, amount, gap, ttl);
+        _dcall(abi.encodeWithSignature("setIlkAutoLineParameters(address,bytes32,uint256,uint256,uint256)", autoLine(), ilk, amount, gap, ttl));
     }
 
     function setIlkAutoLineDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libCall("setIlkAutoLineDebtCeiling(address,bytes32,uint256)", autoLine(), ilk, amount);
+        _dcall(abi.encodeWithSignature("setIlkAutoLineDebtCeiling(address,bytes32,uint256)", autoLine(), ilk, amount));
     }
 
     function removeIlkFromAutoLine(bytes32 ilk) internal {
-        libCall("removeIlkFromAutoLine(address,bytes32)", autoLine(), ilk);
+        _dcall(abi.encodeWithSignature("removeIlkFromAutoLine(address,bytes32)", autoLine(), ilk));
     }
 
     function setIlkMinVaultAmount(bytes32 ilk, uint256 amount) internal {
-        libCall("setIlkMinVaultAmount(address,bytes32,uint256)", vat(), ilk, amount);
+        _dcall(abi.encodeWithSignature("setIlkMinVaultAmount(address,bytes32,uint256)", vat(), ilk, amount));
     }
 
     function setIlkLiquidationPenalty(bytes32 ilk, uint256 pct_bps) internal {
-        libCall("setIlkLiquidationPenalty(address,bytes32,uint256)", cat(), ilk, pct_bps);
+        _dcall(abi.encodeWithSignature("setIlkLiquidationPenalty(address,bytes32,uint256)", cat(), ilk, pct_bps));
     }
 
     function setIlkMaxLiquidationAmount(bytes32 ilk, uint256 amount) internal {
-        libCall("setIlkMaxLiquidationAmount(address,bytes32,uint256)", cat(), ilk, amount);
+        _dcall(abi.encodeWithSignature("setIlkMaxLiquidationAmount(address,bytes32,uint256)", cat(), ilk, amount));
     }
 
     function setIlkLiquidationRatio(bytes32 ilk, uint256 pct_bps) internal {
-        libCall("setIlkLiquidationRatio(address,bytes32,uint256)", spot(), ilk, pct_bps);
+        _dcall(abi.encodeWithSignature("setIlkLiquidationRatio(address,bytes32,uint256)", spot(), ilk, pct_bps));
     }
 
     function setIlkMinAuctionBidIncrease(bytes32 ilk, uint256 pct_bps) internal {
-        libCall("setIlkMinAuctionBidIncrease(address,uint256)", flip(ilk), pct_bps);
+        _dcall(abi.encodeWithSignature("setIlkMinAuctionBidIncrease(address,uint256)", flip(ilk), pct_bps));
     }
 
     function setIlkBidDuration(bytes32 ilk, uint256 duration) internal {
-        libCall("setIlkBidDuration(address,uint256)", flip(ilk), duration);
+        _dcall(abi.encodeWithSignature("setIlkBidDuration(address,uint256)", flip(ilk), duration));
     }
 
     function setIlkAuctionDuration(bytes32 ilk, uint256 duration) internal {
-        libCall("setIlkAuctionDuration(address,uint256)", flip(ilk), duration);
+        _dcall(abi.encodeWithSignature("setIlkAuctionDuration(address,uint256)", flip(ilk), duration));
     }
 
     function setIlkStabilityFee(bytes32 ilk, uint256 rate) internal {
-        libCall("setIlkStabilityFee(address,bytes32,uint256,bool)", jug(), ilk, rate, true);
+        _dcall(abi.encodeWithSignature("setIlkStabilityFee(address,bytes32,uint256,bool)", jug(), ilk, rate, true));
     }
 
     /***********************/
     /*** Core Management ***/
     /***********************/
     function updateCollateralAuctionContract(bytes32 ilk, address newFlip, address oldFlip) internal {
-        libCall("updateCollateralAuctionContract(address,address,address,address,bytes32,address,address)", vat(), cat(), end(), flipperMom(), ilk, newFlip, oldFlip);
+        _dcall(abi.encodeWithSignature("updateCollateralAuctionContract(address,address,address,address,bytes32,address,address)", vat(), cat(), end(), flipperMom(), ilk, newFlip, oldFlip));
     }
 
     function updateSurplusAuctionContract(address newFlap, address oldFlap) internal {
-        libCall("updateSurplusAuctionContract(address,address,address,address)", vat(), vow(), newFlap, oldFlap);
+        _dcall(abi.encodeWithSignature("updateSurplusAuctionContract(address,address,address,address)", vat(), vow(), newFlap, oldFlap));
     }
 
     function updateDebtAuctionContract(address newFlop, address oldFlop) internal {
-        libCall("updateDebtAuctionContract(address,address,address,address,address)", vat(), vow(), govGuard(), newFlop, oldFlop);
+        _dcall(abi.encodeWithSignature("updateDebtAuctionContract(address,address,address,address,address)", vat(), vow(), govGuard(), newFlop, oldFlop));
     }
 
     /*************************/
     /*** Oracle Management ***/
     /*************************/
     function addWritersToMedianWhitelist(address medianizer, address[] memory feeds) internal {
-        libCall("addWritersToMedianWhitelist(address,address[])", medianizer, feeds);
+        _dcall(abi.encodeWithSignature("addWritersToMedianWhitelist(address,address[])", medianizer, feeds));
     }
 
     function removeWritersFromMedianWhitelist(address medianizer, address[] memory feeds) internal {
-        libCall("removeWritersFromMedianWhitelist(address,address[])", medianizer, feeds);
+        _dcall(abi.encodeWithSignature("removeWritersFromMedianWhitelist(address,address[])", medianizer, feeds));
     }
 
     function addReadersToMedianWhitelist(address medianizer, address[] memory readers) internal {
-        libCall("addReadersToMedianWhitelist(address,address[])", medianizer, readers);
+        _dcall(abi.encodeWithSignature("addReadersToMedianWhitelist(address,address[])", medianizer, readers));
     }
 
     function addReaderToMedianWhitelist(address medianizer, address reader) internal {
-        libCall("addReaderToMedianWhitelist(address,address)", medianizer, reader);
+        _dcall(abi.encodeWithSignature("addReaderToMedianWhitelist(address,address)", medianizer, reader));
     }
 
     function removeReadersFromMedianWhitelist(address medianizer, address[] memory readers) internal {
-        libCall("removeReadersFromMedianWhitelist(address,address[])", medianizer, readers);
+        _dcall(abi.encodeWithSignature("removeReadersFromMedianWhitelist(address,address[])", medianizer, readers));
     }
 
     function removeReaderFromMedianWhitelist(address medianizer, address reader) internal {
-        libCall("removeReaderFromMedianWhitelist(address,address)", medianizer, reader);
+        _dcall(abi.encodeWithSignature("removeReaderFromMedianWhitelist(address,address)", medianizer, reader));
     }
 
     function setMedianWritersQuorum(address medianizer, uint256 minQuorum) internal {
-        libCall("setMedianWritersQuorum(address,uint256)", medianizer, minQuorum);
+        _dcall(abi.encodeWithSignature("setMedianWritersQuorum(address,uint256)", medianizer, minQuorum));
     }
 
     function addReaderToOSMWhitelist(address osm, address reader) internal {
-        libCall("addReaderToOSMWhitelist(address,address)", osm, reader);
+        _dcall(abi.encodeWithSignature("addReaderToOSMWhitelist(address,address)", osm, reader));
     }
 
     function removeReaderFromOSMWhitelist(address osm, address reader) internal {
-        libCall("removeReaderFromOSMWhitelist(address,address)", osm, reader);
+        _dcall(abi.encodeWithSignature("removeReaderFromOSMWhitelist(address,address)", osm, reader));
     }
 
     function allowOSMFreeze(address osm, bytes32 ilk) internal {
-        libCall("allowOSMFreeze(address,address,bytes32)", osmMom(), osm, ilk);
+        _dcall(abi.encodeWithSignature("allowOSMFreeze(address,address,bytes32)", osmMom(), osm, ilk));
     }
 
     /*****************************/
@@ -462,10 +385,10 @@ abstract contract DssAction {
 
     // Minimum actions to onboard a collateral to the system with 0 line.
     function addCollateralBase(bytes32 ilk, address gem, address join, address flipper, address pip) internal {
-        libCall(
+        _dcall(abi.encodeWithSignature(
             "addCollateralBase(address,address,address,address,address,address,bytes32,address,address,address,address)",
             vat(), cat(), jug(), end(), spot(), reg(), ilk, gem, join, flipper, pip
-        );
+        ));
     }
 
     // Complete collateral onboarding logic.
