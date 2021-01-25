@@ -28,7 +28,7 @@ interface ChainlogLike {
 }
 
 interface RegistryLike {
-    function ilkData(bytes32) external returns (
+    function ilkData(bytes32) external view returns (
         uint256       pos,
         address       gem,
         address       pip,
@@ -90,28 +90,28 @@ abstract contract DssAction {
     /****************************/
     /*** Core Address Helpers ***/
     /****************************/
-    function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
-    function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
-    function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
-    function pot()        public view returns (address) { return getChangelogAddress("MCD_POT"); }
-    function vow()        public view returns (address) { return getChangelogAddress("MCD_VOW"); }
-    function end()        public view returns (address) { return getChangelogAddress("MCD_END"); }
-    function reg()        public view returns (address) { return getChangelogAddress("ILK_REGISTRY"); }
-    function spot()       public view returns (address) { return getChangelogAddress("MCD_SPOT"); }
-    function flap()       public view returns (address) { return getChangelogAddress("MCD_FLAP"); }
-    function flop()       public view returns (address) { return getChangelogAddress("MCD_FLOP"); }
-    function osmMom()     public view returns (address) { return getChangelogAddress("OSM_MOM"); }
-    function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
-    function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
-    function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
+    function vat()        internal view returns (address) { return getChangelogAddress("MCD_VAT"); }
+    function cat()        internal view returns (address) { return getChangelogAddress("MCD_CAT"); }
+    function jug()        internal view returns (address) { return getChangelogAddress("MCD_JUG"); }
+    function pot()        internal view returns (address) { return getChangelogAddress("MCD_POT"); }
+    function vow()        internal view returns (address) { return getChangelogAddress("MCD_VOW"); }
+    function end()        internal view returns (address) { return getChangelogAddress("MCD_END"); }
+    function reg()        internal view returns (address) { return getChangelogAddress("ILK_REGISTRY"); }
+    function spot()       internal view returns (address) { return getChangelogAddress("MCD_SPOT"); }
+    function flap()       internal view returns (address) { return getChangelogAddress("MCD_FLAP"); }
+    function flop()       internal view returns (address) { return getChangelogAddress("MCD_FLOP"); }
+    function osmMom()     internal view returns (address) { return getChangelogAddress("OSM_MOM"); }
+    function govGuard()   internal view returns (address) { return getChangelogAddress("GOV_GUARD"); }
+    function flipperMom() internal view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
+    function autoLine()   internal view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
 
-    function getChangelogAddress(bytes32 _key) public view returns (address) {
-        return ChainlogLike(LOG).getAddress(_key);
+    function flip(bytes32 ilk) internal view returns (address) {
+        (,,,, address _flip,,,) = RegistryLike(reg()).ilkData(ilk);
+        return _flip;
     }
 
-    function flip(bytes32 _ilk) public returns (address) {
-        (,,,, address _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
-        return _flip;
+    function getChangelogAddress(bytes32 key) internal view returns (address) {
+        return ChainlogLike(LOG).getAddress(key);
     }
 
     function _dcall(bytes memory data) internal {
@@ -201,11 +201,11 @@ abstract contract DssAction {
     /*** Changelog Management ***/
     /****************************/
     function setChangelogAddress(bytes32 key, address value) internal {
-        libCall("setChangelogAddress(address,bytes32,address)", LOG, key, value);
+        _dcall(abi.encodeWithSignature("setChangelogAddress(address,bytes32,address)", LOG, key, value));
     }
 
     function setChangelogVersion(string memory version) internal {
-        libCall("setChangelogVersion(address,string)", LOG, version);
+        _dcall(abi.encodeWithSignature("setChangelogVersion(address,string)", LOG, version));
     }
 
     function setChangelogIPFS(string memory ipfs) internal {
