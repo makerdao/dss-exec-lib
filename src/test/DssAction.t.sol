@@ -449,7 +449,7 @@ contract ActionTest is DSTest {
 
     function test_setMinSurplusAuctionBidIncrease() public {
         action.setMinSurplusAuctionBidIncrease_test(525); // 5.25%
-        assertEq(flap.beg(), 5.25 ether / 100); // WAD pct
+        assertEq(flap.beg(), 1 ether + 5.25 ether / 100); // (1 + pct) * WAD
     }
 
     function test_setSurplusAuctionBidDuration() public {
@@ -479,7 +479,7 @@ contract ActionTest is DSTest {
 
     function test_setMinDebtAuctionBidIncrease() public {
         action.setMinDebtAuctionBidIncrease_test(525); // 5.25%
-        assertEq(flop.beg(), 5.25 ether / 100); // WAD pct
+        assertEq(flop.beg(), 1 ether + 5.25 ether / 100); // (1 + pct) * WAD
     }
 
     function test_setDebtAuctionBidDuration() public {
@@ -610,7 +610,7 @@ contract ActionTest is DSTest {
 
     function test_setIlkMinAuctionBidIncrease() public {
         action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
-        assertEq(ilks["gold"].flip.beg(), 5 * WAD / 100); // WAD pct
+        assertEq(ilks["gold"].flip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
     }
 
     function test_setIlkBidDuration() public {
@@ -924,7 +924,7 @@ contract ActionTest is DSTest {
         }
 
         {
-            assertEq(tokenFlip.beg(), 5 * WAD / 100); // WAD pct
+            assertEq(tokenFlip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
             assertEq(uint256(tokenFlip.ttl()), 6 hours);
             assertEq(uint256(tokenFlip.tau()), 6 hours);
 
