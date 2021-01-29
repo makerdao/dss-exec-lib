@@ -1,4 +1,4 @@
-pragma solidity ^0.6.7;
+pragma solidity ^0.6.11;
 
 struct CollateralOpts {
     bytes32 ilk;
