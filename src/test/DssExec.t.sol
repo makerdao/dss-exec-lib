@@ -29,7 +29,6 @@ import "dss-interfaces/Interfaces.sol";
 import "../DssExec.sol";
 import "../DssAction.sol";
 import "../CollateralOpts.sol";
-import {DssExecLib} from "../DssExecLib.sol";
 import "./rates.sol";
 
 interface Hevm {
@@ -40,7 +39,7 @@ interface Hevm {
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
 
     // This can be hardcoded away later or can use the chain-log
-    constructor(address lib, bool ofcHrs) DssAction(lib, ofcHrs) public {}
+    constructor(bool ofcHrs) DssAction(ofcHrs) public {}
 
     uint256 constant MILLION  = 10 ** 6;
 
@@ -138,7 +137,6 @@ contract DssLibExecTest is DSTest, DSMath {
     Rates rates;
 
     DssExec spell;
-    address execlib;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -200,12 +198,10 @@ contract DssLibExecTest is DSTest, DSMath {
         hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
-        execlib = address(new DssExecLib()); // This would be deployed only once
-
         spell = new DssExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
-            address(new DssLibSpellAction(execlib, true))
+            address(new DssLibSpellAction(true))
         );
 
         //
@@ -569,17 +565,5 @@ contract DssLibExecTest is DSTest, DSMath {
         assertEq(flipXMPLA.kicks(), 0);
         cat.bite("XMPL-A", address(this));
         assertEq(flipXMPLA.kicks(), 1);
-    }
-
-    function testExecLibDeployCost() public {
-        new DssExecLib();
-    }
-
-    function testExecDeployCost() public {
-        new DssExec(
-            "Basic Spell",                              // Description
-            now + 30 days,                              // Expiration
-            address(new DssLibSpellAction(execlib, true))
-        );
     }
 }
