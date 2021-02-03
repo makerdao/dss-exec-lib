@@ -26,7 +26,6 @@ abstract contract DssAction {
 
     using DssExecLib for *;
 
-    address public lib;
     bool    public immutable officeHours;
 
     // Changelog address applies to MCD deployments on
