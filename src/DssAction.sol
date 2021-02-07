@@ -258,7 +258,7 @@ abstract contract DssAction {
     }
 
     function setDAIReferenceValue(uint256 value) internal {
-        libcall(abi.encodeWithSignature("setDAIReferenceValue(address,uint256)", spot(),value));
+        libcall(abi.encodeWithSignature("setDAIReferenceValue(address,uint256)", spot(), value));
     }
 
     /*****************************/
@@ -268,12 +268,20 @@ abstract contract DssAction {
         libcall(abi.encodeWithSignature("setIlkDebtCeiling(address,bytes32,uint256)", vat(), ilk, amount));
     }
 
+    function increaseIlkDebtCeiling(bytes32 ilk, uint256 amount, bool global) internal {
+        libcall(abi.encodeWithSignature("increaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, global));
+    }
+
     function increaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libcall(abi.encodeWithSignature("increaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, true));
+        increaseIlkDebtCeiling(ilk, amount, true);
+    }
+
+    function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount, bool global) internal {
+        libcall(abi.encodeWithSignature("decreaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, global));
     }
 
     function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        libcall(abi.encodeWithSignature("decreaseIlkDebtCeiling(address,bytes32,uint256,bool)", vat(), ilk, amount, true));
+        decreaseIlkDebtCeiling(ilk, amount, true);
     }
 
     function setIlkAutoLineParameters(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) internal {
@@ -316,8 +324,12 @@ abstract contract DssAction {
         libcall(abi.encodeWithSignature("setIlkAuctionDuration(address,uint256)", flip(ilk), duration));
     }
 
+    function setIlkStabilityFee(bytes32 ilk, uint256 rate, bool doDrip) internal {
+        libcall(abi.encodeWithSignature("setIlkStabilityFee(address,bytes32,uint256,bool)", jug(), ilk, rate, doDrip));
+    }
+
     function setIlkStabilityFee(bytes32 ilk, uint256 rate) internal {
-        libcall(abi.encodeWithSignature("setIlkStabilityFee(address,bytes32,uint256,bool)", jug(), ilk, rate, true));
+        setIlkStabilityFee(ilk, rate, true);
     }
 
     /***********************/
