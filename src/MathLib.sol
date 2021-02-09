@@ -26,7 +26,8 @@ library MathLib {
     uint256 constant internal THOUSAND = 10 ** 3;
     uint256 constant internal MILLION  = 10 ** 6;
 
-    uint256 constant internal BPS_ONE_HUNDRED_PCT     = 10 * THOUSAND;
+    uint256 constant internal BPS_ONE_PCT             = 100;
+    uint256 constant internal BPS_ONE_HUNDRED_PCT     = 100 * BPS_ONE_PCT;
     uint256 constant internal RATES_ONE_HUNDRED_PCT   = 1000000021979553151239153027;
 
     // --- SafeMath Functions ---
