@@ -20,11 +20,15 @@ pragma solidity ^0.6.11;
 
 library MathLib {
 
-    uint256 constant public WAD      = 10 ** 18;
-    uint256 constant public RAY      = 10 ** 27;
-    uint256 constant public RAD      = 10 ** 45;
-    uint256 constant public THOUSAND = 10 ** 3;
-    uint256 constant public MILLION  = 10 ** 6;
+    uint256 constant internal WAD      = 10 ** 18;
+    uint256 constant internal RAY      = 10 ** 27;
+    uint256 constant internal RAD      = 10 ** 45;
+    uint256 constant internal THOUSAND = 10 ** 3;
+    uint256 constant internal MILLION  = 10 ** 6;
+
+    uint256 constant internal BPS_ONE_PCT             = 100;
+    uint256 constant internal BPS_ONE_HUNDRED_PCT     = 100 * BPS_ONE_PCT;
+    uint256 constant internal RATES_ONE_HUNDRED_PCT   = 1000000021979553151239153027;
 
     // --- SafeMath Functions ---
     function add(uint x, uint y) internal pure returns (uint z) {

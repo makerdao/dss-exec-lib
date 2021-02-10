@@ -234,12 +234,20 @@ abstract contract DssAction {
         DssExecLib.setIlkDebtCeiling(vat(), ilk, amount);
     }
 
+    function increaseIlkDebtCeiling(bytes32 ilk, uint256 amount, bool global) internal {
+        DssExecLib.increaseIlkDebtCeiling(vat(), ilk, amount, global);
+    }
+
     function increaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
         DssExecLib.increaseIlkDebtCeiling(vat(), ilk, amount, true);
     }
 
+    function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount, bool global) internal {
+        decreaseIlkDebtCeiling(ilk, amount, global);
+    }
+
     function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        DssExecLib.decreaseIlkDebtCeiling(vat(), ilk, amount, true);
+        decreaseIlkDebtCeiling(ilk, amount, true);
     }
 
     function setIlkAutoLineParameters(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) internal {
@@ -280,6 +288,10 @@ abstract contract DssAction {
 
     function setIlkAuctionDuration(bytes32 ilk, uint256 duration) internal {
         DssExecLib.setIlkAuctionDuration(flip(ilk), duration);
+    }
+
+    function setIlkStabilityFee(bytes32 ilk, uint256 rate, bool doDrip) internal {
+        DssExecLib.setIlkStabilityFee(jug(), ilk, rate, doDrip);
     }
 
     function setIlkStabilityFee(bytes32 ilk, uint256 rate) internal {
