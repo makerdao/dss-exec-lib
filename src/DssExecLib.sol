@@ -248,7 +248,8 @@ contract DssExecLib {
         @param _amount The amount to add in DAI (ex. 10m DAI amount == 10000000)
     */
     function increaseGlobalDebtCeiling(address _vat, uint256 _amount) public {
-        setGlobalDebtCeiling(_vat, MathLib.add(DssVat(_vat).Line() / MathLib.RAD, _amount));
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-Line-increase-precision"
+        Fileable(_vat).file("Line", MathLib.add(DssVat(_vat).Line(), _amount * MathLib.RAD));
     }
     /**
         @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
@@ -256,7 +257,8 @@ contract DssExecLib {
         @param _amount The amount to reduce in DAI (ex. 10m DAI amount == 10000000)
     */
     function decreaseGlobalDebtCeiling(address _vat, uint256 _amount) public {
-        setGlobalDebtCeiling(_vat, MathLib.sub(DssVat(_vat).Line() / MathLib.RAD, _amount));
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-Line-decrease-precision"
+        Fileable(_vat).file("Line", MathLib.sub(DssVat(_vat).Line(), _amount * MathLib.RAD));
     }
     /**
         @dev Set the Dai Savings Rate. See: docs/rates.txt
@@ -439,8 +441,9 @@ contract DssExecLib {
         @param _global If true, increases the global debt ceiling by _amount
     */
     function increaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setIlkDebtCeiling(_vat, _ilk, MathLib.add(line_ / MathLib.RAD, _amount));
+        Fileable(_vat).file(_ilk, "line", MathLib.add(line_, _amount * MathLib.RAD));
         if (_global) { increaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
@@ -451,8 +454,9 @@ contract DssExecLib {
         @param _global If true, decreases the global debt ceiling by _amount
     */
     function decreaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setIlkDebtCeiling(_vat, _ilk, MathLib.sub(line_ / MathLib.RAD, _amount));
+        Fileable(_vat).file(_ilk, "line", MathLib.sub(line_, _amount * MathLib.RAD));
         if (_global) { decreaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
