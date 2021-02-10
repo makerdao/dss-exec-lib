@@ -266,7 +266,7 @@ contract DssExecLib {
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
     function setDSR(address _pot, uint256 _rate) public {
-        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY));  // "LibDssExec/dsr-out-of-bounds"
+        require((_rate >= MathLib.RAY) && (_rate <= MathLib.RATES_ONE_HUNDRED_PCT));  // "LibDssExec/dsr-out-of-bounds"
         Fileable(_pot).file("dsr", _rate);
     }
     /**
@@ -294,8 +294,8 @@ contract DssExecLib {
         @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinSurplusAuctionBidIncrease(address _flap, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(_flap).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
+        require(_pct_bps < MathLib.BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
+        Fileable(_flap).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, MathLib.BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for surplus auctions.
@@ -346,8 +346,8 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinDebtAuctionBidIncrease(address _flop, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(_flop).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
+        require(_pct_bps < MathLib.BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
+        Fileable(_flop).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, MathLib.BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for debt auctions.
@@ -373,7 +373,7 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setDebtAuctionMKRIncreaseRate(address _flop, uint256 _pct_bps) public {
-        Fileable(_flop).file("pad", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
+        Fileable(_flop).file("pad", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, MathLib.BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
@@ -406,7 +406,7 @@ contract DssExecLib {
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
     */
     function setGlobalStabilityFee(address _jug, uint256 _rate) public {
-        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY));  // "LibDssExec/global-stability-fee-out-of-bounds"
+        require((_rate >= MathLib.RAY) && (_rate <= MathLib.RATES_ONE_HUNDRED_PCT));  // "LibDssExec/global-stability-fee-out-of-bounds"
         Fileable(_jug).file("base", _rate);
     }
     /**
@@ -441,8 +441,9 @@ contract DssExecLib {
         @param _global If true, increases the global debt ceiling by _amount
     */
     function increaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setIlkDebtCeiling(_vat, _ilk, MathLib.add(line_ / MathLib.RAD, _amount));
+        Fileable(_vat).file(_ilk, "line", MathLib.add(line_, _amount * MathLib.RAD));
         if (_global) { increaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
@@ -453,8 +454,9 @@ contract DssExecLib {
         @param _global If true, decreases the global debt ceiling by _amount
     */
     function decreaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setIlkDebtCeiling(_vat, _ilk, MathLib.sub(line_ / MathLib.RAD, _amount));
+        Fileable(_vat).file(_ilk, "line", MathLib.sub(line_, _amount * MathLib.RAD));
         if (_global) { decreaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
@@ -507,8 +509,8 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 10.25% = 10.25 * 100 = 1025)
     */
     function setIlkLiquidationPenalty(address _cat, bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(_cat).file(_ilk, "chop", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
+        require(_pct_bps < MathLib.BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
+        Fileable(_cat).file(_ilk, "chop", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, MathLib.BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
@@ -528,9 +530,9 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 150% = 150 * 100 = 15000)
     */
     function setIlkLiquidationRatio(address _spot, bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < 100 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-mat-precision" // Fails if pct >= 1000%
-        require(_pct_bps >= 10 * MathLib.THOUSAND); // the liquidation ratio has to be bigger or equal to 100%
-        Fileable(_spot).file(_ilk, "mat", MathLib.rdiv(_pct_bps, 10 * MathLib.THOUSAND));
+        require(_pct_bps < 10 * MathLib.BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-ilk-mat-precision" // Fails if pct >= 1000%
+        require(_pct_bps >= MathLib.BPS_ONE_HUNDRED_PCT); // the liquidation ratio has to be bigger or equal to 100%
+        Fileable(_spot).file(_ilk, "mat", MathLib.rdiv(_pct_bps, MathLib.BPS_ONE_HUNDRED_PCT));
     }
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
@@ -539,8 +541,8 @@ contract DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setIlkMinAuctionBidIncrease(address _flip, uint256 _pct_bps) public {
-        require(_pct_bps < 10 * MathLib.THOUSAND);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(_flip).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, 10 * MathLib.THOUSAND)));
+        require(_pct_bps < MathLib.BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
+        Fileable(_flip).file("beg", MathLib.add(MathLib.WAD, MathLib.wdiv(_pct_bps, MathLib.BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for a collateral type.
@@ -575,7 +577,7 @@ contract DssExecLib {
         @param _doDrip `true` to accumulate stability fees for the collateral
     */
     function setIlkStabilityFee(address _jug, bytes32 _ilk, uint256 _rate, bool _doDrip) public {
-        require((_rate >= MathLib.RAY) && (_rate < 2 * MathLib.RAY));  // "LibDssExec/ilk-stability-fee-out-of-bounds"
+        require((_rate >= MathLib.RAY) && (_rate <= MathLib.RATES_ONE_HUNDRED_PCT));  // "LibDssExec/ilk-stability-fee-out-of-bounds"
         if (_doDrip) Drippable(_jug).drip(_ilk);
 
         Fileable(_jug).file(_ilk, "duty", _rate);
@@ -606,12 +608,12 @@ contract DssExecLib {
         // Add new flip address to Cat
         setContract(_cat, _ilk, "flip", _newFlip);
 
-        // Authorize MCD contracts from new flip
+        // Authorize MCD contracts for new flip
         authorize(_newFlip, _cat);
         authorize(_newFlip, _end);
         authorize(_newFlip, _flipperMom);
 
-        // Authorize MCD contracts from old flip
+        // Deauthorize MCD contracts for old flip
         deauthorize(_oldFlip, _cat);
         deauthorize(_oldFlip, _end);
         deauthorize(_oldFlip, _flipperMom);
@@ -637,10 +639,10 @@ contract DssExecLib {
         // Add new flap address to Vow
         setContract(_vow, "flapper", _newFlap);
 
-        // Authorize MCD contracts from new flap
+        // Authorize MCD contracts for new flap
         authorize(_newFlap, _vow);
 
-        // Authorize MCD contracts from old flap
+        // Deauthorize MCD contracts for old flap
         deauthorize(_oldFlap, _vow);
 
         // Transfer auction params from old flap to new flap
