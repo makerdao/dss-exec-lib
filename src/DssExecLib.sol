@@ -245,7 +245,7 @@ library DssExecLib {
     /******************************/
     // function setGlobalDebtCeiling(uint256 _amount) public { setGlobalDebtCeiling(vat(), _amount); }
     /**
-        @dev Set the global debt ceiling. Amount will be converted to the correct external precision.
+        @dev Set the global debt ceiling. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
@@ -254,7 +254,7 @@ library DssExecLib {
         Fileable(_vat).file("Line", _amount * MathLib.RAD);
     }
     /**
-        @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct external precision.
+        @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
         @param _amount The amount to add in DAI (ex. 10m DAI amount == 10000000)
     */
@@ -262,7 +262,7 @@ library DssExecLib {
         setGlobalDebtCeiling(_vat, MathLib.add(DssVat(_vat).Line() / MathLib.RAD, _amount));
     }
     /**
-        @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct external precision.
+        @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
         @param _vat    The address of the Vat core accounting contract
         @param _amount The amount to reduce in DAI (ex. 10m DAI amount == 10000000)
     */
@@ -279,7 +279,7 @@ library DssExecLib {
         Fileable(_pot).file("dsr", _rate);
     }
     /**
-        @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct external precision.
+        @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
         @param _vow    The address of the Vow core contract
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
@@ -288,7 +288,7 @@ library DssExecLib {
         Fileable(_vow).file("bump", _amount * MathLib.RAD);
     }
     /**
-        @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct external precision.
+        @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
         @param _vow    The address of the Vow core contract
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
@@ -297,7 +297,7 @@ library DssExecLib {
         Fileable(_vow).file("hump", _amount * MathLib.RAD);
     }
     /**
-        @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct external precision.
+        @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is (1 + pct / 10,000) * WAD
         @param _flap    The address of the Flapper core contract
         @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)

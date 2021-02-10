@@ -243,11 +243,11 @@ abstract contract DssAction {
     }
 
     function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount, bool global) internal {
-        decreaseIlkDebtCeiling(ilk, amount, global);
+        DssExecLib.decreaseIlkDebtCeiling(vat(), ilk, amount, global);
     }
 
     function decreaseIlkDebtCeiling(bytes32 ilk, uint256 amount) internal {
-        decreaseIlkDebtCeiling(ilk, amount, true);
+        DssExecLib.decreaseIlkDebtCeiling(vat(), ilk, amount, true);
     }
 
     function setIlkAutoLineParameters(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) internal {
