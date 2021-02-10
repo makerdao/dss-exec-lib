@@ -439,8 +439,9 @@ contract DssExecLib {
         @param _global If true, increases the global debt ceiling by _amount
     */
     function increaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setIlkDebtCeiling(_vat, _ilk, MathLib.add(line_ / MathLib.RAD, _amount));
+        Fileable(_vat).file(_ilk, "line", MathLib.add(line_, _amount * MathLib.RAD));
         if (_global) { increaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
@@ -451,8 +452,9 @@ contract DssExecLib {
         @param _global If true, decreases the global debt ceiling by _amount
     */
     function decreaseIlkDebtCeiling(address _vat, bytes32 _ilk, uint256 _amount, bool _global) public {
+        require(_amount < MathLib.WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setIlkDebtCeiling(_vat, _ilk, MathLib.sub(line_ / MathLib.RAD, _amount));
+        Fileable(_vat).file(_ilk, "line", MathLib.sub(line_, _amount * MathLib.RAD));
         if (_global) { decreaseGlobalDebtCeiling(_vat, _amount); }
     }
     /**
