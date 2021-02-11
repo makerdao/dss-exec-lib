@@ -27,9 +27,263 @@ contract DssTestAction is DssAction {
 
     function actions() public override {}
 
+    /**********************/
+    /*** Authorizations ***/
+    /**********************/
+    function authorize_test(address base, address ward) public {
+        DssExecLib.authorize(base, ward);
+    }
+
+    function deauthorize_test(address base, address ward) public {
+        DssExecLib.deauthorize(base, ward);
+    }
+
+    /**************************/
+    /*** Accumulating Rates ***/
+    /**************************/
+    function accumulateDSR_test() public {
+        DssExecLib.accumulateDSR();
+    }
+
+    function accumulateCollateralStabilityFees_test(bytes32 ilk) public {
+        DssExecLib.accumulateCollateralStabilityFees(ilk);
+    }
+
+    /****************************/
+    /*** Changelog Management ***/
+    /****************************/
+
+    function setChangelogAddress_test(bytes32 key, address val) public {
+        DssExecLib.setChangelogAddress(key, val);
+    }
+
+    function setChangelogVersion_test(string memory version) public {
+        DssExecLib.setChangelogVersion(version);
+    }
+
+    function setChangelogIPFS_test(string memory ipfs) public {
+        DssExecLib.setChangelogIPFS(ipfs);
+    }
+
+    function setChangelogSHA256_test(string memory SHA256) public {
+        DssExecLib.setChangelogSHA256(SHA256);
+    }
+
+    /*********************/
+    /*** Price Updates ***/
+    /*********************/
+    function updateCollateralPrice_test(bytes32 ilk) public {
+        DssExecLib.updateCollateralPrice(ilk);
+    }
+
+    /****************************/
+    /*** System Configuration ***/
+    /****************************/
+    function setContract_test(address base, bytes32 what, address addr) public {
+        DssExecLib.setContract(base, what, addr);
+    }
+
+    function setContract_test(address base, bytes32 ilk, bytes32 what, address addr) public {
+        DssExecLib.setContract(base, ilk, what, addr);
+    }
+
+    /******************************/
+    /*** System Risk Parameters ***/
+    /******************************/
+    function setGlobalDebtCeiling_test(uint256 amount) public {
+        DssExecLib.setGlobalDebtCeiling(amount);
+    }
+
+    function increaseGlobalDebtCeiling_test(uint256 amount) public {
+        DssExecLib.increaseGlobalDebtCeiling(amount);
+    }
+
+    function decreaseGlobalDebtCeiling_test(uint256 amount) public {
+        DssExecLib.decreaseGlobalDebtCeiling(amount);
+    }
+
+    function setDSR_test(uint256 rate) public {
+        DssExecLib.setDSR(rate);
+    }
+
+    function setSurplusAuctionAmount_test(uint256 amount) public {
+        DssExecLib.setSurplusAuctionAmount(amount);
+    }
+
+    function setSurplusBuffer_test(uint256 amount) public {
+        DssExecLib.setSurplusBuffer(amount);
+    }
+
+    function setMinSurplusAuctionBidIncrease_test(uint256 pct_bps) public {
+        DssExecLib.setMinSurplusAuctionBidIncrease(pct_bps);
+    }
+
+    function setSurplusAuctionBidDuration_test(uint256 duration) public {
+        DssExecLib.setSurplusAuctionBidDuration(duration);
+    }
+
+    function setSurplusAuctionDuration_test(uint256 duration) public {
+        DssExecLib.setSurplusAuctionDuration(duration);
+    }
+
+    function setDebtAuctionDelay_test(uint256 duration) public {
+        DssExecLib.setDebtAuctionDelay(duration);
+    }
+
+    function setDebtAuctionDAIAmount_test(uint256 amount) public {
+        DssExecLib.setDebtAuctionDAIAmount(amount);
+    }
+
+    function setDebtAuctionMKRAmount_test(uint256 amount) public {
+        DssExecLib.setDebtAuctionMKRAmount(amount);
+    }
+
+    function setMinDebtAuctionBidIncrease_test(uint256 pct_bps) public {
+        DssExecLib.setMinDebtAuctionBidIncrease(pct_bps);
+    }
+
+    function setDebtAuctionBidDuration_test(uint256 duration) public {
+        DssExecLib.setDebtAuctionBidDuration(duration);
+    }
+
+    function setDebtAuctionDuration_test(uint256 duration) public {
+        DssExecLib.setDebtAuctionDuration(duration);
+    }
+
+    function setDebtAuctionMKRIncreaseRate_test(uint256 pct_bps) public {
+        DssExecLib.setDebtAuctionMKRIncreaseRate(pct_bps);
+    }
+
+    function setMaxTotalDAILiquidationAmount_test(uint256 amount) public {
+        DssExecLib.setMaxTotalDAILiquidationAmount(amount);
+    }
+
+    function setEmergencyShutdownProcessingTime_test(uint256 duration) public {
+        DssExecLib.setEmergencyShutdownProcessingTime(duration);
+    }
+
+    function setGlobalStabilityFee_test(uint256 rate) public {
+        DssExecLib.setGlobalStabilityFee(rate);
+    }
+
+    function setDAIReferenceValue_test(uint256 value) public {
+        DssExecLib.setDAIReferenceValue(value);
+    }
+
+    /*****************************/
+    /*** Collateral Management ***/
+    /*****************************/
+    function setIlkDebtCeiling_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.setIlkDebtCeiling(ilk, amount);
+    }
+
+    function increaseIlkDebtCeiling_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.increaseIlkDebtCeiling(ilk, amount, true);
+    }
+
+    function decreaseIlkDebtCeiling_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.decreaseIlkDebtCeiling(ilk, amount, true);
+    }
+
+    function setIlkAutoLineParameters_test(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) public {
+        DssExecLib.setIlkAutoLineParameters(ilk, amount, gap, ttl);
+    }
+
+    function setIlkAutoLineDebtCeiling_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.setIlkAutoLineDebtCeiling(ilk, amount);
+    }
+
+    function removeIlkFromAutoLine_test(bytes32 ilk) public {
+        DssExecLib.removeIlkFromAutoLine(ilk);
+    }
+
+    function setIlkMinVaultAmount_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.setIlkMinVaultAmount(ilk, amount);
+    }
+
+    function setIlkLiquidationPenalty_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setIlkLiquidationPenalty(ilk, pct_bps);
+    }
+
+    function setIlkMaxLiquidationAmount_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.setIlkMaxLiquidationAmount(ilk, amount);
+    }
+
+    function setIlkLiquidationRatio_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setIlkLiquidationRatio(ilk, pct_bps);
+    }
+
+    function setIlkMinAuctionBidIncrease_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setIlkMinAuctionBidIncrease(ilk, pct_bps);
+    }
+
+    function setIlkBidDuration_test(bytes32 ilk, uint256 duration) public {
+        DssExecLib.setIlkBidDuration(ilk, duration);
+    }
+
+    function setIlkAuctionDuration_test(bytes32 ilk, uint256 duration) public {
+        DssExecLib.setIlkAuctionDuration(ilk, duration);
+    }
+
+    function setIlkStabilityFee_test(bytes32 ilk, uint256 rate) public {
+        DssExecLib.setIlkStabilityFee(ilk, rate, true);
+    }
+
+
+    /*************************/
+    /*** Oracle Management ***/
+    /*************************/
+    function addWritersToMedianWhitelist_test(address medianizer, address[] memory feeds) public {
+        DssExecLib.addWritersToMedianWhitelist(medianizer, feeds);
+    }
+
+    function removeWritersFromMedianWhitelist_test(address medianizer, address[] memory feeds) public {
+        DssExecLib.removeWritersFromMedianWhitelist(medianizer, feeds);
+    }
+
+    function addReadersToMedianWhitelist_test(address medianizer, address[] memory readers) public {
+        DssExecLib.addReadersToMedianWhitelist(medianizer, readers);
+    }
+
+    function addReaderToMedianWhitelist_test(address medianizer, address reader) public {
+        DssExecLib.addReaderToMedianWhitelist(medianizer, reader);
+    }
+
+    function removeReadersFromMedianWhitelist_test(address medianizer, address[] memory readers) public {
+        DssExecLib.removeReadersFromMedianWhitelist(medianizer, readers);
+    }
+
+    function removeReaderFromMedianWhitelist_test(address medianizer, address reader) public {
+        DssExecLib.removeReaderFromMedianWhitelist(medianizer, reader);
+    }
+
+    function setMedianWritersQuorum_test(address medianizer, uint256 minQuorum) public {
+        DssExecLib.setMedianWritersQuorum(medianizer, minQuorum);
+    }
+
+    function addReaderToOSMWhitelist_test(address osm, address reader) public {
+        DssExecLib.addReaderToOSMWhitelist(osm, reader);
+    }
+
+    function removeReaderFromOSMWhitelist_test(address osm, address reader) public {
+        DssExecLib.removeReaderFromOSMWhitelist(osm, reader);
+    }
+
+    function allowOSMFreeze_test(address osm, bytes32 ilk) public {
+        DssExecLib.allowOSMFreeze(osm, ilk);
+    }
+
+
     /*****************************/
     /*** Collateral Onboarding ***/
     /*****************************/
+
+    function addCollateralBase_test(
+        bytes32 ilk, address gem, address join, address flip, address pip
+    ) public {
+        DssExecLib.addCollateralBase(ilk, gem, join, flip, pip);
+    }
+
 
     function addNewCollateral_test(
         bytes32          ilk,
