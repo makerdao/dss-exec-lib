@@ -26,10 +26,7 @@ abstract contract DssAction {
 
     using DssExecLib for *;
 
-    bool    public immutable officeHours;
-
-    // Changelog address applies to MCD deployments on
-    //        mainnet, kovan, rinkeby, ropsten, and goerli
+    bool public immutable officeHours;
 
     constructor(bool officeHours_) public {
         officeHours = officeHours_;
