@@ -65,8 +65,8 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         });
         addNewCollateral(XMPL_A);
 
-        setIlkDebtCeiling("ETH-A", 10 * MILLION);
-        setGlobalDebtCeiling(2000 * MILLION);
+        DssExecLib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
+        DssExecLib.setGlobalDebtCeiling(2000 * MILLION);
     }
 }
 
