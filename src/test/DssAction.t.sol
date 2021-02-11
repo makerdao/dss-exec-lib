@@ -885,5 +885,6 @@ contract ActionTest is DSTest {
     function test_officeHoursCanOverrideInAction() public {
         DssTestNoOfficeHoursAction actionNoOfficeHours = new DssTestNoOfficeHoursAction();
         actionNoOfficeHours.execute();
+        assertTrue(!actionNoOfficeHours.officeHours());
     }
 }
