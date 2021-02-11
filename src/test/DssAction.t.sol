@@ -49,7 +49,6 @@ import {Spotter}          from 'dss/spot.sol';
 
 import "../CollateralOpts.sol";
 import {DssTestAction}    from './DssTestAction.sol';
-import {DssExecLib}       from '../DssExecLib.sol';
 
 interface Hevm {
     function warp(uint256) external;
@@ -86,7 +85,6 @@ contract ActionTest is DSTest {
     Flopper flop;
 
     DssTestAction action;
-    DssExecLib lib;
 
     struct Ilk {
         DSValue pip;
@@ -272,9 +270,7 @@ contract ActionTest is DSTest {
         log.setAddress("FLIPPER_MOM",       address(flipperMom));
         log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
 
-        lib = new DssExecLib();
-
-        action = new DssTestAction(address(lib), true);
+        action = new DssTestAction(true);
 
         init_collateral("gold", address(action));
 

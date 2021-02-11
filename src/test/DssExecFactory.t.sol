@@ -29,7 +29,6 @@ import "dss-interfaces/Interfaces.sol";
 import "../DssExec.sol";
 import "../DssAction.sol";
 import "../CollateralOpts.sol";
-import {DssExecLib} from "../DssExecLib.sol";
 import {DssExecFactory} from "../DssExecFactory.sol";
 import "./rates.sol";
 
@@ -41,7 +40,7 @@ interface Hevm {
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
 
     // This can be hardcoded away later or can use the chain-log
-    constructor(address lib, bool ofcHrs) DssAction(lib, ofcHrs) public {}
+    constructor(bool ofcHrs) DssAction(ofcHrs) public {}
 
     uint256 constant MILLION  = 10 ** 6;
 
@@ -141,7 +140,6 @@ contract DssLibExecTest is DSTest, DSMath {
     DssExec spell;
     DssExecFactory factory;
     DssAction action;
-    address execlib;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -203,14 +201,11 @@ contract DssLibExecTest is DSTest, DSMath {
         hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
-        // ExecLib lives on chain and provides business logic
-        execlib = address(new DssExecLib()); // This would be deployed only once
-
         // The ExecLib factory can exist independently on-chain
         factory = new DssExecFactory();
 
         // Only an action needs to be crafted, it can be passed to the factory which is already deployed.
-        action = new DssLibSpellAction(execlib, true);
+        action = new DssLibSpellAction(true);
 
         address _factorySpell = factory.newExec(
             "A test dss exec spell",                    // Description

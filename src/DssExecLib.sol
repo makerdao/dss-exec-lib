@@ -93,6 +93,16 @@ interface RegistryLike {
     function info(bytes32) external view returns (
         string memory, string memory, uint256, address, address, address, address
     );
+    function ilkData(bytes32) external view returns (
+        uint256       pos,
+        address       gem,
+        address       pip,
+        address       join,
+        address       flip,
+        uint256       dec,
+        string memory name,
+        string memory symbol
+    );
 }
 
 // https://github.com/makerdao/dss-chain-log
@@ -100,6 +110,7 @@ interface ChainlogLike {
     function setVersion(string calldata) external;
     function setIPFS(string calldata) external;
     function setSha256sum(string calldata) external;
+    function getAddress(bytes32) external view returns (address);
     function setAddress(bytes32, address) external;
     function removeAddress(bytes32) external;
 }
@@ -112,7 +123,7 @@ interface IAMLike {
 }
 
 
-contract DssExecLib {
+library DssExecLib {
 
     using MathLib for *;
 
