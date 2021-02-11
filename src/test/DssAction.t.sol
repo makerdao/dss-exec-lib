@@ -293,14 +293,6 @@ contract ActionTest is DSTest {
         govGuard.setRoot(address(action));
     }
 
-    function testFail_basic_sanity() public {
-        assertTrue(false);
-    }
-
-    function test_basic_sanity() public {
-        assertTrue(true);
-    }
-
     // /**********************/
     // /*** Authorizations ***/
     // /**********************/
