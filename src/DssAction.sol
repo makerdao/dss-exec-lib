@@ -298,20 +298,6 @@ abstract contract DssAction {
         DssExecLib.setIlkStabilityFee(jug(), ilk, rate, true);
     }
 
-    /***********************/
-    /*** Core Management ***/
-    /***********************/
-    function updateCollateralAuctionContract(bytes32 ilk, address newFlip, address oldFlip) internal {
-        DssExecLib.updateCollateralAuctionContract(vat(), cat(), end(), flipperMom(), ilk, newFlip, oldFlip);
-    }
-
-    function updateSurplusAuctionContract(address newFlap, address oldFlap) internal {
-        DssExecLib.updateSurplusAuctionContract(vat(), vow(), newFlap, oldFlap);
-    }
-
-    function updateDebtAuctionContract(address newFlop, address oldFlop) internal {
-        DssExecLib.updateDebtAuctionContract(vat(), vow(), govGuard(), newFlop, oldFlop);
-    }
 
     /*************************/
     /*** Oracle Management ***/

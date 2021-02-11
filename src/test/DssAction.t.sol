@@ -627,67 +627,6 @@ contract ActionTest is DSTest {
         assertEq(rho, START_TIME + 1 days);
     }
 
-    /***********************/
-    /*** Core Management ***/
-    /***********************/
-
-    function test_updateCollateralAuctionContract() public {
-        Flipper flip = ilks["gold"].flip;
-        Flipper newFlip = new Flipper(address(vat), address(cat), "gold");
-        newFlip.rely(address(action));
-        action.updateCollateralAuctionContract_test("gold", address(newFlip), address(flip));
-
-        (address catFlip,,) = cat.ilks("gold");
-        assertEq(catFlip, address(newFlip));
-
-        assertEq(newFlip.wards(address(cat)),        1);
-        assertEq(newFlip.wards(address(end)),        1);
-        assertEq(newFlip.wards(address(flipperMom)), 1);
-
-        assertEq(flip.wards(address(cat)),        0);
-        assertEq(flip.wards(address(end)),        0);
-        assertEq(flip.wards(address(flipperMom)), 0);
-
-        assertEq(newFlip.beg(), flip.beg());
-        assertEq(uint256(newFlip.ttl()), uint256(flip.ttl()));
-        assertEq(uint256(newFlip.tau()), uint256(flip.tau()));
-    }
-
-    function test_updateSurplusAuctionContract() public {
-        Flapper newFlap = new Flapper(address(vat), address(gov));
-        newFlap.rely(address(action));
-        action.updateSurplusAuctionContract_test(address(newFlap), address(flap));
-
-        assertEq(address(vow.flapper()), address(newFlap));
-
-        assertEq(newFlap.wards(address(vow)), 1);
-        assertEq(flap.wards(address(vow)),    0);
-
-        assertEq(newFlap.beg(), flap.beg());
-        assertEq(uint256(newFlap.ttl()), uint256(flap.ttl()));
-        assertEq(uint256(newFlap.tau()), uint256(flap.tau()));
-    }
-
-    function test_updateDebtAuctionContract() public {
-        Flopper newFlop = new Flopper(address(vat), address(gov));
-        newFlop.rely(address(action));
-        action.updateDebtAuctionContract_test(address(newFlop), address(flop));
-
-        assertEq(address(vow.flopper()), address(newFlop));
-
-        assertEq(newFlop.wards(address(vow)),          1);
-        assertEq(vat.wards(address(newFlop)),          1);
-        assertEq(govGuard.wards(address(newFlop)), 1);
-
-        assertEq(flop.wards(address(vow)),          0);
-        assertEq(vat.wards(address(flop)),          0);
-        assertEq(govGuard.wards(address(flop)), 0);
-
-        assertEq(newFlop.beg(), flop.beg());
-        assertEq(uint256(newFlop.ttl()), uint256(flop.ttl()));
-        assertEq(uint256(newFlop.tau()), uint256(flop.tau()));
-        assertEq(newFlop.pad(), flop.pad());
-    }
 
     /*************************/
     /*** Oracle Management ***/
