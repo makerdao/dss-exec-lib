@@ -270,7 +270,7 @@ contract ActionTest is DSTest {
         log.setAddress("FLIPPER_MOM",       address(flipperMom));
         log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
 
-        action = new DssTestAction(true);
+        action = new DssTestAction();
 
         init_collateral("gold", address(action));
 

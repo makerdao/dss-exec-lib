@@ -38,9 +38,6 @@ interface Hevm {
 
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
 
-    // This can be hardcoded away later or can use the chain-log
-    constructor(bool ofcHrs) DssAction(ofcHrs) public {}
-
     uint256 constant MILLION  = 10 ** 6;
 
     function actions() public override {
@@ -201,7 +198,7 @@ contract DssLibExecTest is DSTest, DSMath {
         spell = new DssExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
-            address(new DssLibSpellAction(true))
+            address(new DssLibSpellAction())
         );
 
         //

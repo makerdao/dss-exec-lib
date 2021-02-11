@@ -23,8 +23,6 @@ import "../DssAction.sol";
 
 contract DssTestAction is DssAction {
 
-    constructor(bool ofcHrs) DssAction(ofcHrs) public {}
-
     function actions() public override {}
 
     /**********************/
