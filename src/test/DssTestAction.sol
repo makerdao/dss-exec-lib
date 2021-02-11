@@ -229,20 +229,6 @@ contract DssTestAction is DssAction {
         setIlkStabilityFee(ilk, rate);
     }
 
-    /***********************/
-    /*** Core Management ***/
-    /***********************/
-    function updateCollateralAuctionContract_test(bytes32 ilk, address newFlip, address oldFlip) public {
-        updateCollateralAuctionContract(ilk, newFlip, oldFlip);
-    }
-
-    function updateSurplusAuctionContract_test(address newFlap, address oldFlap) public {
-        updateSurplusAuctionContract(newFlap, oldFlap);
-    }
-
-    function updateDebtAuctionContract_test(address newFlop, address oldFlop) public {
-        updateDebtAuctionContract(newFlop, oldFlop);
-    }
 
     /*************************/
     /*** Oracle Management ***/
