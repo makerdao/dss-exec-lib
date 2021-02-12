@@ -167,6 +167,8 @@ library DssExecLib {
     /****************************/
     /*** Core Address Helpers ***/
     /****************************/
+    function dai()        public view returns (address) { return getChangelogAddress("MCD_DAI"); }
+    function mkr()        public view returns (address) { return getChangelogAddress("MCD_ADM"); }
     function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
     function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
     function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
@@ -180,6 +182,7 @@ library DssExecLib {
     function osmMom()     public view returns (address) { return getChangelogAddress("OSM_MOM"); }
     function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
     function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
+    function pauseProxy() public view returns (address) { return getChangelogAddress("MCD_PAUSE_PROXY"); }
     function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
 
     function flip(bytes32 ilk) public view returns (address _flip) {
