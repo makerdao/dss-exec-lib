@@ -26,10 +26,11 @@ abstract contract DssAction {
 
     using lib for *;
 
-    bool public immutable officeHours;
-
-    constructor(bool officeHours_) public {
-        officeHours = officeHours_;
+    // Office Hours defaults to true by default.
+    //   To disable office hours, override this function and
+    //    return false in the inherited action.
+    function officeHours() public virtual returns (bool) {
+        return true;
     }
 
     // DssExec calls execute. We limit this function subject to officeHours modifier.
@@ -44,7 +45,7 @@ abstract contract DssAction {
 
     // Modifier required to
     modifier limited {
-        if (officeHours) {
+        if (officeHours()) {
             uint day = (block.timestamp / 1 days + 3) % 7;
             require(day < 5, "Can only be cast on a weekday");
             uint hour = block.timestamp / 1 hours % 24;

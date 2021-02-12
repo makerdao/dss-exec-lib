@@ -21,9 +21,17 @@ pragma solidity ^0.6.11;
 
 import "../DssAction.sol";
 
-contract DssTestAction is DssAction {
+contract DssTestNoOfficeHoursAction is DssAction {
+    function actions() public override {
+        require(!officeHours());
+    }
 
-    constructor(bool ofcHrs) DssAction(ofcHrs) public {}
+    function officeHours() public override returns (bool) {
+        return false;
+    }
+}
+
+contract DssTestAction is DssAction {
 
     function actions() public override {}
 

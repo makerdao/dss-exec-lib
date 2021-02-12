@@ -48,7 +48,7 @@ import {End}              from 'dss/end.sol';
 import {Spotter}          from 'dss/spot.sol';
 
 import "../CollateralOpts.sol";
-import {DssTestAction}    from './DssTestAction.sol';
+import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
 
 interface Hevm {
     function warp(uint256) external;
@@ -270,7 +270,7 @@ contract ActionTest is DSTest {
         log.setAddress("FLIPPER_MOM",       address(flipperMom));
         log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
 
-        action = new DssTestAction(true);
+        action = new DssTestAction();
 
         init_collateral("gold", address(action));
 
@@ -880,5 +880,11 @@ contract ActionTest is DSTest {
     }
     function test_addNewCollateral_case6() public {
         collateralOnboardingTest(false, false, false);   // Liquidations: OFF, PIP != OSM, osmSrc != median
+    }
+
+    function test_officeHoursCanOverrideInAction() public {
+        DssTestNoOfficeHoursAction actionNoOfficeHours = new DssTestNoOfficeHoursAction();
+        actionNoOfficeHours.execute();
+        assertTrue(!actionNoOfficeHours.officeHours());
     }
 }
