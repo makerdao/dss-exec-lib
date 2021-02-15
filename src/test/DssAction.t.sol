@@ -915,9 +915,9 @@ contract ActionTest is DSTest {
     }
 
 
-    /*****************************/
-    /*** Collateral Onboarding ***/
-    /*****************************/
+    /***************/
+    /*** Payment ***/
+    /***************/
 
     function sendPaymentFromSurplusBuffer_test() public {
         address target = address(this);
