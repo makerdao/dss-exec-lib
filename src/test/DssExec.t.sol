@@ -17,8 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.7;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.6.11;
 
 import "ds-test/test.sol";
 import "ds-math/math.sol";
@@ -30,7 +29,6 @@ import "dss-interfaces/Interfaces.sol";
 import "../DssExec.sol";
 import "../DssAction.sol";
 import "../CollateralOpts.sol";
-import {DssExecLib} from "../DssExecLib.sol";
 import "./rates.sol";
 
 interface Hevm {
@@ -39,9 +37,6 @@ interface Hevm {
 }
 
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
-
-    // This can be hardcoded away later or can use the chain-log
-    constructor(address lib, bool ofcHrs) DssAction(lib, ofcHrs) public {}
 
     uint256 constant MILLION  = 10 ** 6;
 
@@ -67,8 +62,8 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         });
         addNewCollateral(XMPL_A);
 
-        setIlkDebtCeiling("ETH-A", 10 * MILLION);
-        setGlobalDebtCeiling(1500 * MILLION);
+        lib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
+        lib.setGlobalDebtCeiling(10000 * MILLION);
     }
 }
 
@@ -139,7 +134,6 @@ contract DssLibExecTest is DSTest, DSMath {
     Rates rates;
 
     DssExec spell;
-    address execlib;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -201,12 +195,10 @@ contract DssLibExecTest is DSTest, DSMath {
         hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
-        execlib = address(new DssExecLib()); // This would be deployed only once
-
         spell = new DssExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
-            address(new DssLibSpellAction(execlib, true))
+            address(new DssLibSpellAction())
         );
 
         //
@@ -214,7 +206,7 @@ contract DssLibExecTest is DSTest, DSMath {
         //
         afterSpell = SystemValues({
             dsr_rate:     0,               // In basis points
-            vat_Line:     1500 * MILLION,  // In whole Dai units
+            vat_Line:     10000 * MILLION, // In whole Dai units
             pause_delay:  pause.delay(),   // In seconds
             vow_wait:     vow.wait(),      // In seconds
             vow_dump:     vow.dump()/WAD,  // In whole Dai units
@@ -570,17 +562,5 @@ contract DssLibExecTest is DSTest, DSMath {
         assertEq(flipXMPLA.kicks(), 0);
         cat.bite("XMPL-A", address(this));
         assertEq(flipXMPLA.kicks(), 1);
-    }
-
-    function testExecLibDeployCost() public {
-        new DssExecLib();
-    }
-
-    function testExecDeployCost() public {
-        new DssExec(
-            "Basic Spell",                              // Description
-            now + 30 days,                              // Expiration
-            address(new DssLibSpellAction(execlib, true))
-        );
     }
 }

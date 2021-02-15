@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.7;
+pragma solidity ^0.6.11;
 
 import "ds-test/test.sol";
 import "ds-token/token.sol";
@@ -49,8 +49,7 @@ import {End}              from 'dss/end.sol';
 import {Spotter}          from 'dss/spot.sol';
 
 import "../CollateralOpts.sol";
-import {DssTestAction}    from './DssTestAction.sol';
-import {DssExecLib}       from '../DssExecLib.sol';
+import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
 
 interface Hevm {
     function warp(uint256) external;
@@ -87,7 +86,6 @@ contract ActionTest is DSTest {
     Flopper flop;
 
     DssTestAction action;
-    DssExecLib lib;
 
     struct Ilk {
         DSValue pip;
@@ -273,9 +271,7 @@ contract ActionTest is DSTest {
         log.setAddress("FLIPPER_MOM",       address(flipperMom));
         log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
 
-        lib = new DssExecLib();
-
-        action = new DssTestAction(address(lib), true);
+        action = new DssTestAction();
 
         init_collateral("gold", address(action));
 
@@ -296,14 +292,6 @@ contract ActionTest is DSTest {
         osmMom.setOwner(address(action));
 
         govGuard.setRoot(address(action));
-    }
-
-    function testFail_basic_sanity() public {
-        assertTrue(false);
-    }
-
-    function test_basic_sanity() public {
-        assertTrue(true);
     }
 
     // /**********************/
@@ -450,7 +438,7 @@ contract ActionTest is DSTest {
 
     function test_setMinSurplusAuctionBidIncrease() public {
         action.setMinSurplusAuctionBidIncrease_test(525); // 5.25%
-        assertEq(flap.beg(), 5.25 ether / 100); // WAD pct
+        assertEq(flap.beg(), 1 ether + 5.25 ether / 100); // (1 + pct) * WAD
     }
 
     function test_setSurplusAuctionBidDuration() public {
@@ -480,7 +468,7 @@ contract ActionTest is DSTest {
 
     function test_setMinDebtAuctionBidIncrease() public {
         action.setMinDebtAuctionBidIncrease_test(525); // 5.25%
-        assertEq(flop.beg(), 5.25 ether / 100); // WAD pct
+        assertEq(flop.beg(), 1 ether + 5.25 ether / 100); // (1 + pct) * WAD
     }
 
     function test_setDebtAuctionBidDuration() public {
@@ -611,7 +599,7 @@ contract ActionTest is DSTest {
 
     function test_setIlkMinAuctionBidIncrease() public {
         action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
-        assertEq(ilks["gold"].flip.beg(), 5 * WAD / 100); // WAD pct
+        assertEq(ilks["gold"].flip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
     }
 
     function test_setIlkBidDuration() public {
@@ -632,67 +620,6 @@ contract ActionTest is DSTest {
         assertEq(rho, START_TIME + 1 days);
     }
 
-    /***********************/
-    /*** Core Management ***/
-    /***********************/
-
-    function test_updateCollateralAuctionContract() public {
-        Flipper flip = ilks["gold"].flip;
-        Flipper newFlip = new Flipper(address(vat), address(cat), "gold");
-        newFlip.rely(address(action));
-        action.updateCollateralAuctionContract_test("gold", address(newFlip), address(flip));
-
-        (address catFlip,,) = cat.ilks("gold");
-        assertEq(catFlip, address(newFlip));
-
-        assertEq(newFlip.wards(address(cat)),        1);
-        assertEq(newFlip.wards(address(end)),        1);
-        assertEq(newFlip.wards(address(flipperMom)), 1);
-
-        assertEq(flip.wards(address(cat)),        0);
-        assertEq(flip.wards(address(end)),        0);
-        assertEq(flip.wards(address(flipperMom)), 0);
-
-        assertEq(newFlip.beg(), flip.beg());
-        assertEq(uint256(newFlip.ttl()), uint256(flip.ttl()));
-        assertEq(uint256(newFlip.tau()), uint256(flip.tau()));
-    }
-
-    function test_updateSurplusAuctionContract() public {
-        Flapper newFlap = new Flapper(address(vat), address(gov));
-        newFlap.rely(address(action));
-        action.updateSurplusAuctionContract_test(address(newFlap), address(flap));
-
-        assertEq(address(vow.flapper()), address(newFlap));
-
-        assertEq(newFlap.wards(address(vow)), 1);
-        assertEq(flap.wards(address(vow)),    0);
-
-        assertEq(newFlap.beg(), flap.beg());
-        assertEq(uint256(newFlap.ttl()), uint256(flap.ttl()));
-        assertEq(uint256(newFlap.tau()), uint256(flap.tau()));
-    }
-
-    function test_updateDebtAuctionContract() public {
-        Flopper newFlop = new Flopper(address(vat), address(gov));
-        newFlop.rely(address(action));
-        action.updateDebtAuctionContract_test(address(newFlop), address(flop));
-
-        assertEq(address(vow.flopper()), address(newFlop));
-
-        assertEq(newFlop.wards(address(vow)),          1);
-        assertEq(vat.wards(address(newFlop)),          1);
-        assertEq(govGuard.wards(address(newFlop)), 1);
-
-        assertEq(flop.wards(address(vow)),          0);
-        assertEq(vat.wards(address(flop)),          0);
-        assertEq(govGuard.wards(address(flop)), 0);
-
-        assertEq(newFlop.beg(), flop.beg());
-        assertEq(uint256(newFlop.ttl()), uint256(flop.ttl()));
-        assertEq(uint256(newFlop.tau()), uint256(flop.tau()));
-        assertEq(newFlop.pad(), flop.pad());
-    }
 
     /*************************/
     /*** Oracle Management ***/
@@ -925,7 +852,7 @@ contract ActionTest is DSTest {
         }
 
         {
-            assertEq(tokenFlip.beg(), 5 * WAD / 100); // WAD pct
+            assertEq(tokenFlip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
             assertEq(uint256(tokenFlip.ttl()), 6 hours);
             assertEq(uint256(tokenFlip.tau()), 6 hours);
 
@@ -954,6 +881,11 @@ contract ActionTest is DSTest {
     }
     function test_addNewCollateral_case6() public {
         collateralOnboardingTest(false, false, false);   // Liquidations: OFF, PIP != OSM, osmSrc != median
+    }
+    function test_officeHoursCanOverrideInAction() public {
+        DssTestNoOfficeHoursAction actionNoOfficeHours = new DssTestNoOfficeHoursAction();
+        actionNoOfficeHours.execute();
+        assertTrue(!actionNoOfficeHours.officeHours());
     }
 
     /************/
