@@ -37,3 +37,6 @@
 [submodule "lib/dss-auto-line"]
 	path = lib/dss-auto-line
 	url = https://github.com/makerdao/dss-auto-line
+[submodule "lib/dss-lerp"]
+	path = lib/dss-lerp
+	url = https://github.com/makerdao/dss-lerp
