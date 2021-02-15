@@ -35,6 +35,7 @@ import {OsmAbstract,
 import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
+import {LerpFactory}      from "dss-lerp/LerpFactory.sol";
 
 import {Vat}              from 'dss/vat.sol';
 import {Cat}              from 'dss/cat.sol';
@@ -78,6 +79,7 @@ contract ActionTest is DSTest {
     MkrAuthority govGuard;
     FlipperMom flipperMom;
     DssAutoLine autoLine;
+    LerpFactory lerpFab;
 
     ChainLog log;
 
@@ -246,6 +248,8 @@ contract ActionTest is DSTest {
         autoLine   = new DssAutoLine(address(vat));
         vat.rely(address(autoLine));
 
+        lerpFab = new LerpFactory();
+
         median = new Median();
 
         hevm.store(
@@ -270,6 +274,7 @@ contract ActionTest is DSTest {
         log.setAddress("GOV_GUARD",         address(govGuard));
         log.setAddress("FLIPPER_MOM",       address(flipperMom));
         log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
+        log.setAddress("LERP_FAB",          address(lerpFab));
 
         action = new DssTestAction();
 
