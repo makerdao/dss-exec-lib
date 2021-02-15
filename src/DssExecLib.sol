@@ -48,8 +48,11 @@ interface ERC20 {
 }
 
 interface DssVat {
+    function hope(address) external;
+    function nope(address) external;
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
     function Line() external view returns (uint256);
+    function suck(address u, address v, uint rad) external;
 }
 
 interface AuctionLike {
@@ -68,6 +71,8 @@ interface JoinLike {
     function ilk() external returns (bytes32);
     function gem() external returns (address);
     function dec() external returns (uint256);
+    function join(address usr, uint wad) external;
+    function exit(address usr, uint wad) external;
 }
 
 // Includes Median and OSM functions
@@ -181,6 +186,7 @@ library DssExecLib {
     function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
     function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
     function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
+    function daiJoin()    public view returns (address) { return getChangelogAddress("MCD_JOIN_DAI"); }
 
     function flip(bytes32 ilk) public view returns (address _flip) {
         (,,,, _flip,,,) = RegistryLike(reg()).ilkData(ilk);
@@ -243,6 +249,20 @@ library DssExecLib {
     */
     function deauthorize(address _base, address _ward) public {
         Authorizable(_base).deny(_ward);
+    }
+    /**
+        @dev Delegate vat authority to the specified address.
+        @param _usr Address to be authorized
+    */
+    function delegateVat(address _usr) public {
+        DssVat(vat()).hope(_usr);
+    }
+    /**
+        @dev Revoke vat authority to the specified address.
+        @param _usr Address to be deauthorized
+    */
+    function undelegateVat(address _usr) public {
+        DssVat(vat()).nope(_usr);
     }
 
     /**************************/
@@ -763,5 +783,20 @@ library DssExecLib {
 
         // Add new ilk to the IlkRegistry
         RegistryLike(reg()).add(_join);
+    }
+
+
+    /***************/
+    /*** Payment ***/
+    /***************/
+    /**
+        @dev Send a payment in ERC20 DAI from the surplus buffer.
+        @param _target The target address to send the DAI to.
+        @param _amount The amount to send in DAI (ex. 10m DAI amount == 10000000)
+    */
+    function sendPaymentFromSurplusBuffer(address _target, uint256 _amount) public {
+        require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
+        DssVat(vat()).suck(vow(), address(this), _amount * RAD);
+        JoinLike(daiJoin()).exit(_target, _amount * WAD);
     }
 }

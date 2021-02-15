@@ -46,6 +46,14 @@ contract DssTestAction is DssAction {
         lib.deauthorize(base, ward);
     }
 
+    function delegateVat_test(address usr) public {
+        lib.delegateVat(usr);
+    }
+
+    function undelegateVat_test(address usr) public {
+        lib.undelegateVat(usr);
+    }
+
     /**************************/
     /*** Accumulating Rates ***/
     /**************************/
@@ -320,6 +328,15 @@ contract DssTestAction is DssAction {
         );
 
         addNewCollateral(co);
+    }
+
+
+    /***************/
+    /*** Payment ***/
+    /***************/
+
+    function sendPaymentFromSurplusBuffer_test(address target, uint256 amount) public {
+        lib.sendPaymentFromSurplusBuffer(target, amount);
     }
 
 }
