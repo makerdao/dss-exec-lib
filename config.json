@@ -1,0 +1,116 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "src/DssAction.sol": {
+      "urls": [
+        "src/DssAction.sol"
+      ]
+    },
+    "src/DssExec.sol": {
+      "urls": [
+        "src/DssExec.sol"
+      ]
+    },
+    "src/MathLib.sol": {
+      "urls": [
+        "src/MathLib.sol"
+      ]
+    },
+    "src/CollateralOpts.sol": {
+      "urls": [
+        "src/CollateralOpts.sol"
+      ]
+    },
+    "src/DssExecLib.sol": {
+      "urls": [
+        "src/DssExecLib.sol"
+      ]
+    },
+    "src/test/DssExec.t.sol": {
+      "urls": [
+        "src/test/DssExec.t.sol"
+      ]
+    },
+    "src/test/DssTestAction.sol": {
+      "urls": [
+        "src/test/DssTestAction.sol"
+      ]
+    },
+    "src/test/DssAction.t.sol": {
+      "urls": [
+        "src/test/DssAction.t.sol"
+      ]
+    },
+    "src/test/rates.sol": {
+      "urls": [
+        "src/test/rates.sol"
+      ]
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "remappings": [
+      "dss/=lib/dss/src/",
+      "dss=lib/dss/src/index.sol",
+      "dss-interfaces/=lib/dss-interfaces/src/",
+      "dss-interfaces=lib/dss-interfaces/src/index.sol",
+      "median/=lib/median/src/",
+      "median=lib/median/src/index.sol",
+      "ds-math/=lib/ds-math/src/",
+      "ds-math=lib/ds-math/src/index.sol",
+      "dss-auto-line/=lib/dss-auto-line/src/",
+      "dss-auto-line=lib/dss-auto-line/src/index.sol",
+      "osm-mom/=lib/osm-mom/src/",
+      "osm-mom=lib/osm-mom/src/index.sol",
+      "mkr-authority/=lib/mkr-authority/src/",
+      "mkr-authority=lib/mkr-authority/src/index.sol",
+      "dss-chain-log/=lib/dss-chain-log/src/",
+      "dss-chain-log=lib/dss-chain-log/src/index.sol",
+      "ds-test/=lib/ds-test/src/",
+      "ds-test=lib/ds-test/src/index.sol",
+      "osm/=lib/osm/src/",
+      "osm=lib/osm/src/index.sol",
+      "ilk-registry/=lib/ilk-registry/src/",
+      "ilk-registry=lib/ilk-registry/src/index.sol",
+      "flipper-mom/=lib/flipper-mom/src/",
+      "flipper-mom=lib/flipper-mom/src/index.sol",
+      "ds-proxy/=lib/ds-proxy/src/",
+      "ds-proxy=lib/ds-proxy/src/index.sol",
+      "ds-token/=lib/dss/lib/ds-token/src/",
+      "ds-token=lib/dss/lib/ds-token/src/index.sol",
+      "ds-value/=lib/dss/lib/ds-value/src/",
+      "ds-value=lib/dss/lib/ds-value/src/index.sol",
+      "ds-auth/=lib/ds-proxy/lib/ds-auth/src/",
+      "ds-auth=lib/ds-proxy/lib/ds-auth/src/index.sol",
+      "ds-stop/=lib/osm/lib/ds-stop/src/",
+      "ds-stop=lib/osm/lib/ds-stop/src/index.sol",
+      "ds-note/=lib/ds-proxy/lib/ds-note/src/",
+      "ds-note=lib/ds-proxy/lib/ds-note/src/index.sol",
+      "ds-thing/=lib/dss/lib/ds-value/lib/ds-thing/src/",
+      "ds-thing=lib/dss/lib/ds-value/lib/ds-thing/src/index.sol"
+    ],
+    "outputSelection": {
+      "*": {
+        "*": [
+          "metadata",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "abi",
+          "storageLayout",
+          "evm.bytecode.sourceMap",
+          "evm.bytecode.linkReferences",
+          "evm.bytecode.generatedSources",
+          "evm.deployedBytecode.sourceMap",
+          "evm.deployedBytecode.linkReferences",
+          "evm.deployedBytecode.generatedSources"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    }
+  }
+}
