@@ -81,7 +81,7 @@ contract ActionTest is DSTest {
     FlipperMom flipperMom;
     DssAutoLine autoLine;
 
-    ChainLog log;
+    ChainLog clog;
 
     Spotter spot;
     Flapper flap;
@@ -260,25 +260,24 @@ contract ActionTest is DSTest {
             keccak256(abi.encode(address(this), uint256(0))), // Grant auth to test contract
             bytes32(uint256(1))
         );
+        clog = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
 
-        log = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
-
-        log.setAddress("MCD_VAT",           address(vat));
-        log.setAddress("MCD_CAT",           address(cat));
-        log.setAddress("MCD_JUG",           address(jug));
-        log.setAddress("MCD_POT",           address(pot));
-        log.setAddress("MCD_VOW",           address(vow));
-        log.setAddress("MCD_SPOT",          address(spot));
-        log.setAddress("MCD_FLAP",          address(flap));
-        log.setAddress("MCD_FLOP",          address(flop));
-        log.setAddress("MCD_END",           address(end));
-        log.setAddress("MCD_DAI",           address(daiToken));
-        log.setAddress("MCD_JOIN_DAI",      address(daiJoin));
-        log.setAddress("ILK_REGISTRY",      address(reg));
-        log.setAddress("OSM_MOM",           address(osmMom));
-        log.setAddress("GOV_GUARD",         address(govGuard));
-        log.setAddress("FLIPPER_MOM",       address(flipperMom));
-        log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
+        clog.setAddress("MCD_VAT",           address(vat));
+        clog.setAddress("MCD_CAT",           address(cat));
+        clog.setAddress("MCD_JUG",           address(jug));
+        clog.setAddress("MCD_POT",           address(pot));
+        clog.setAddress("MCD_VOW",           address(vow));
+        clog.setAddress("MCD_SPOT",          address(spot));
+        clog.setAddress("MCD_FLAP",          address(flap));
+        clog.setAddress("MCD_FLOP",          address(flop));
+        clog.setAddress("MCD_END",           address(end));
+        clog.setAddress("MCD_DAI",           address(daiToken));
+        clog.setAddress("MCD_JOIN_DAI",      address(daiJoin));
+        clog.setAddress("ILK_REGISTRY",      address(reg));
+        clog.setAddress("OSM_MOM",           address(osmMom));
+        clog.setAddress("GOV_GUARD",         address(govGuard));
+        clog.setAddress("FLIPPER_MOM",       address(flipperMom));
+        clog.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
 
         action = new DssTestAction();
 
@@ -295,7 +294,7 @@ contract ActionTest is DSTest {
         flop.rely(address(action));
         daiJoin.rely(address(action));
         median.rely(address(action));
-        log.rely(address(action));
+        clog.rely(address(action));
         autoLine.rely(address(action));
 
         flipperMom.setOwner(address(action));
@@ -345,25 +344,25 @@ contract ActionTest is DSTest {
     function test_setAddress() public {
         bytes32 ilk = "silver";
         action.setChangelogAddress_test(ilk, address(this));
-        assertEq(log.getAddress(ilk), address(this));
+        assertEq(clog.getAddress(ilk), address(this));
     }
 
     function test_setVersion() public {
         string memory version = "9001.0.0";
         action.setChangelogVersion_test(version);
-        assertEq(log.version(), version);
+        assertEq(clog.version(), version);
     }
 
     function test_setIPFS() public {
         string memory ipfs = "QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW";
         action.setChangelogIPFS_test(ipfs);
-        assertEq(log.ipfs(), ipfs);
+        assertEq(clog.ipfs(), ipfs);
     }
 
     function test_setSHA256() public {
         string memory SHA256 = "e42dc9d043a57705f3f097099e6b2de4230bca9a020c797508da079f9079e35b";
         action.setChangelogSHA256_test(SHA256);
-        assertEq(log.sha256sum(), SHA256);
+        assertEq(clog.sha256sum(), SHA256);
     }
 
     /**************************/

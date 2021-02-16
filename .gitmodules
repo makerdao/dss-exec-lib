@@ -30,10 +30,8 @@
 	url = https://github.com/makerdao/median
 [submodule "lib/ds-proxy"]
 	path = lib/ds-proxy
-	url = https://github.com/brianmcmichael/ds-proxy
-[submodule "lib/osm"]
-	path = lib/osm
-	url = https://github.com/makerdao/osm
+	url = https://github.com/makerdao/ds-proxy
+	branch = solc-0.6
 [submodule "lib/dss-auto-line"]
 	path = lib/dss-auto-line
 	url = https://github.com/makerdao/dss-auto-line
