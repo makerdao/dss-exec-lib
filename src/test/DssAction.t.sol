@@ -43,9 +43,10 @@ import {Jug}              from 'dss/jug.sol';
 import {Flipper}          from 'dss/flip.sol';
 import {Flapper}          from 'dss/flap.sol';
 import {Flopper}          from 'dss/flop.sol';
-import {GemJoin}          from 'dss/join.sol';
+import {GemJoin,DaiJoin}  from 'dss/join.sol';
 import {End}              from 'dss/end.sol';
 import {Spotter}          from 'dss/spot.sol';
+import {Dai}              from 'dss/dai.sol';
 
 import "../CollateralOpts.sol";
 import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
@@ -62,12 +63,14 @@ interface PipLike {
 contract ActionTest is DSTest {
     Hevm hevm;
 
-    Vat   vat;
-    End   end;
-    Vow   vow;
-    Pot   pot;
-    Jug   jug;
-    Cat   cat;
+    Vat         vat;
+    End         end;
+    Vow         vow;
+    Pot         pot;
+    Jug         jug;
+    Cat         cat;
+    Dai         daiToken;
+    DaiJoin     daiJoin;
 
     DSToken gov;
 
@@ -221,6 +224,11 @@ contract ActionTest is DSTest {
         jug = new Jug(address(vat));
         vat.rely(address(jug));
 
+        daiToken = new Dai(1);
+        daiJoin = new DaiJoin(address(vat), address(daiToken));
+        daiToken.rely(address(daiJoin));
+        daiToken.deny(address(this));
+
         end = new End();
         end.file("vat", address(vat));
         end.file("cat", address(cat));
@@ -264,6 +272,8 @@ contract ActionTest is DSTest {
         log.setAddress("MCD_FLAP",          address(flap));
         log.setAddress("MCD_FLOP",          address(flop));
         log.setAddress("MCD_END",           address(end));
+        log.setAddress("MCD_DAI",           address(daiToken));
+        log.setAddress("MCD_JOIN_DAI",      address(daiJoin));
         log.setAddress("ILK_REGISTRY",      address(reg));
         log.setAddress("OSM_MOM",           address(osmMom));
         log.setAddress("GOV_GUARD",         address(govGuard));
@@ -283,6 +293,7 @@ contract ActionTest is DSTest {
         jug.rely(address(action));
         flap.rely(address(action));
         flop.rely(address(action));
+        daiJoin.rely(address(action));
         median.rely(address(action));
         log.rely(address(action));
         autoLine.rely(address(action));
@@ -310,6 +321,21 @@ contract ActionTest is DSTest {
 
         action.deauthorize_test(address(vat), address(1));
         assertEq(vat.wards(address(1)), 0);
+    }
+
+    function test_delegateVat() public {
+        assertEq(vat.can(address(action), address(1)), 0);
+        action.delegateVat_test(address(1));
+        assertEq(vat.can(address(action), address(1)), 1);
+    }
+
+    function test_undelegateVat() public {
+        assertEq(vat.can(address(action), address(1)), 0);
+        action.delegateVat_test(address(1));
+        assertEq(vat.can(address(action), address(1)), 1);
+
+        action.undelegateVat_test(address(1));
+        assertEq(vat.can(address(action), address(1)), 0);
     }
 
     /****************************/
@@ -886,5 +912,28 @@ contract ActionTest is DSTest {
         DssTestNoOfficeHoursAction actionNoOfficeHours = new DssTestNoOfficeHoursAction();
         actionNoOfficeHours.execute();
         assertTrue(!actionNoOfficeHours.officeHours());
+    }
+
+
+    /***************/
+    /*** Payment ***/
+    /***************/
+
+    function sendPaymentFromSurplusBuffer_test() public {
+        address target = address(this);
+
+        action.delegateVat_test(address(daiJoin));
+
+        assertEq(vat.dai(target), 0);
+        assertEq(vat.sin(target), 0);
+        assertEq(daiToken.balanceOf(target), 0);
+        assertEq(vat.dai(address(vow)), 0);
+        assertEq(vat.sin(address(vow)), 0);
+        action.sendPaymentFromSurplusBuffer_test(target, 100);
+        assertEq(vat.dai(target), 0);
+        assertEq(vat.sin(target), 0);
+        assertEq(daiToken.balanceOf(target), 100 * WAD);
+        assertEq(vat.dai(address(vow)), 0);
+        assertEq(vat.sin(address(vow)), 100 * RAD);
     }
 }

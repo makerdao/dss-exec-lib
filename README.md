@@ -76,6 +76,8 @@ Below is an outline of all functions used in the library.
 ### Authorizations
 - `authorize(address _base, address _ward)`: Give an address authorization to perform auth actions on the contract.
 - `deauthorize(address _base, address _ward)`: Revoke contract authorization from an address.
+- `delegateVat(address _usr)`: Delegate vat authority to the specified address.
+- `undelegateVat(address _usr)`: Revoke vat authority to the specified address.
 
 ### Accumulating Rates
 - `accumulateDSR()`: Update rate accumulation for the Dai Savings Rate (DSR).
@@ -199,6 +201,9 @@ setChangelogAddress("MCD_FLIP_XMPL", 0x32c6DF17f8E94694977aa41A595d8dc583836A51)
 - `bidDuration`:          Bid period duration for new collateral
 - `auctionDuration`:      Total auction duration for new collateral
 - `liquidationRatio`:     Percent liquidation ratio for new collateral   [ex. 150% == 15000]
+
+### Payments
+- `sendPaymentFromSurplusBuffer(address _target, uint256 _amount)`: Send a payment in ERC20 DAI from the surplus buffer.
 
 ## Testing
 
