@@ -168,7 +168,7 @@ library DssExecLib {
     /*** Core Address Helpers ***/
     /****************************/
     function dai()        public view returns (address) { return getChangelogAddress("MCD_DAI"); }
-    function mkr()        public view returns (address) { return getChangelogAddress("MCD_ADM"); }
+    function mkr()        public view returns (address) { return getChangelogAddress("MCD_GOV"); }
     function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
     function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
     function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
