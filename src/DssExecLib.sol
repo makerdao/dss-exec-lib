@@ -52,7 +52,7 @@ interface DssVat {
     function nope(address) external;
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
     function Line() external view returns (uint256);
-    function suck(address u, address v, uint rad) external;
+    function suck(address, address, uint) external;
 }
 
 interface AuctionLike {
@@ -71,8 +71,8 @@ interface JoinLike {
     function ilk() external returns (bytes32);
     function gem() external returns (address);
     function dec() external returns (uint256);
-    function join(address usr, uint wad) external;
-    function exit(address usr, uint wad) external;
+    function join(address, uint) external;
+    function exit(address, uint) external;
 }
 
 // Includes Median and OSM functions
