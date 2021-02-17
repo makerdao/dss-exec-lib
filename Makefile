@@ -1,5 +1,5 @@
-all          :; DAPP_STANDARD_JSON="config.json" dapp --use solc:0.6.11 build
-build        :; DAPP_STANDARD_JSON="config.json" dapp --use solc:0.6.11 build --extract
+all          :; dapp --use solc:0.6.11 build
+build        :; dapp --use solc:0.6.11 build --extract
 clean        :; dapp clean
 test         :; ./test.sh
 deploy       :; make && dapp create DssExecLib
