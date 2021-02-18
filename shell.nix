@@ -10,10 +10,6 @@ mkShell {
   DAPP_BUILD_OPTIMIZE_RUNS = 200;
   buildInputs = [
     dapp
-    hevm
-    seth
-    jq
-    curl
   ];
 
   shellHook = ''
