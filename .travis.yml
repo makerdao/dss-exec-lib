@@ -7,4 +7,4 @@ before_install:
   - echo "trusted-users = root travis" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon
   - cachix use maker
 script:
-  - nix-shell --pure --argstr url ${ETH_RPC_URL} --run 'dapp test -v --rpc'
+  - nix-shell --pure --argstr url ${ETH_RPC_URL} --run 'source "./allow-optimize.sh" && dapp test -v --rpc'

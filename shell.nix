@@ -1,11 +1,13 @@
 { url
   , dappPkgs ? (
     import (fetchTarball "https://github.com/makerdao/makerpkgs/tarball/master") {}
-  ).dappPkgsVersions.master-20200216
+  ).dappPkgsVersions.master-20200217
 }: with dappPkgs;
 
 mkShell {
   DAPP_SOLC = solc-static-versions.solc_0_6_11 + "/bin/solc-0.6.11";
+  DAPP_BUILD_OPTIMIZE = 1;
+  DAPP_BUILD_OPTIMIZE_RUNS = 200;
   buildInputs = [
     dapp
     hevm
