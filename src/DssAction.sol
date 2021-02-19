@@ -67,11 +67,16 @@ abstract contract DssAction {
         // Add the collateral to the system.
         DssExecLib.addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
 
-        // Allow FlipperMom to access to the ilk Flipper
         address _flipperMom = DssExecLib.flipperMom();
+
+        // Allow FlipperMom to access to the ilk Flipper
         DssExecLib.authorize(co.flip, _flipperMom);
-        // Disallow Cat to kick auctions in ilk Flipper
-        if(!co.isLiquidatable) { DssExecLib.deauthorize(_flipperMom, co.flip); }
+
+        if (!co.isLiquidatable) {
+            // Remove liquidation permission from FlipperMom and Flip
+            DssExecLib.deauthorize(_flipperMom, co.flip);
+            DssExecLib.deauthorize(co.flip, _flipperMom);
+        }
 
         if(co.isOSM) { // If pip == OSM
             // Allow OsmMom to access to the TOKEN OSM
