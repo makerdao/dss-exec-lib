@@ -69,12 +69,12 @@ abstract contract DssAction {
 
         address _flipperMom = DssExecLib.flipperMom();
 
-        if (!co.isLiquidatable) {
-            // Disallow Cat to kick auctions in ilk Flipper
-            DssExecLib.deauthorize(co.flip, DssExecLib.cat());
-        } else {
+        if (co.isLiquidatable) {
             // Allow FlipperMom to access to the ilk Flipper
             DssExecLib.authorize(co.flip, DssExecLib.flipperMom());
+        } else {
+            // Disallow Cat to kick auctions in ilk Flipper
+            DssExecLib.deauthorize(co.flip, DssExecLib.cat());
         }
 
         if(co.isOSM) { // If pip == OSM
