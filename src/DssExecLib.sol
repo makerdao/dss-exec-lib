@@ -352,9 +352,11 @@ library DssExecLib {
     /**
         @dev Set the Dai Savings Rate. See: docs/rates.txt
         @param _rate   The accumulated rate (ex. 4% => 1000000001243680656318820312)
+        @param _doDrip `true` to accumulate interest owed
     */
-    function setDSR(uint256 _rate) public {
+    function setDSR(uint256 _rate, bool _doDrip) public {
         require((_rate >= RAY) && (_rate <= RATES_ONE_HUNDRED_PCT));  // "LibDssExec/dsr-out-of-bounds"
+        if (_doDrip) Drippable(pot()).drip();
         Fileable(pot()).file("dsr", _rate);
     }
     /**

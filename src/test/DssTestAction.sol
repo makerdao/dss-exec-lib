@@ -119,7 +119,7 @@ contract DssTestAction is DssAction {
     }
 
     function setDSR_test(uint256 rate) public {
-        DssExecLib.setDSR(rate);
+        DssExecLib.setDSR(rate, true);
     }
 
     function setSurplusAuctionAmount_test(uint256 amount) public {
