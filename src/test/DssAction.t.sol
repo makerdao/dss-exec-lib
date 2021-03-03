@@ -846,12 +846,11 @@ contract ActionTest is DSTest {
         assertEq(cat.wards(address(tokenFlip)), 1);
 
         assertEq(tokenFlip.wards(address(end)),        1);
-        assertEq(tokenFlip.wards(address(flipperMom)), 1);
 
-        if (!liquidatable) assertEq(tokenFlip.wards(address(cat)), 0);
-        else               assertEq(tokenFlip.wards(address(cat)), 1);
+        uint256 liq_ = (liquidatable) ? 1 : 0;
+        assertEq(tokenFlip.wards(address(cat)), liq_);
+        assertEq(tokenFlip.wards(address(flipperMom)), liq_);
         }
-
 
         if (isOsm) {
           assertEq(OSM(tokenPip).wards(address(osmMom)), 1);
