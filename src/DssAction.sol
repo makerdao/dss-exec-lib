@@ -67,8 +67,6 @@ abstract contract DssAction {
         // Add the collateral to the system.
         DssExecLib.addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
 
-        address _flipperMom = DssExecLib.flipperMom();
-
         if (co.isLiquidatable) {
             // Allow FlipperMom to access to the ilk Flipper
             DssExecLib.authorize(co.flip, DssExecLib.flipperMom());
