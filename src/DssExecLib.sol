@@ -18,6 +18,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pragma solidity ^0.6.11;
 
+import "./CollateralOpts.sol";
+
 interface Initializable {
     function init(bytes32) external;
 }
@@ -788,6 +790,60 @@ library DssExecLib {
 
         // Add new ilk to the IlkRegistry
         RegistryLike(reg()).add(_join);
+    }
+
+    // Complete collateral onboarding logic.
+    function addNewCollateral(CollateralOpts memory co) internal {
+        // Add the collateral to the system.
+        addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
+
+        if (co.isLiquidatable) {
+            // Allow FlipperMom to access to the ilk Flipper
+            authorize(co.flip, flipperMom());
+        } else {
+            // Disallow Cat to kick auctions in ilk Flipper
+            deauthorize(co.flip, cat());
+        }
+
+        if(co.isOSM) { // If pip == OSM
+            // Allow OsmMom to access to the TOKEN OSM
+            authorize(co.pip, osmMom());
+            if (co.whitelistOSM) { // If median is src in OSM
+                // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
+                addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
+            }
+            // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(co.pip, spotter());
+            // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
+            addReaderToOSMWhitelist(co.pip, end());
+            // Set TOKEN OSM in the OsmMom for new ilk
+            allowOSMFreeze(co.pip, co.ilk);
+        }
+        // Increase the global debt ceiling by the ilk ceiling
+        increaseGlobalDebtCeiling(co.ilkDebtCeiling);
+        // Set the ilk debt ceiling
+        setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
+        // Set the ilk dust
+        setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
+        // Set the dunk size
+        setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
+        // Set the ilk liquidation penalty
+        setIlkLiquidationPenalty(co.ilk, co.liquidationPenalty);
+
+        // Set the ilk stability fee
+        setIlkStabilityFee(co.ilk, co.ilkStabilityFee, true);
+
+        // Set the ilk percentage between bids
+        setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
+        // Set the ilk time max time between bids
+        setIlkBidDuration(co.ilk, co.bidDuration);
+        // Set the ilk max auction duration
+        setIlkAuctionDuration(co.ilk, co.auctionDuration);
+        // Set the ilk min collateralization ratio
+        setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
+
+        // Update ilk spot value in Vat
+        updateCollateralPrice(co.ilk);
     }
 
 
