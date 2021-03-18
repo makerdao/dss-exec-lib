@@ -191,12 +191,12 @@ library DssExecLib {
     function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
     function daiJoin()    public view returns (address) { return getChangelogAddress("MCD_JOIN_DAI"); }
 
-    function flip(bytes32 ilk) public view returns (address _flip) {
-        (,,,, _flip,,,) = RegistryLike(reg()).ilkData(ilk);
+    function flip(bytes32 _ilk) public view returns (address _flip) {
+        (,,,, _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
     }
 
-    function getChangelogAddress(bytes32 key) public view returns (address) {
-        return ChainlogLike(LOG).getAddress(key);
+    function getChangelogAddress(bytes32 _key) public view returns (address) {
+        return ChainlogLike(LOG).getAddress(_key);
     }
 
     /****************************/
