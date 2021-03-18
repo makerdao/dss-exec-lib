@@ -20,6 +20,7 @@
 pragma solidity ^0.6.11;
 
 import "../DssAction.sol";
+import "../CollateralOpts.sol";
 
 contract DssTestNoOfficeHoursAction is DssAction {
     function actions() public override {
@@ -327,7 +328,7 @@ contract DssTestAction is DssAction {
             amounts[8]            // liquidationRatio
         );
 
-        addNewCollateral(co);
+        DssExecLib.addNewCollateral(co);
     }
 
 
