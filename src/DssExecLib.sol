@@ -168,9 +168,15 @@ library DssExecLib {
         z = add(mul(x, RAY), y / 2) / y;
     }
 
-    function nextCastTime(uint256 _eta, bool _officeHours) public view returns (uint256 castTime) {
+    /**
+        @dev Calculate the next available cast time in epoch seconds
+        @param _eta          The scheduled time of the spell plus the pause delay
+        @param _ts           The current block.timestamp
+        @param _officeHours  True if office hours is enabled.
+    */
+    function nextCastTime(uint40 _eta, uint40 _ts, bool _officeHours) public pure returns (uint256 castTime) {
         require(_eta != 0, "DssExecLib/spell-not-scheduled");
-        castTime = block.timestamp > _eta ? block.timestamp : _eta; // Any day at XX:YY
+        castTime = _ts > _eta ? _ts : _eta; // Any day at XX:YY
 
         if (_officeHours) {
             uint256 day    = (castTime / 1 days + 3) % 7;

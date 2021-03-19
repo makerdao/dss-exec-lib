@@ -44,7 +44,8 @@ abstract contract DssAction {
 
     // Returns the next available cast time
     function nextCastTime(uint256 eta) external returns (uint256 castTime) {
-        DssExecLib.nextCastTime(eta, officeHours());
+        require(eta < uint40(-1), "invalid eta");
+        DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
 
     // DssAction developer must override `actions()` and place all actions to be called inside.
