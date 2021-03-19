@@ -168,14 +168,36 @@ library DssExecLib {
         z = add(mul(x, RAY), y / 2) / y;
     }
 
+    /******************************/
+    /*** OfficeHours Management ***/
+    /******************************/
+
+    /**
+        @dev Returns true if a time is within office hours range
+        @param _ts           The timestamp to check
+        @param _officeHours  true if office hours is enabled.
+        @return              true if time is in castable range
+    */
+    function canCast(uint40 _ts, bool _officeHours) public pure returns (bool) {
+        if (_officeHours) {
+            uint day = (_ts / 1 days + 3) % 7;
+            require(day < 5, "DssExecLib/Can only be cast on a weekday");
+            uint hour = _ts / 1 hours % 24;
+            require(hour >= 14 && hour < 21, "DssExecLib/Outside office hours");
+        }
+        return true;
+    }
+
     /**
         @dev Calculate the next available cast time in epoch seconds
         @param _eta          The scheduled time of the spell plus the pause delay
         @param _ts           The current block.timestamp
-        @param _officeHours  True if office hours is enabled.
+        @param _officeHours  true if office hours is enabled.
+        @return castTime     The next available cast timestamp
     */
     function nextCastTime(uint40 _eta, uint40 _ts, bool _officeHours) public pure returns (uint256 castTime) {
-        require(_eta != 0, "DssExecLib/spell-not-scheduled");
+        require(_eta != 0 && _eta < uint40(-1), "DssExecLib/invalid eta");
+        require(_ts  != 0 && _ts  < uint40(-1), "DssExecLib/invalid ts");
         castTime = _ts > _eta ? _ts : _eta; // Any day at XX:YY
 
         if (_officeHours) {

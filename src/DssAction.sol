@@ -30,6 +30,12 @@ abstract contract DssAction {
 
     using DssExecLib for *;
 
+    // Modifier used to limit execution time when office hours is enabled
+    modifier limited {
+        require(DssExecLib.canCast(uint40(block.timestamp), officeHours()), "Outside office hours");
+        _;
+    }
+
     // Office Hours defaults to true by default.
     //   To disable office hours, override this function and
     //    return false in the inherited action.
@@ -42,26 +48,15 @@ abstract contract DssAction {
         actions();
     }
 
-    // Returns the next available cast time
-    function nextCastTime(uint256 eta) external returns (uint256 castTime) {
-        require(eta < uint40(-1), "invalid eta");
-        DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
-    }
-
     // DssAction developer must override `actions()` and place all actions to be called inside.
     //   The DssExec function will call this subject to the officeHours limiter
     //   By keeping this function public we allow simulations of `execute()` on the actions outside of the cast time.
     function actions() public virtual;
 
-    // Modifier required to
-    modifier limited {
-        if (officeHours()) {
-            uint day = (block.timestamp / 1 days + 3) % 7;
-            require(day < 5, "Can only be cast on a weekday");
-            uint hour = block.timestamp / 1 hours % 24;
-            require(hour >= 14 && hour < 21, "Outside office hours");
-        }
-        _;
+    // Returns the next available cast time
+    function nextCastTime(uint256 eta) external returns (uint256 castTime) {
+        require(eta < uint40(-1), "invalid eta");
+        castTime = DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
 
     /*****************************/
