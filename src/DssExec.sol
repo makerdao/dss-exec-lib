@@ -31,6 +31,7 @@ interface Changelog {
 
 interface SpellAction {
     function officeHours() external view returns (bool);
+    function nextCastTime(uint256) external view returns (uint256);
 }
 
 contract DssExec {
@@ -54,30 +55,7 @@ contract DssExec {
     }
 
     function nextCastTime() external view returns (uint256 castTime) {
-        require(eta != 0, "DssExec/spell-not-scheduled");
-        castTime = block.timestamp > eta ? block.timestamp : eta; // Any day at XX:YY
-
-        if (SpellAction(action).officeHours()) {
-            uint256 day    = (castTime / 1 days + 3) % 7;
-            uint256 hour   = castTime / 1 hours % 24;
-            uint256 minute = castTime / 1 minutes % 60;
-            uint256 second = castTime % 60;
-
-            if (day >= 5) {
-                castTime += (6 - day) * 1 days;                 // Go to Sunday XX:YY
-                castTime += (24 - hour + 14) * 1 hours;         // Go to 14:YY UTC Monday
-                castTime -= minute * 1 minutes + second;        // Go to 14:00 UTC
-            } else {
-                if (hour >= 21) {
-                    if (day == 4) castTime += 2 days;           // If Friday, fast forward to Sunday XX:YY
-                    castTime += (24 - hour + 14) * 1 hours;     // Go to 14:YY UTC next day
-                    castTime -= minute * 1 minutes + second;    // Go to 14:00 UTC
-                } else if (hour < 14) {
-                    castTime += (14 - hour) * 1 hours;          // Go to 14:YY UTC same day
-                    castTime -= minute * 1 minutes + second;    // Go to 14:00 UTC
-                }
-            }
-        }
+        return SpellAction(action).nextCastTime(eta);
     }
 
     // @param _description  A string description of the spell

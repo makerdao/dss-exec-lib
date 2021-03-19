@@ -42,6 +42,11 @@ abstract contract DssAction {
         actions();
     }
 
+    // Returns the next available cast time
+    function nextCastTime(uint256 eta) external returns (uint256 castTime) {
+        DssExecLib.nextCastTime(eta, officeHours());
+    }
+
     // DssAction developer must override `actions()` and place all actions to be called inside.
     //   The DssExec function will call this subject to the officeHours limiter
     //   By keeping this function public we allow simulations of `execute()` on the actions outside of the cast time.

@@ -143,7 +143,6 @@ library DssExecLib {
     uint256 constant internal BPS_ONE_HUNDRED_PCT     = 100 * BPS_ONE_PCT;
     uint256 constant internal RATES_ONE_HUNDRED_PCT   = 1000000021979553151239153027;
 
-
     /**********************/
     /*** Math Functions ***/
     /**********************/
@@ -167,6 +166,33 @@ library DssExecLib {
     }
     function rdiv(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, RAY), y / 2) / y;
+    }
+
+    function nextCastTime(uint256 _eta, bool _officeHours) public view returns (uint256 castTime) {
+        require(_eta != 0, "DssExecLib/spell-not-scheduled");
+        castTime = block.timestamp > _eta ? block.timestamp : _eta; // Any day at XX:YY
+
+        if (_officeHours) {
+            uint256 day    = (castTime / 1 days + 3) % 7;
+            uint256 hour   = castTime / 1 hours % 24;
+            uint256 minute = castTime / 1 minutes % 60;
+            uint256 second = castTime % 60;
+
+            if (day >= 5) {
+                castTime += (6 - day) * 1 days;                 // Go to Sunday XX:YY
+                castTime += (24 - hour + 14) * 1 hours;         // Go to 14:YY UTC Monday
+                castTime -= minute * 1 minutes + second;        // Go to 14:00 UTC
+            } else {
+                if (hour >= 21) {
+                    if (day == 4) castTime += 2 days;           // If Friday, fast forward to Sunday XX:YY
+                    castTime += (24 - hour + 14) * 1 hours;     // Go to 14:YY UTC next day
+                    castTime -= minute * 1 minutes + second;    // Go to 14:00 UTC
+                } else if (hour < 14) {
+                    castTime += (14 - hour) * 1 hours;          // Go to 14:YY UTC same day
+                    castTime -= minute * 1 minutes + second;    // Go to 14:00 UTC
+                }
+            }
+        }
     }
 
     /****************************/
