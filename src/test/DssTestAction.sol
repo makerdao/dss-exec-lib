@@ -35,6 +35,14 @@ contract DssTestAction is DssAction {
 
     function actions() public override {}
 
+    function canCast_test(uint40 ts, bool officeHours) public pure returns (bool) {
+        return DssExecLib.canCast(ts, officeHours);
+    }
+
+    function nextCastTime_test(uint40 eta, uint40 ts, bool officeHours) public pure returns (uint256) {
+        return DssExecLib.nextCastTime(eta, ts, officeHours);
+    }
+
     /**********************/
     /*** Authorizations ***/
     /**********************/

@@ -303,6 +303,37 @@ contract ActionTest is DSTest {
         govGuard.setRoot(address(action));
     }
 
+    // /******************************/
+    // /*** OfficeHours Management ***/
+    // /******************************/
+
+    function test_canCast() public {
+        assertTrue(action.canCast_test(1616169600, true));  // Friday   2021/03/19, 4:00:00 PM GMT
+
+        assertTrue(action.canCast_test(1616169600, false)); // Friday   2021/03/19, 4:00:00 PM GMT
+        assertTrue(action.canCast_test(1616256000, false)); // Saturday 2021/03/20, 4:00:00 PM GMT
+    }
+
+    function testFail_canCast() public {
+        assertTrue(action.canCast_test(1616256000, true)); // Saturday 2021/03/20, 4:00:00 PM GMT
+    }
+
+    function test_nextCastTime() public {
+        assertEq(action.nextCastTime_test(1616169600, 1616169600, true), 1616169600);
+        assertEq(action.nextCastTime_test(1616169600, 1616169600, false), 1616169600);
+
+        assertEq(action.nextCastTime_test(1616256000, 1616256000, true), 1616421600);
+        assertEq(action.nextCastTime_test(1616256000, 1616256000, false), 1616256000);
+    }
+
+    function testFail_nextCastTime_eta_zero() public {
+        assertEq(action.nextCastTime_test(0, 1616256000, false), 1616256000);
+    }
+
+    function testFail_nextCastTime_ts_zero() public {
+        assertEq(action.nextCastTime_test(1616256000, 0, false), 1616256000);
+    }
+
     // /**********************/
     // /*** Authorizations ***/
     // /**********************/
