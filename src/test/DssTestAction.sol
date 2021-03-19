@@ -328,7 +328,7 @@ contract DssTestAction is DssAction {
             amounts[8]            // liquidationRatio
         );
 
-        DssExecLib.addNewCollateral(co);
+        addNewCollateral(co);
     }
 
 

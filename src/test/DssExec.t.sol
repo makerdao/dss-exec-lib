@@ -60,7 +60,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             auctionDuration:       6 hours,
             liquidationRatio:      15000
         });
-        DssExecLib.addNewCollateral(XMPL_A);
+        addNewCollateral(XMPL_A);
 
         DssExecLib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
         DssExecLib.setIlkLiquidationPenalty("ETH-A", 1400);
