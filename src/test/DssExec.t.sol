@@ -225,14 +225,14 @@ contract DssLibExecTest is DSTest, DSMath {
         (uint256 _duty,)  = jug.ilks("ETH-A");
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         10 * MILLION,    // In whole Dai units
-            dust:         _dust/RAD,        // In whole Dai units
-            pct:          _duty,             // In basis points
+            dust:         _dust/RAD,       // In whole Dai units
+            pct:          _duty,           // In basis points
             chop:         1300,            // In basis points
-            dunk:         _dunk/RAD,        // In whole Dai units
+            dunk:         _dunk/RAD,       // In whole Dai units
             mat:          15000,           // In basis points
             beg:          300,             // In basis points
-            ttl:          6 hours,         // In seconds
-            tau:          6 hours,         // In seconds
+            ttl:          4 hours,         // In seconds
+            tau:          4 hours,         // In seconds
             liquidations: 1                // 1 if enabled
         });
         // New collateral
