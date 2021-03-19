@@ -174,7 +174,7 @@ library DssExecLib {
 
     /**
         @dev Returns true if a time is within office hours range
-        @param _ts           The timestamp to check
+        @param _ts           The timestamp to check, usually block.timestamp
         @param _officeHours  true if office hours is enabled.
         @return              true if time is in castable range
     */
@@ -191,7 +191,7 @@ library DssExecLib {
     /**
         @dev Calculate the next available cast time in epoch seconds
         @param _eta          The scheduled time of the spell plus the pause delay
-        @param _ts           The current block.timestamp
+        @param _ts           The current timestamp, usually block.timestamp
         @param _officeHours  true if office hours is enabled.
         @return castTime     The next available cast timestamp
     */
