@@ -245,12 +245,12 @@ library DssExecLib {
     function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
     function daiJoin()    public view returns (address) { return getChangelogAddress("MCD_JOIN_DAI"); }
 
-    function flip(bytes32 ilk) public view returns (address _flip) {
-        (,,,, _flip,,,) = RegistryLike(reg()).ilkData(ilk);
+    function flip(bytes32 _ilk) public view returns (address _flip) {
+        (,,,, _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
     }
 
-    function getChangelogAddress(bytes32 key) public view returns (address) {
-        return ChainlogLike(LOG).getAddress(key);
+    function getChangelogAddress(bytes32 _key) public view returns (address) {
+        return ChainlogLike(LOG).getAddress(_key);
     }
 
     /****************************/
@@ -601,7 +601,7 @@ library DssExecLib {
     /**
         @dev Set the debt ceiling for an ilk in the "MCD_IAM_AUTO_LINE" auto-line without updating the time values
         @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
-        @param _amount The amount to decrease in DAI (ex. 10m DAI amount == 10000000)
+        @param _amount The Maximum value (ex. 100m DAI amount == 100000000)
     */
     function setIlkAutoLineDebtCeiling(bytes32 _ilk, uint256 _amount) public {
         address _autoLine = autoLine();

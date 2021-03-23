@@ -44,9 +44,9 @@ The spell itself is deployed as follows:
 
 ```js
 new DssExec(
-    "A test dss exec spell",                // Description
-    now + 30 days,                          // Expiration
-    address(new SpellAction(execlib, true)) // true = officeHours on
+    "A test dss exec spell",      // Description
+    now + 30 days,                // Expiration
+    address(new SpellAction())
 );
 ```
 
@@ -66,12 +66,33 @@ Below is an outline of how all variables are accounted for for precision based o
 
 Below is an outline of all functions used in the library.
 
+### Core Address Helpers
+- `dai()`: Dai ERC20 Contract
+- `mkr()`: MKR ERC20 Contract
+- `vat()`: MCD Core Accounting
+- `cat()`: MCD Liquidation Agent
+- `jug()`: MCD Rates Module
+- `pot()`: MCD Savings Rates Module
+- `vow()`: MCD System Stabilizer Module
+- `end()`: MCD Shutdown Coordinator
+- `reg()`: Ilk Registry
+- `spotter()`: MCD Oracle Liason
+- `flap()`: MCD Surplus Auction Module
+- `flop()`: MCD Debt Auction Module
+- `osmMom()`: OSM Circuit Breaker
+- `govGuard()`: MKR Authority
+- `flipperMom()`: Flipper Governance Interface
+- `pauseProxy()`: Governance Authority
+- `autoLine()`: Debt Ceiling Auto Adjustment
+- `daiJoin()`: MCD Join adapter for Dai
+- `flip(bytes32 _ilk)`: Collateral Auction Module (per ilk)
+
 ### Changelog Management
+- `getChangelogAddress(bytes32 _key)`: Get MCD address from key from MCD on-chain changelog.
 - `setChangelogAddress(bytes32 _key, address _val)`: Set an address in the MCD on-chain changelog.
 - `setChangelogVersion(string memory _version)`: Set version in the MCD on-chain changelog.
 - `setChangelogIPFS(string memory _ipfsHash)`: Set IPFS hash of IPFS changelog in MCD on-chain changelog.
 - `setChangelogSHA256(string memory _SHA256Sum)`: Set SHA256 hash in MCD on-chain changelog.
-- `getChangelogAddress(bytes32 _key)`: Get MCD address from key from MCD on-chain changelog.
 
 ### Time Management
 - `canCast(uint40 _ts, bool _officeHours) returns (bool)`: Use to determine whether a timestamp is within the office hours window.
@@ -98,7 +119,7 @@ Below is an outline of all functions used in the library.
 - `setGlobalDebtCeiling(uint256 _amount)`: Set the global debt ceiling.
 - `increaseGlobalDebtCeiling(uint256 _amount)`: Increase the global debt ceiling.
 - `decreaseGlobalDebtCeiling(uint256 _amount)`: Decrease the global debt ceiling.
-- `setDSR(uint256 _rate)`: Set the Dai Savings Rate.
+- `setDSR(uint256 _rate, bool _doDrip)`: Set the Dai Savings Rate.
 - `setSurplusAuctionAmount(uint256 _amount)`: Set the DAI amount for system surplus auctions.
 - `setSurplusBuffer(uint256 _amount)`: Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start.
 - `setMinSurplusAuctionBidIncrease(uint256 _pct_bps)`: Set minimum bid increase for surplus auctions.
@@ -118,6 +139,11 @@ Below is an outline of all functions used in the library.
 
 ### Collateral Management
 - `setIlkDebtCeiling(bytes32 _ilk, uint256 _amount)`: Set a collateral debt ceiling.
+- `increaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount, bool _global)`: Raise the debt ceiling of a particular ilk.
+- `decreaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount, bool _global)`: Lower the debt ceiling of a particular ilk.
+- `setIlkAutoLineParameters(bytes32 _ilk, uint256 _amount, uint256 _gap, uint256 _ttl)`: Configure the parameters for the Debt Ceiling auto line module for a particluar ilk.
+- `setIlkAutoLineDebtCeiling(bytes32 _ilk, uint256 _amount)`: Adjust the debt ceiling in the auto line module.
+- `removeIlkFromAutoLine(bytes32 _ilk)`: Remove the management of an ilk by the debt ceiling auto line module.
 - `setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount)`: Set a collateral minimum vault amount.
 - `setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps)`: Set a collateral liquidation penalty.
 - `setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount)`: Set max DAI amount for liquidation per vault for a collateral type.
@@ -135,7 +161,7 @@ Below is an outline of all functions used in the library.
 ### Oracle Management
 - `addWritersToMedianWhitelist(address _median, address[] memory _feeds)`: Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
 - `removeWritersFromMedianWhitelist(address _median, address[] memory _feeds)`: Removes oracle feeds to the Median's writer whitelist, disallowing the feeds to write prices.
-- `function addReadersToMedianWhitelist(address _median, address[] memory _readers)`: Adds addresses to the Median's reader whitelist, allowing the addresses to read prices from the median.
+- `addReadersToMedianWhitelist(address _median, address[] memory _readers)`: Adds addresses to the Median's reader whitelist, allowing the addresses to read prices from the median.
 - `addReaderToMedianWhitelist(address _median, address _reader)`: Adds an address to the Median's reader whitelist, allowing the address to read prices from the median.
 - `removeReadersFromMedianWhitelist(address _median, address[] memory _readers)`: Removes addresses from the Median's reader whitelist, disallowing the addresses to read prices from the median.
 - `removeReaderFromMedianWhitelist(address _median, address _reader)`: Removes an address to the Median's reader whitelist, disallowing the address to read prices from the median.
@@ -161,6 +187,8 @@ Once these actions are done, add the following code (below is an example) to the
 - PIP: `PIP_TOKEN`
 
 ```js
+import "src/CollateralOpts.sol";
+
 CollateralOpts memory XMPL_A = CollateralOpts({
     ilk:                   "XMPL-A",
     gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
@@ -183,10 +211,10 @@ CollateralOpts memory XMPL_A = CollateralOpts({
 
 addNewCollateral(XMPL_A);
 
-setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
-setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
-setChangelogAddress("MCD_JOIN_XMPL", 0xa30925910067a2d9eB2a7358c017E6075F660842);
-setChangelogAddress("MCD_FLIP_XMPL", 0x32c6DF17f8E94694977aa41A595d8dc583836A51);
+DssExecLib.setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
+DssExecLib.setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+DssExecLib.setChangelogAddress("MCD_JOIN_XMPL", 0xa30925910067a2d9eB2a7358c017E6075F660842);
+DssExecLib.setChangelogAddress("MCD_FLIP_XMPL", 0x32c6DF17f8E94694977aa41A595d8dc583836A51);
 ```
 - `ilk`:                  Collateral type
 - `gem`:                  Address of collateral token
