@@ -46,7 +46,7 @@ The spell itself is deployed as follows:
 new DssExec(
     "A test dss exec spell",      // Description
     now + 30 days,                // Expiration
-    address(new SpellAction())    // true = officeHours on
+    address(new SpellAction())
 );
 ```
 
@@ -205,7 +205,7 @@ CollateralOpts memory XMPL_A = CollateralOpts({
     liquidationRatio:      15000
 });
 
-DssExecLib.addNewCollateral(XMPL_A);
+addNewCollateral(XMPL_A);
 
 DssExecLib.setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
 DssExecLib.setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
