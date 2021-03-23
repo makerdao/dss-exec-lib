@@ -196,8 +196,8 @@ library DssExecLib {
         @return castTime     The next available cast timestamp
     */
     function nextCastTime(uint40 _eta, uint40 _ts, bool _officeHours) public pure returns (uint256 castTime) {
-        require(_eta != 0 && _eta < uint40(-1), "DssExecLib/invalid eta");
-        require(_ts  != 0 && _ts  < uint40(-1), "DssExecLib/invalid ts");
+        require(_eta != 0 && _eta < uint40(-1));  // "DssExecLib/invalid eta"
+        require(_ts  != 0 && _ts  < uint40(-1));  // "DssExecLib/invalid ts"
         castTime = _ts > _eta ? _ts : _eta; // Any day at XX:YY
 
         if (_officeHours) {
