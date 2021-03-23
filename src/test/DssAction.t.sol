@@ -327,11 +327,11 @@ contract ActionTest is DSTest {
     }
 
     function testFail_nextCastTime_eta_zero() public {
-        assertEq(action.nextCastTime_test(0, 1616256000, false), 1616256000);
+        action.nextCastTime_test(0, 1616256000, false);
     }
 
     function testFail_nextCastTime_ts_zero() public {
-        assertEq(action.nextCastTime_test(1616256000, 0, false), 1616256000);
+        action.nextCastTime_test(1616256000, 0, false);
     }
 
     // /**********************/
