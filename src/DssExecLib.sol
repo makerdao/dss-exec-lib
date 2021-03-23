@@ -146,25 +146,25 @@ library DssExecLib {
     /**********************/
     /*** Math Functions ***/
     /**********************/
-    function add(uint x, uint y) internal pure returns (uint z) {
+    function add(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require((z = x + y) >= x);
     }
-    function sub(uint x, uint y) internal pure returns (uint z) {
+    function sub(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require((z = x - y) <= x);
     }
-    function mul(uint x, uint y) internal pure returns (uint z) {
+    function mul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require(y == 0 || (z = x * y) / y == x);
     }
-    function wmul(uint x, uint y) internal pure returns (uint z) {
+    function wmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, y), WAD / 2) / WAD;
     }
-    function rmul(uint x, uint y) internal pure returns (uint z) {
+    function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, y), RAY / 2) / RAY;
     }
-    function wdiv(uint x, uint y) internal pure returns (uint z) {
+    function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, WAD), y / 2) / y;
     }
-    function rdiv(uint x, uint y) internal pure returns (uint z) {
+    function rdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, RAY), y / 2) / y;
     }
 
@@ -180,9 +180,9 @@ library DssExecLib {
     */
     function canCast(uint40 _ts, bool _officeHours) public pure returns (bool) {
         if (_officeHours) {
-            uint day = (_ts / 1 days + 3) % 7;
+            uint256 day = (_ts / 1 days + 3) % 7;
             require(day < 5, "DssExecLib/Can only be cast on a weekday");
-            uint hour = _ts / 1 hours % 24;
+            uint256 hour = _ts / 1 hours % 24;
             require(hour >= 14 && hour < 21, "DssExecLib/Outside office hours");
         }
         return true;
