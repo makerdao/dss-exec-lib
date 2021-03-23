@@ -181,9 +181,9 @@ library DssExecLib {
     function canCast(uint40 _ts, bool _officeHours) public pure returns (bool) {
         if (_officeHours) {
             uint256 day = (_ts / 1 days + 3) % 7;
-            require(day < 5, "DssExecLib/Can only be cast on a weekday");
+            if (day >= 5)                 { return false; }  // Can only be cast on a weekday
             uint256 hour = _ts / 1 hours % 24;
-            require(hour >= 14 && hour < 21, "DssExecLib/Outside office hours");
+            if (hour < 14 || hour >= 21)  { return false; }  // Outside office hours
         }
         return true;
     }
