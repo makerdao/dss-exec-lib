@@ -57,34 +57,4 @@ abstract contract DssAction {
         }
         _;
     }
-
-    function addNewCollateral(CollateralOpts memory co) internal {
-
-        address[] memory _addrs = new address[](4);
-        bool[] memory _bools = new bool[](3);
-        uint256[] memory _vals = new uint256[](9);
-        _addrs[0] = co.gem;
-        _addrs[1] = co.join;
-        _addrs[2] = co.flip;
-        _addrs[3] = co.pip;
-        _bools[0] = co.isLiquidatable;
-        _bools[1] = co.isOSM;
-        _bools[2] = co.whitelistOSM;
-        _vals[0]  = co.ilkDebtCeiling;
-        _vals[1]  = co.minVaultAmount;
-        _vals[2]  = co.maxLiquidationAmount;
-        _vals[3]  = co.liquidationPenalty;
-        _vals[4]  = co.ilkStabilityFee;
-        _vals[5]  = co.bidIncrease;
-        _vals[6]  = co.bidDuration;
-        _vals[7]  = co.auctionDuration;
-        _vals[8]  = co.liquidationRatio;
-
-        DssExecLib.addNewCollateral(
-            co.ilk,
-            _addrs,
-            _bools,
-            _vals
-        );
-    }
 }
