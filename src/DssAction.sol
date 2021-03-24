@@ -56,6 +56,7 @@ abstract contract DssAction {
 
     // Returns the next available cast time
     function nextCastTime(uint256 eta) external returns (uint256 castTime) {
+        require(eta <= uint40(-1));
         castTime = DssTimeLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
 }
