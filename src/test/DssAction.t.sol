@@ -18,6 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pragma solidity ^0.6.11;
+pragma experimental ABIEncoderV2;
 
 import "ds-test/test.sol";
 import "ds-token/token.sol";
@@ -822,8 +823,8 @@ contract ActionTest is DSTest {
 
         bytes32 ilk = "silver";
 
-        DSToken token     = new DSToken(ilk);
-        GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
+        address token     = address(new DSToken(ilk));
+        GemJoin tokenJoin = new GemJoin(address(vat), ilk, token);
         Flipper tokenFlip = new Flipper(address(vat), address(cat), ilk);
         address tokenPip  = address(new DSValue());
 
@@ -838,35 +839,28 @@ contract ActionTest is DSTest {
         tokenJoin.deny(address(this));
 
         {
-            address[] memory addresses = new address[](4);
-            addresses[0] = address(token);
-            addresses[1] = address(tokenJoin);
-            addresses[2] = address(tokenFlip);
-            addresses[3] = tokenPip;
-
-            bool[] memory oracleSettings = new bool[](3);
-            oracleSettings[0] = liquidatable;
-            oracleSettings[1] = isOsm;
-            oracleSettings[2] = medianSrc;
-
-            uint256[] memory amounts = new uint256[](9);
-            amounts[0] = 100 * MILLION;                // ilkDebtCeiling
-            amounts[1] = 100;                          // minVaultAmount
-            amounts[2] = 50 * THOUSAND;                // maxLiquidationAmount
-            amounts[3] = 1300;                         // liquidationPenalty
-            amounts[4] = 1000000001243680656318820312; // ilkStabilityFee
-            amounts[5] = 500;                          // bidIncrease
-            amounts[6] = 6 hours;                      // bidDuration
-            amounts[7] = 6 hours;                      // auctionDuration
-            amounts[8] = 15000;                        // liquidationRatio
-
             uint256 globalLine = vat.Line();
 
             action.addNewCollateral_test(
-                ilk,
-                addresses,
-                oracleSettings,
-                amounts
+                CollateralOpts({
+                    ilk:                   ilk,
+                    gem:                   token,
+                    join:                  address(tokenJoin),
+                    flip:                  address(tokenFlip),
+                    pip:                   tokenPip,
+                    isLiquidatable:        liquidatable,
+                    isOSM:                 isOsm,
+                    whitelistOSM:          medianSrc,
+                    ilkDebtCeiling:        100 * MILLION,
+                    minVaultAmount:        100,
+                    maxLiquidationAmount:  50 * THOUSAND,
+                    liquidationPenalty:    1300,
+                    ilkStabilityFee:       1000000001243680656318820312,
+                    bidIncrease:           500,
+                    bidDuration:           6 hours,
+                    auctionDuration:       6 hours,
+                    liquidationRatio:      15000
+                })
             );
 
             assertEq(vat.Line(), globalLine + 100 * MILLION * RAD);
