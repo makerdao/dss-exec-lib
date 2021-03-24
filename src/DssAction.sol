@@ -19,8 +19,8 @@
 
 pragma solidity ^0.6.11;
 
-import "./CollateralOpts.sol";
 import { DssExecLib } from "./DssExecLib.sol";
+import { CollateralOpts } from "./CollateralOpts.sol";
 
 interface OracleLike {
     function src() external view returns (address);
@@ -56,63 +56,5 @@ abstract contract DssAction {
             require(hour >= 14 && hour < 21, "Outside office hours");
         }
         _;
-    }
-
-    /*****************************/
-    /*** Collateral Onboarding ***/
-    /*****************************/
-
-    // Complete collateral onboarding logic.
-    function addNewCollateral(CollateralOpts memory co) internal {
-        // Add the collateral to the system.
-        DssExecLib.addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
-
-        if (co.isLiquidatable) {
-            // Allow FlipperMom to access to the ilk Flipper
-            DssExecLib.authorize(co.flip, DssExecLib.flipperMom());
-        } else {
-            // Disallow Cat to kick auctions in ilk Flipper
-            DssExecLib.deauthorize(co.flip, DssExecLib.cat());
-        }
-
-        if(co.isOSM) { // If pip == OSM
-            // Allow OsmMom to access to the TOKEN OSM
-            DssExecLib.authorize(co.pip, DssExecLib.osmMom());
-            if (co.whitelistOSM) { // If median is src in OSM
-                // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-                DssExecLib.addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
-            }
-            // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            DssExecLib.addReaderToOSMWhitelist(co.pip, DssExecLib.spotter());
-            // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            DssExecLib.addReaderToOSMWhitelist(co.pip, DssExecLib.end());
-            // Set TOKEN OSM in the OsmMom for new ilk
-            DssExecLib.allowOSMFreeze(co.pip, co.ilk);
-        }
-        // Increase the global debt ceiling by the ilk ceiling
-        DssExecLib.increaseGlobalDebtCeiling(co.ilkDebtCeiling);
-        // Set the ilk debt ceiling
-        DssExecLib.setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
-        // Set the ilk dust
-        DssExecLib.setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
-        // Set the dunk size
-        DssExecLib.setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
-        // Set the ilk liquidation penalty
-        DssExecLib.setIlkLiquidationPenalty(co.ilk, co.liquidationPenalty);
-
-        // Set the ilk stability fee
-        DssExecLib.setIlkStabilityFee(co.ilk, co.ilkStabilityFee, true);
-
-        // Set the ilk percentage between bids
-        DssExecLib.setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
-        // Set the ilk time max time between bids
-        DssExecLib.setIlkBidDuration(co.ilk, co.bidDuration);
-        // Set the ilk max auction duration
-        DssExecLib.setIlkAuctionDuration(co.ilk, co.auctionDuration);
-        // Set the ilk min collateralization ratio
-        DssExecLib.setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
-
-        // Update ilk spot value in Vat
-        DssExecLib.updateCollateralPrice(co.ilk);
     }
 }

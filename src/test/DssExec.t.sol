@@ -18,6 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pragma solidity ^0.6.11;
+pragma experimental ABIEncoderV2;
 
 import "ds-test/test.sol";
 import "ds-math/math.sol";
@@ -60,9 +61,14 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             auctionDuration:       6 hours,
             liquidationRatio:      15000
         });
-        addNewCollateral(XMPL_A);
+        DssExecLib.addNewCollateral(XMPL_A);
 
         DssExecLib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
+        DssExecLib.setIlkLiquidationPenalty("ETH-A", 1400);
+        DssExecLib.setIlkMinAuctionBidIncrease("ETH-A", 400);
+        DssExecLib.setIlkLiquidationRatio("ETH-A", 16000);
+        DssExecLib.setIlkBidDuration("ETH-A", 3 hours);
+        DssExecLib.setIlkAuctionDuration("ETH-A", 3 hours);
         DssExecLib.setGlobalDebtCeiling(10000 * MILLION);
     }
 }
@@ -225,14 +231,14 @@ contract DssLibExecTest is DSTest, DSMath {
         (uint256 _duty,)  = jug.ilks("ETH-A");
         afterSpell.collaterals["ETH-A"] = CollateralValues({
             line:         10 * MILLION,    // In whole Dai units
-            dust:         _dust/RAD,        // In whole Dai units
-            pct:          _duty,             // In basis points
-            chop:         1300,            // In basis points
-            dunk:         _dunk/RAD,        // In whole Dai units
-            mat:          15000,           // In basis points
-            beg:          300,             // In basis points
-            ttl:          6 hours,         // In seconds
-            tau:          6 hours,         // In seconds
+            dust:         _dust/RAD,       // In whole Dai units
+            pct:          _duty,           // In basis points
+            chop:         1400,            // In basis points
+            dunk:         _dunk/RAD,       // In whole Dai units
+            mat:          16000,           // In basis points
+            beg:          400,             // In basis points
+            ttl:          3 hours,         // In seconds
+            tau:          3 hours,         // In seconds
             liquidations: 1                // 1 if enabled
         });
         // New collateral
