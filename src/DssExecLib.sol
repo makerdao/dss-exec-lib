@@ -17,6 +17,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pragma solidity ^0.6.11;
+pragma experimental ABIEncoderV2;
+
+import { CollateralOpts } from "./CollateralOpts.sol";
+
 
 interface Initializable {
     function init(bytes32) external;
@@ -791,100 +795,58 @@ library DssExecLib {
     }
 
     // Complete collateral onboarding logic.
-    /**
-        @dev Add a new collateral type and configure settings
-        @param _ilk       ilk  Collateral type key code [Ex. "ETH-A"]
-        @param _addrs[0]  gem
-        @param _addrs[1]  join
-        @param _addrs[2]  flip
-        @param _addrs[3]  pip
-        @param _bools[0]  isLiquidatable
-        @param _bools[1]  isOSM
-        @param _bools[2]  whitelistOSM
-        @param _vals[0]   ilkDebtCeiling
-        @param _vals[1]   minVaultAmount
-        @param _vals[2]   maxLiquidationAmount
-        @param _vals[3]   liquidationPenalty
-        @param _vals[4]   ilkStabilityFee
-        @param _vals[5]   bidIncrease
-        @param _vals[6]   bidDuration
-        @param _vals[7]   auctionDuration
-        @param _vals[8]   liquidationRatio
-    */
-    function addNewCollateral(bytes32 _ilk, address[] calldata _addrs, bool[] calldata _bools, uint256[] calldata _vals) public {
+    function addNewCollateral(CollateralOpts memory co) public {
         // Add the collateral to the system.
-        //                 ilk,       gem,      join,      flip,       pip
-        addCollateralBase(_ilk, _addrs[0], _addrs[1], _addrs[2], _addrs[3]);
+        addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
 
-        // isLiquidatable
-        if (_bools[0]) {
+        if (co.isLiquidatable) {
             // Allow FlipperMom to access to the ilk Flipper
-            //             flip
-            authorize(_addrs[2], flipperMom());
+            authorize(co.flip, flipperMom());
         } else {
             // Disallow Cat to kick auctions in ilk Flipper
-            //               flip
-            deauthorize(_addrs[2], cat());
+            deauthorize(co.flip, cat());
         }
 
-        //     isOSM
-        if(_bools[1]) { // If pip == OSM
+        if(co.isOSM) { // If pip == OSM
             // Allow OsmMom to access to the TOKEN OSM
-            //              pip
-            authorize(_addrs[3], osmMom());
-            //  whitelistOSM
-            if (_bools[2]) { // If median is src in OSM
+            authorize(co.pip, osmMom());
+            if (co.whitelistOSM) { // If median is src in OSM
                 // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-                //                                                  pip                pip
-                addReaderToMedianWhitelist(address(OracleLike(_addrs[3]).src()), _addrs[3]);
+                addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            //                            pip
-            addReaderToOSMWhitelist(_addrs[3], spotter());
+            addReaderToOSMWhitelist(co.pip, spotter());
             // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            //                            pip
-            addReaderToOSMWhitelist(_addrs[3], end());
+            addReaderToOSMWhitelist(co.pip, end());
             // Set TOKEN OSM in the OsmMom for new ilk
-            //                  pip   ilk
-            allowOSMFreeze(_addrs[3], _ilk);
+            allowOSMFreeze(co.pip, co.ilk);
         }
         // Increase the global debt ceiling by the ilk ceiling
-        //                  ilkDebtCeiling
-        increaseGlobalDebtCeiling(_vals[0]);
+        increaseGlobalDebtCeiling(co.ilkDebtCeiling);
         // Set the ilk debt ceiling
-        //                 ilk  ilkDebtCeiling
-        setIlkDebtCeiling(_ilk, _vals[0]);
+        setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
         // Set the ilk dust
-        //                    ilk  minVaultAmount
-        setIlkMinVaultAmount(_ilk, _vals[1]);
+        setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
         // Set the dunk size
-        //                          ilk  maxLiquidationAmount
-        setIlkMaxLiquidationAmount(_ilk, _vals[2]);
+        setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
         // Set the ilk liquidation penalty
-        //                        ilk  liquidationPenalty
-        setIlkLiquidationPenalty(_ilk, _vals[3]);
+        setIlkLiquidationPenalty(co.ilk, co.liquidationPenalty);
 
         // Set the ilk stability fee
-        //                  ilk  ilkStabilityFee
-        setIlkStabilityFee(_ilk, _vals[4], true);
+        setIlkStabilityFee(co.ilk, co.ilkStabilityFee, true);
 
         // Set the ilk percentage between bids
-        //                           ilk  bidIncrease
-        setIlkMinAuctionBidIncrease(_ilk, _vals[5]);
+        setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
         // Set the ilk time max time between bids
-        //                 ilk, bidDuration
-        setIlkBidDuration(_ilk, _vals[6]);
+        setIlkBidDuration(co.ilk, co.bidDuration);
         // Set the ilk max auction duration
-        //                     ilk  auctionDuration
-        setIlkAuctionDuration(_ilk, _vals[7]);
+        setIlkAuctionDuration(co.ilk, co.auctionDuration);
         // Set the ilk min collateralization ratio
-        //                      ilk  liquidationRatio
-        setIlkLiquidationRatio(_ilk, _vals[8]);
+        setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
 
         // Update ilk spot value in Vat
-        updateCollateralPrice(_ilk);
+        updateCollateralPrice(co.ilk);
     }
-
 
     /***************/
     /*** Payment ***/

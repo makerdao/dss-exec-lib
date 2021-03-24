@@ -18,6 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pragma solidity ^0.6.11;
+pragma experimental ABIEncoderV2;
 
 import "ds-test/test.sol";
 import "ds-math/math.sol";
@@ -60,7 +61,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             auctionDuration:       6 hours,
             liquidationRatio:      15000
         });
-        addNewCollateral(XMPL_A);
+        DssExecLib.addNewCollateral(XMPL_A);
 
         DssExecLib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
         DssExecLib.setIlkLiquidationPenalty("ETH-A", 1400);
