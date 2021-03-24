@@ -20,6 +20,7 @@
 pragma solidity ^0.6.11;
 
 import { DssExecLib } from "./DssExecLib.sol";
+import { DssTimeLib } from "./DssTimeLib.sol";
 import { CollateralOpts } from "./CollateralOpts.sol";
 
 interface OracleLike {
@@ -32,7 +33,7 @@ abstract contract DssAction {
 
     // Modifier used to limit execution time when office hours is enabled
     modifier limited {
-        require(DssExecLib.canCast(uint40(block.timestamp), officeHours()), "Outside office hours");
+        require(DssTimeLib.canCast(uint40(block.timestamp), officeHours()), "Outside office hours");
         _;
     }
 
@@ -55,6 +56,6 @@ abstract contract DssAction {
 
     // Returns the next available cast time
     function nextCastTime(uint256 eta) external returns (uint256 castTime) {
-        castTime = DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
+        castTime = DssTimeLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
 }
