@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.11;
+pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "../DssAction.sol";
@@ -37,11 +37,11 @@ contract DssTestAction is DssAction {
     function actions() public override {}
 
     function canCast_test(uint40 ts, bool officeHours) public pure returns (bool) {
-        return DssTimeLib.canCast(ts, officeHours);
+        return DssExecLib.canCast(ts, officeHours);
     }
 
     function nextCastTime_test(uint40 eta, uint40 ts, bool officeHours) public pure returns (uint256) {
-        return DssTimeLib.nextCastTime(eta, ts, officeHours);
+        return DssExecLib.nextCastTime(eta, ts, officeHours);
     }
 
     /**********************/

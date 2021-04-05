@@ -17,10 +17,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.11;
+pragma solidity ^0.6.12;
 
 import { DssExecLib } from "./DssExecLib.sol";
-import { DssTimeLib } from "./DssTimeLib.sol";
 import { CollateralOpts } from "./CollateralOpts.sol";
 
 interface OracleLike {
@@ -33,7 +32,7 @@ abstract contract DssAction {
 
     // Modifier used to limit execution time when office hours is enabled
     modifier limited {
-        require(DssTimeLib.canCast(uint40(block.timestamp), officeHours()), "Outside office hours");
+        require(DssExecLib.canCast(uint40(block.timestamp), officeHours()), "Outside office hours");
         _;
     }
 
@@ -57,6 +56,6 @@ abstract contract DssAction {
     // Returns the next available cast time
     function nextCastTime(uint256 eta) external returns (uint256 castTime) {
         require(eta <= uint40(-1));
-        castTime = DssTimeLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
+        castTime = DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
 }
