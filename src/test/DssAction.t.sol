@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.11;
+pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "ds-test/test.sol";
@@ -302,6 +302,37 @@ contract ActionTest is DSTest {
         osmMom.setOwner(address(action));
 
         govGuard.setRoot(address(action));
+    }
+
+    // /******************************/
+    // /*** OfficeHours Management ***/
+    // /******************************/
+
+    function test_canCast() public {
+        assertTrue(action.canCast_test(1616169600, true));  // Friday   2021/03/19, 4:00:00 PM GMT
+
+        assertTrue(action.canCast_test(1616169600, false)); // Friday   2021/03/19, 4:00:00 PM GMT
+        assertTrue(action.canCast_test(1616256000, false)); // Saturday 2021/03/20, 4:00:00 PM GMT
+    }
+
+    function testFail_canCast() public {
+        assertTrue(action.canCast_test(1616256000, true)); // Saturday 2021/03/20, 4:00:00 PM GMT
+    }
+
+    function test_nextCastTime() public {
+        assertEq(action.nextCastTime_test(1616169600, 1616169600, true), 1616169600);
+        assertEq(action.nextCastTime_test(1616169600, 1616169600, false), 1616169600);
+
+        assertEq(action.nextCastTime_test(1616256000, 1616256000, true), 1616421600);
+        assertEq(action.nextCastTime_test(1616256000, 1616256000, false), 1616256000);
+    }
+
+    function testFail_nextCastTime_eta_zero() public {
+        action.nextCastTime_test(0, 1616256000, false);
+    }
+
+    function testFail_nextCastTime_ts_zero() public {
+        action.nextCastTime_test(1616256000, 0, false);
     }
 
     // /**********************/

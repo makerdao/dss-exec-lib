@@ -94,6 +94,10 @@ Below is an outline of all functions used in the library.
 - `setChangelogIPFS(string memory _ipfsHash)`: Set IPFS hash of IPFS changelog in MCD on-chain changelog.
 - `setChangelogSHA256(string memory _SHA256Sum)`: Set SHA256 hash in MCD on-chain changelog.
 
+### Time Management
+- `canCast(uint40 _ts, bool _officeHours) returns (bool)`: Use to determine whether a timestamp is within the office hours window.
+- `nextCastTime(uint40 _eta, uint40 _ts, bool _officeHours) returns (uint256)`: Use to return the timestamp of the first available time after eta that a spell can be cast.
+
 ### Authorizations
 - `authorize(address _base, address _ward)`: Give an address authorization to perform auth actions on the contract.
 - `deauthorize(address _base, address _ward)`: Revoke contract authorization from an address.

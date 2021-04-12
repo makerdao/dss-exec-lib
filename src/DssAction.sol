@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.11;
+pragma solidity ^0.6.12;
 
 import { DssExecLib } from "./DssExecLib.sol";
 import { CollateralOpts } from "./CollateralOpts.sol";
@@ -29,6 +29,12 @@ interface OracleLike {
 abstract contract DssAction {
 
     using DssExecLib for *;
+
+    // Modifier used to limit execution time when office hours is enabled
+    modifier limited {
+        require(DssExecLib.canCast(uint40(block.timestamp), officeHours()), "Outside office hours");
+        _;
+    }
 
     // Office Hours defaults to true by default.
     //   To disable office hours, override this function and
@@ -47,14 +53,9 @@ abstract contract DssAction {
     //   By keeping this function public we allow simulations of `execute()` on the actions outside of the cast time.
     function actions() public virtual;
 
-    // Modifier required to
-    modifier limited {
-        if (officeHours()) {
-            uint day = (block.timestamp / 1 days + 3) % 7;
-            require(day < 5, "Can only be cast on a weekday");
-            uint hour = block.timestamp / 1 hours % 24;
-            require(hour >= 14 && hour < 21, "Outside office hours");
-        }
-        _;
+    // Returns the next available cast time
+    function nextCastTime(uint256 eta) external returns (uint256 castTime) {
+        require(eta <= uint40(-1));
+        castTime = DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
 }

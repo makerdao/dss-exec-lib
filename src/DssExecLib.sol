@@ -16,11 +16,10 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pragma solidity ^0.6.11;
+pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
 import { CollateralOpts } from "./CollateralOpts.sol";
-
 
 interface Initializable {
     function init(bytes32) external;
@@ -147,29 +146,28 @@ library DssExecLib {
     uint256 constant internal BPS_ONE_HUNDRED_PCT     = 100 * BPS_ONE_PCT;
     uint256 constant internal RATES_ONE_HUNDRED_PCT   = 1000000021979553151239153027;
 
-
     /**********************/
     /*** Math Functions ***/
     /**********************/
-    function add(uint x, uint y) internal pure returns (uint z) {
+    function add(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require((z = x + y) >= x);
     }
-    function sub(uint x, uint y) internal pure returns (uint z) {
+    function sub(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require((z = x - y) <= x);
     }
-    function mul(uint x, uint y) internal pure returns (uint z) {
+    function mul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require(y == 0 || (z = x * y) / y == x);
     }
-    function wmul(uint x, uint y) internal pure returns (uint z) {
+    function wmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, y), WAD / 2) / WAD;
     }
-    function rmul(uint x, uint y) internal pure returns (uint z) {
+    function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, y), RAY / 2) / RAY;
     }
-    function wdiv(uint x, uint y) internal pure returns (uint z) {
+    function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, WAD), y / 2) / y;
     }
-    function rdiv(uint x, uint y) internal pure returns (uint z) {
+    function rdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = add(mul(x, RAY), y / 2) / y;
     }
 
@@ -270,6 +268,61 @@ library DssExecLib {
     */
     function undelegateVat(address _usr) public {
         DssVat(vat()).nope(_usr);
+    }
+
+    /******************************/
+    /*** OfficeHours Management ***/
+    /******************************/
+
+    /**
+        @dev Returns true if a time is within office hours range
+        @param _ts           The timestamp to check, usually block.timestamp
+        @param _officeHours  true if office hours is enabled.
+        @return              true if time is in castable range
+    */
+    function canCast(uint40 _ts, bool _officeHours) public pure returns (bool) {
+        if (_officeHours) {
+            uint256 day = (_ts / 1 days + 3) % 7;
+            if (day >= 5)                 { return false; }  // Can only be cast on a weekday
+            uint256 hour = _ts / 1 hours % 24;
+            if (hour < 14 || hour >= 21)  { return false; }  // Outside office hours
+        }
+        return true;
+    }
+
+    /**
+        @dev Calculate the next available cast time in epoch seconds
+        @param _eta          The scheduled time of the spell plus the pause delay
+        @param _ts           The current timestamp, usually block.timestamp
+        @param _officeHours  true if office hours is enabled.
+        @return castTime     The next available cast timestamp
+    */
+    function nextCastTime(uint40 _eta, uint40 _ts, bool _officeHours) public pure returns (uint256 castTime) {
+        require(_eta != 0);  // "DssExecLib/invalid eta"
+        require(_ts  != 0);  // "DssExecLib/invalid ts"
+        castTime = _ts > _eta ? _ts : _eta; // Any day at XX:YY
+
+        if (_officeHours) {
+            uint256 day    = (castTime / 1 days + 3) % 7;
+            uint256 hour   = castTime / 1 hours % 24;
+            uint256 minute = castTime / 1 minutes % 60;
+            uint256 second = castTime % 60;
+
+            if (day >= 5) {
+                castTime += (6 - day) * 1 days;                 // Go to Sunday XX:YY
+                castTime += (24 - hour + 14) * 1 hours;         // Go to 14:YY UTC Monday
+                castTime -= minute * 1 minutes + second;        // Go to 14:00 UTC
+            } else {
+                if (hour >= 21) {
+                    if (day == 4) castTime += 2 days;           // If Friday, fast forward to Sunday XX:YY
+                    castTime += (24 - hour + 14) * 1 hours;     // Go to 14:YY UTC next day
+                    castTime -= minute * 1 minutes + second;    // Go to 14:00 UTC
+                } else if (hour < 14) {
+                    castTime += (14 - hour) * 1 hours;          // Go to 14:YY UTC same day
+                    castTime -= minute * 1 minutes + second;    // Go to 14:00 UTC
+                }
+            }
+        }
     }
 
     /**************************/
