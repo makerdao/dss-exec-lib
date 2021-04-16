@@ -61,6 +61,7 @@ interface DssVat {
 interface AuctionLike {
     function vat() external returns (address);
     function cat() external returns (address); // Only flip
+    function dog() external returns (address); // Only clip
     function beg() external returns (uint256);
     function pad() external returns (uint256); // Only flop
     function ttl() external returns (uint256);
@@ -96,19 +97,7 @@ interface MomLike {
 
 interface RegistryLike {
     function add(address) external;
-    function info(bytes32) external view returns (
-        string memory, string memory, uint256, address, address, address, address
-    );
-    function ilkData(bytes32) external view returns (
-        uint256       pos,
-        address       gem,
-        address       pip,
-        address       join,
-        address       flip,
-        uint256       dec,
-        string memory name,
-        string memory symbol
-    );
+    function xlip(bytes32) external view returns (address);
 }
 
 // https://github.com/makerdao/dss-chain-log
@@ -178,6 +167,7 @@ library DssExecLib {
     function mkr()        public view returns (address) { return getChangelogAddress("MCD_GOV"); }
     function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
     function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
+    function dog()        public view returns (address) { return getChangelogAddress("MCD_DOG"); }
     function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
     function pot()        public view returns (address) { return getChangelogAddress("MCD_POT"); }
     function vow()        public view returns (address) { return getChangelogAddress("MCD_VOW"); }
@@ -189,12 +179,17 @@ library DssExecLib {
     function osmMom()     public view returns (address) { return getChangelogAddress("OSM_MOM"); }
     function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
     function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
+    function clipperMom() public view returns (address) { return getChangelogAddress("CLIPPER_MOM"); }
     function pauseProxy() public view returns (address) { return getChangelogAddress("MCD_PAUSE_PROXY"); }
     function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
     function daiJoin()    public view returns (address) { return getChangelogAddress("MCD_JOIN_DAI"); }
 
+    function clip(bytes32 _ilk) public view returns (address _clip) {
+        _clip = RegistryLike(reg()).xlip(_ilk);
+    }
+
     function flip(bytes32 _ilk) public view returns (address _flip) {
-        (,,,, _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
+        _flip = RegistryLike(reg()).xlip(_ilk);
     }
 
     function getChangelogAddress(bytes32 _key) public view returns (address) {
@@ -664,6 +659,7 @@ library DssExecLib {
         @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
+    // TODO
     function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
         Fileable(flip(_ilk)).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
@@ -673,6 +669,7 @@ library DssExecLib {
         @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
         @param _duration Amount of time for bids.
     */
+    // TODO
     function setIlkBidDuration(bytes32 _ilk, uint256 _duration) public {
         Fileable(flip(_ilk)).file("ttl", _duration);
     }
@@ -681,6 +678,7 @@ library DssExecLib {
         @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
         @param _duration Amount of time for auctions.
     */
+    // TODO
     function setIlkAuctionDuration(bytes32 _ilk, uint256 _duration) public {
         Fileable(flip(_ilk)).file("tau", _duration);
     }
@@ -802,33 +800,33 @@ library DssExecLib {
         @param _ilk      Collateral type key code [Ex. "ETH-A"]
         @param _gem      Address of token contract
         @param _join     Address of join adapter
-        @param _flip     Address of flipper
+        @param _clip     Address of liquidation agent
         @param _pip      Address of price feed
     */
     function addCollateralBase(
         bytes32 _ilk,
         address _gem,
         address _join,
-        address _flip,
+        address _clip,
         address _pip
     ) public {
         // Sanity checks
         address _vat = vat();
-        address _cat = cat();
+        address _dog = dog();
         require(JoinLike(_join).vat() == _vat);     // "join-vat-not-match"
         require(JoinLike(_join).ilk() == _ilk);     // "join-ilk-not-match"
         require(JoinLike(_join).gem() == _gem);     // "join-gem-not-match"
         require(JoinLike(_join).dec() ==
                    ERC20(_gem).decimals());         // "join-dec-not-match"
-        require(AuctionLike(_flip).vat() == _vat);  // "flip-vat-not-match"
-        require(AuctionLike(_flip).cat() == _cat);  // "flip-cat-not-match"
-        require(AuctionLike(_flip).ilk() == _ilk);  // "flip-ilk-not-match"
+        require(AuctionLike(_clip).vat() == _vat);  // "clip-vat-not-match"
+        require(AuctionLike(_clip).dog() == _dog);  // "clip-dog-not-match"
+        require(AuctionLike(_clip).ilk() == _ilk);  // "clip-ilk-not-match"
 
         // Set the token PIP in the Spotter
         setContract(spotter(), _ilk, "pip", _pip);
 
-        // Set the ilk Flipper in the Cat
-        setContract(_cat, _ilk, "flip", _flip);
+        // Set the ilk Clipper in the Cat
+        setContract(_dog, _ilk, "clip", _clip);
 
         // Init ilk in Vat & Jug
         Initializable(_vat).init(_ilk);  // Vat
@@ -836,12 +834,12 @@ library DssExecLib {
 
         // Allow ilk Join to modify Vat registry
         authorize(_vat, _join);
-		// Allow the ilk Flipper to reduce the Cat litterbox on deal()
-        authorize(_cat, _flip);
-        // Allow Cat to kick auctions in ilk Flipper
-        authorize(_flip, _cat);
-        // Allow End to yank auctions in ilk Flipper
-        authorize(_flip, end());
+		// Allow the ilk Clipper to reduce the Dog litterbox on deal()
+        authorize(_dog, _clip);
+        // Allow Dog to kick auctions in ilk Clipper
+        authorize(_clip, _dog);
+        // Allow End to yank auctions in ilk Clipper
+        authorize(_clip, end());
 
         // Add new ilk to the IlkRegistry
         RegistryLike(reg()).add(_join);
@@ -850,14 +848,14 @@ library DssExecLib {
     // Complete collateral onboarding logic.
     function addNewCollateral(CollateralOpts memory co) public {
         // Add the collateral to the system.
-        addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
+        addCollateralBase(co.ilk, co.gem, co.join, co.clip, co.pip);
 
         if (co.isLiquidatable) {
-            // Allow FlipperMom to access to the ilk Flipper
-            authorize(co.flip, flipperMom());
+            // Allow clipperMom to access to the ilk Clipper
+            authorize(co.clip, clipperMom());
         } else {
-            // Disallow Cat to kick auctions in ilk Flipper
-            deauthorize(co.flip, cat());
+            // Disallow Dog to kick auctions in ilk Clipper
+            deauthorize(co.clip, dog());
         }
 
         if(co.isOSM) { // If pip == OSM

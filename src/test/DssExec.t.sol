@@ -46,7 +46,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             ilk:                   "XMPL-A",
             gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
             join:                  0xa30925910067a2d9eB2a7358c017E6075F660842,
-            flip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
+            clip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
             pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, // Using LRC-A pip as a dummy
             isLiquidatable:        true,
             isOSM:                 true,

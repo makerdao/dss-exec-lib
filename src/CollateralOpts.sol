@@ -4,7 +4,7 @@ struct CollateralOpts {
     bytes32 ilk;
     address gem;
     address join;
-    address flip;
+    address clip;
     address pip;
     bool    isLiquidatable;
     bool    isOSM;

@@ -28,7 +28,7 @@ import {ChainLog}         from "dss-chain-log/ChainLog.sol";
 import {OsmMom}           from "osm-mom/OsmMom.sol";
 import {MkrAuthority}     from "mkr-authority/MkrAuthority.sol";
 import {IlkRegistry}      from "ilk-registry/IlkRegistry.sol";
-import {FlipperMom}       from "flipper-mom/FlipperMom.sol";
+import {ClipperMom}       from "clipper-mom/ClipperMom.sol";
 import {Median}           from "median/median.sol";
 import {OSM}              from 'osm/osm.sol';
 import {OsmAbstract}      from "dss-interfaces/Interfaces.sol";
@@ -41,7 +41,7 @@ import {Cat}              from 'dss/cat.sol';
 import {Vow}              from 'dss/vow.sol';
 import {Pot}              from 'dss/pot.sol';
 import {Jug}              from 'dss/jug.sol';
-import {Flipper}          from 'dss/flip.sol';
+import {Clipper}          from 'dss/clip.sol';
 import {Flapper}          from 'dss/flap.sol';
 import {Flopper}          from 'dss/flop.sol';
 import {GemJoin,DaiJoin}  from 'dss/join.sol';
@@ -79,7 +79,7 @@ contract ActionTest is DSTest {
     Median median;
     OsmMom       osmMom;
     MkrAuthority govGuard;
-    FlipperMom flipperMom;
+    ClipperMom clipperMom;
     DssAutoLine autoLine;
 
     ChainLog clog;
@@ -95,7 +95,7 @@ contract ActionTest is DSTest {
         OSM     osm;
         DSToken gem;
         GemJoin gemA;
-        Flipper flip;
+        Clipper clip;
     }
 
     mapping (bytes32 => Ilk) ilks;
@@ -170,19 +170,19 @@ contract ActionTest is DSTest {
 
         vat.rely(address(gemA));
 
-        Flipper flip = new Flipper(address(vat), address(cat), name);
-        vat.hope(address(flip));
-        flip.rely(address(end));
-        flip.rely(address(cat));
-        cat.rely(address(flip));
-        cat.file(name, "flip", address(flip));
+        Clipper clip = new Clipper(address(vat), address(cat), name);
+        vat.hope(address(clip));
+        clip.rely(address(end));
+        clip.rely(address(cat));
+        cat.rely(address(clip));
+        cat.file(name, "clip", address(clip));
         cat.file(name, "chop", 1 ether);
         cat.file(name, "dunk", rad(25000 ether));
         cat.file("box", rad((10 ether) * MILLION));
 
         reg.add(address(gemA));
 
-        flip.rely(_action);
+        clip.rely(_action);
         gemA.rely(_action);
         osm.rely(_action);
 
@@ -190,7 +190,7 @@ contract ActionTest is DSTest {
         ilks[name].osm = osm;
         ilks[name].gem = coin;
         ilks[name].gemA = gemA;
-        ilks[name].flip = flip;
+        ilks[name].clip = clip;
 
 
         return ilks[name];
@@ -249,7 +249,7 @@ contract ActionTest is DSTest {
         reg        = new IlkRegistry(address(vat), address(cat), address(spot));
         osmMom     = new OsmMom();
         govGuard   = new MkrAuthority();
-        flipperMom = new FlipperMom(address(cat));
+        clipperMom = new ClipperMom(address(dog));
 
         autoLine   = new DssAutoLine(address(vat));
         vat.rely(address(autoLine));
@@ -277,7 +277,7 @@ contract ActionTest is DSTest {
         clog.setAddress("ILK_REGISTRY",      address(reg));
         clog.setAddress("OSM_MOM",           address(osmMom));
         clog.setAddress("GOV_GUARD",         address(govGuard));
-        clog.setAddress("FLIPPER_MOM",       address(flipperMom));
+        clog.setAddress("CLIPPER_MOM",       address(clipperMom));
         clog.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
 
         action = new DssTestAction();
@@ -298,7 +298,7 @@ contract ActionTest is DSTest {
         clog.rely(address(action));
         autoLine.rely(address(action));
 
-        flipperMom.setOwner(address(action));
+        clipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
 
         govGuard.setRoot(address(action));
@@ -655,17 +655,17 @@ contract ActionTest is DSTest {
 
     function test_setIlkMinAuctionBidIncrease() public {
         action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
-        assertEq(ilks["gold"].flip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
+        assertEq(ilks["gold"].clip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
     }
 
     function test_setIlkBidDuration() public {
         action.setIlkBidDuration_test("gold", 6 hours);
-        assertEq(uint256(ilks["gold"].flip.ttl()), 6 hours);
+        assertEq(uint256(ilks["gold"].clip.ttl()), 6 hours);
     }
 
     function test_setIlkAuctionDuration() public {
         action.setIlkAuctionDuration_test("gold", 6 hours);
-        assertEq(uint256(ilks["gold"].flip.tau()), 6 hours);
+        assertEq(uint256(ilks["gold"].clip.tau()), 6 hours);
     }
 
     function test_setIlkStabilityFee() public {
@@ -793,30 +793,30 @@ contract ActionTest is DSTest {
 
         DSToken token     = new DSToken(ilk);
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
-        Flipper tokenFlip = new Flipper(address(vat), address(cat), ilk);
+        Clipper tokenClip = new Clipper(address(vat), address(dog), ilk);
         address tokenPip  = address(new DSValue());
 
         tokenPip = address(new OSM(address(tokenPip)));
         OSM(tokenPip).rely(address(action));
-        tokenFlip.rely(address(action));
+        tokenClip.rely(address(action));
         tokenJoin.rely(address(action));
-        tokenFlip.deny(address(this));
+        tokenClip.deny(address(this));
         tokenJoin.deny(address(this));
 
-        action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenFlip), tokenPip);
+        action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenClip), tokenPip);
 
         assertEq(vat.wards(address(tokenJoin)), 1);
-        assertEq(cat.wards(address(tokenFlip)), 1);
+        assertEq(cat.wards(address(tokenClip)), 1);
 
-        assertEq(tokenFlip.wards(address(end)),        1);
+        assertEq(tokenClip.wards(address(end)),        1);
 
-        (,, uint256 _dec, address _gem, address _pip, address _join, address _flip) = reg.info(ilk);
+        (,, uint256 _dec, address _gem, address _pip, address _join, address _clip) = reg.info(ilk);
 
         assertEq(_dec, 18);
         assertEq(_gem, address(token));
         assertEq(_pip, address(tokenPip));
         assertEq(_join, address(tokenJoin));
-        assertEq(_flip, address(tokenFlip));
+        assertEq(_clip, address(tokenClip));
     }
 
     function collateralOnboardingTest(bool liquidatable, bool isOsm, bool medianSrc) internal {
@@ -825,7 +825,7 @@ contract ActionTest is DSTest {
 
         address token     = address(new DSToken(ilk));
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, token);
-        Flipper tokenFlip = new Flipper(address(vat), address(cat), ilk);
+        Clipper tokenClip = new Clipper(address(vat), address(cat), ilk);
         address tokenPip  = address(new DSValue());
 
         if (isOsm) {
@@ -833,9 +833,9 @@ contract ActionTest is DSTest {
             OSM(tokenPip).rely(address(action));
         }
 
-        tokenFlip.rely(address(action));
+        tokenClip.rely(address(action));
         tokenJoin.rely(address(action));
-        tokenFlip.deny(address(this));
+        tokenClip.deny(address(this));
         tokenJoin.deny(address(this));
 
         {
@@ -846,7 +846,7 @@ contract ActionTest is DSTest {
                     ilk:                   ilk,
                     gem:                   token,
                     join:                  address(tokenJoin),
-                    flip:                  address(tokenFlip),
+                    clip:                  address(tokenClip),
                     pip:                   tokenPip,
                     isLiquidatable:        liquidatable,
                     isOSM:                 isOsm,
@@ -868,13 +868,13 @@ contract ActionTest is DSTest {
 
         {
         assertEq(vat.wards(address(tokenJoin)), 1);
-        assertEq(cat.wards(address(tokenFlip)), 1);
+        assertEq(cat.wards(address(tokenClip)), 1);
 
-        assertEq(tokenFlip.wards(address(end)),        1);
+        assertEq(tokenClip.wards(address(end)),        1);
 
         uint256 liq_ = (liquidatable) ? 1 : 0;
-        assertEq(tokenFlip.wards(address(cat)), liq_);
-        assertEq(tokenFlip.wards(address(flipperMom)), liq_);
+        assertEq(tokenClip.wards(address(cat)), liq_);
+        assertEq(tokenClip.wards(address(clipperMom)), liq_);
         }
 
         if (isOsm) {
@@ -900,9 +900,9 @@ contract ActionTest is DSTest {
         }
 
         {
-            assertEq(tokenFlip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
-            assertEq(uint256(tokenFlip.ttl()), 6 hours);
-            assertEq(uint256(tokenFlip.tau()), 6 hours);
+            assertEq(tokenClip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
+            assertEq(uint256(tokenClip.ttl()), 6 hours);
+            assertEq(uint256(tokenClip.tau()), 6 hours);
 
             (, uint256 mat) = spot.ilks(ilk);
             assertEq(mat, ray(150 ether / 100)); // RAY pct
