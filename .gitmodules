@@ -35,3 +35,6 @@
 [submodule "lib/dss-auto-line"]
 	path = lib/dss-auto-line
 	url = https://github.com/makerdao/dss-auto-line
+[submodule "lib/clipper-mom"]
+	path = lib/clipper-mom
+	url = https://github.com/makerdao/clipper-mom
