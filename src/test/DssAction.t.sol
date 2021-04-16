@@ -37,6 +37,7 @@ import {DSProxyFactory,
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 
 import {Vat}              from 'dss/vat.sol';
+import {Dog}              from 'dss/dog.sol';
 import {Cat}              from 'dss/cat.sol';
 import {Vow}              from 'dss/vow.sol';
 import {Pot}              from 'dss/pot.sol';
@@ -69,6 +70,7 @@ contract ActionTest is DSTest {
     Vow         vow;
     Pot         pot;
     Jug         jug;
+    Dog         dog;
     Cat         cat;
     Dai         daiToken;
     DaiJoin     daiJoin;
@@ -170,15 +172,15 @@ contract ActionTest is DSTest {
 
         vat.rely(address(gemA));
 
-        Clipper clip = new Clipper(address(vat), address(cat), name);
+        Clipper clip = new Clipper(address(vat), address(spot), address(dog), name);
         vat.hope(address(clip));
         clip.rely(address(end));
-        clip.rely(address(cat));
-        cat.rely(address(clip));
-        cat.file(name, "clip", address(clip));
-        cat.file(name, "chop", 1 ether);
-        cat.file(name, "dunk", rad(25000 ether));
-        cat.file("box", rad((10 ether) * MILLION));
+        clip.rely(address(dog));
+        dog.rely(address(clip));
+        dog.file(name, "clip", address(clip));
+        dog.file(name, "chop", 1 ether);
+        dog.file(name, "dunk", rad(25000 ether));
+        dog.file("Hole", rad((10 ether) * MILLION));
 
         reg.add(address(gemA));
 
@@ -213,6 +215,11 @@ contract ActionTest is DSTest {
         vat.rely(address(pot));
         pot.file("vow", address(vow));
 
+        dog = new Dog(address(vat));
+        dog.file("vow", address(vow));
+        vat.rely(address(dog));
+        vow.rely(address(dog));
+
         cat = new Cat(address(vat));
         cat.file("vow", address(vow));
         vat.rely(address(cat));
@@ -232,7 +239,7 @@ contract ActionTest is DSTest {
 
         end = new End();
         end.file("vat", address(vat));
-        end.file("cat", address(cat));
+        end.file("dog", address(dog));
         end.file("vow", address(vow));
         end.file("pot", address(pot));
         end.file("spot", address(spot));
@@ -241,12 +248,12 @@ contract ActionTest is DSTest {
         vow.rely(address(end));
         spot.rely(address(end));
         pot.rely(address(end));
-        cat.rely(address(end));
+        dog.rely(address(end));
         flap.rely(address(vow));
         flop.rely(address(vow));
 
 
-        reg        = new IlkRegistry(address(vat), address(cat), address(spot));
+        reg        = new IlkRegistry(address(vat), address(dog), address(cat), address(spot));
         osmMom     = new OsmMom();
         govGuard   = new MkrAuthority();
         clipperMom = new ClipperMom(address(dog));
@@ -264,7 +271,7 @@ contract ActionTest is DSTest {
         clog = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
 
         clog.setAddress("MCD_VAT",           address(vat));
-        clog.setAddress("MCD_CAT",           address(cat));
+        clog.setAddress("MCD_DOG",           address(dog));
         clog.setAddress("MCD_JUG",           address(jug));
         clog.setAddress("MCD_POT",           address(pot));
         clog.setAddress("MCD_VOW",           address(vow));
@@ -286,7 +293,7 @@ contract ActionTest is DSTest {
 
         vat.rely(address(action));
         spot.rely(address(action));
-        cat.rely(address(action));
+        dog.rely(address(action));
         vow.rely(address(action));
         end.rely(address(action));
         pot.rely(address(action));
@@ -544,7 +551,7 @@ contract ActionTest is DSTest {
 
     function test_setMaxTotalDAILiquidationAmount() public {
         action.setMaxTotalDAILiquidationAmount_test(50 * MILLION);
-        assertEq(cat.box(), 50 * MILLION * RAD); // WAD pct
+        assertEq(dog.Hole(), 50 * MILLION * RAD); // WAD pct
     }
 
     function test_setEmergencyShutdownProcessingTime() public {
@@ -637,15 +644,17 @@ contract ActionTest is DSTest {
 
     function test_setIlkLiquidationPenalty() public {
         action.setIlkLiquidationPenalty_test("gold", 1325); // 13.25%
-        (, uint256 chop,) = cat.ilks("gold");
+        (, uint256 chop,,) = dog.ilks("gold");
         assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
     }
 
     function test_setIlkMaxLiquidationAmount() public {
         action.setIlkMaxLiquidationAmount_test("gold", 50 * THOUSAND);
-        (,, uint256 dunk) = cat.ilks("gold");
-        assertEq(dunk, 50 * THOUSAND * RAD);
+        (,, uint256 hole,) = dog.ilks("gold");
+        assertEq(hole, 50 * THOUSAND * RAD);
     }
+
+    // TODO dog.dirt
 
     function test_setIlkLiquidationRatio() public {
         action.setIlkLiquidationRatio_test("gold", 15000); // 150% in bp
@@ -653,10 +662,21 @@ contract ActionTest is DSTest {
         assertEq(mat, ray(150 ether / 100)); // RAY pct
     }
 
+    // TODO
     function test_setIlkMinAuctionBidIncrease() public {
         action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
         assertEq(ilks["gold"].clip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
     }
+
+    // TODO
+    //  clip.calc
+    //  clip.buf
+    //  clip.tail
+    //  clip.cusp
+    //  clip.chip
+    //  clip.tip
+    //  clip.chost
+
 
     function test_setIlkBidDuration() public {
         action.setIlkBidDuration_test("gold", 6 hours);
@@ -806,7 +826,7 @@ contract ActionTest is DSTest {
         action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenClip), tokenPip);
 
         assertEq(vat.wards(address(tokenJoin)), 1);
-        assertEq(cat.wards(address(tokenClip)), 1);
+        assertEq(dog.wards(address(tokenClip)), 1);
 
         assertEq(tokenClip.wards(address(end)),        1);
 
@@ -825,7 +845,7 @@ contract ActionTest is DSTest {
 
         address token     = address(new DSToken(ilk));
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, token);
-        Clipper tokenClip = new Clipper(address(vat), address(cat), ilk);
+        Clipper tokenClip = new Clipper(address(vat), address(dog), ilk);
         address tokenPip  = address(new DSValue());
 
         if (isOsm) {
@@ -868,12 +888,12 @@ contract ActionTest is DSTest {
 
         {
         assertEq(vat.wards(address(tokenJoin)), 1);
-        assertEq(cat.wards(address(tokenClip)), 1);
+        assertEq(dog.wards(address(tokenClip)), 1);
 
         assertEq(tokenClip.wards(address(end)),        1);
 
         uint256 liq_ = (liquidatable) ? 1 : 0;
-        assertEq(tokenClip.wards(address(cat)), liq_);
+        assertEq(tokenClip.wards(address(dog)), liq_);
         assertEq(tokenClip.wards(address(clipperMom)), liq_);
         }
 
@@ -888,7 +908,7 @@ contract ActionTest is DSTest {
 
         {
             (,,, uint256 line, uint256 dust) = vat.ilks(ilk);
-            (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
+            (, uint256 chop, uint256 dunk) = dog.ilks(ilk);
             assertEq(line, 100 * MILLION * RAD);
             assertEq(dust, 100 * RAD);
             assertEq(dunk, 50 * THOUSAND * RAD);
