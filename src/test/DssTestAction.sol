@@ -179,9 +179,10 @@ contract DssTestAction is DssAction {
         DssExecLib.setDebtAuctionMKRIncreaseRate(pct_bps);
     }
 
-    function setMaxTotalDAILiquidationAmount_test(uint256 amount) public {
-        DssExecLib.setMaxTotalDAILiquidationAmount(amount);
-    }
+    // FIXME
+    //function setMaxTotalDAILiquidationAmount_test(uint256 amount) public {
+    //    DssExecLib.setMaxTotalDAILiquidationAmount(amount);
+    //}
 
     function setEmergencyShutdownProcessingTime_test(uint256 duration) public {
         DssExecLib.setEmergencyShutdownProcessingTime(duration);
@@ -226,9 +227,10 @@ contract DssTestAction is DssAction {
         DssExecLib.setIlkMinVaultAmount(ilk, amount);
     }
 
-    function setIlkLiquidationPenalty_test(bytes32 ilk, uint256 pct_bps) public {
-        DssExecLib.setIlkLiquidationPenalty(ilk, pct_bps);
-    }
+    // FIXME
+    //function setIlkLiquidationPenalty_test(bytes32 ilk, uint256 pct_bps) public {
+    //    DssExecLib.setIlkLiquidationPenalty(ilk, pct_bps);
+    //}
 
     function setIlkMaxLiquidationAmount_test(bytes32 ilk, uint256 amount) public {
         DssExecLib.setIlkMaxLiquidationAmount(ilk, amount);
@@ -238,9 +240,10 @@ contract DssTestAction is DssAction {
         DssExecLib.setIlkLiquidationRatio(ilk, pct_bps);
     }
 
-    function setIlkMinAuctionBidIncrease_test(bytes32 ilk, uint256 pct_bps) public {
-        DssExecLib.setIlkMinAuctionBidIncrease(ilk, pct_bps);
-    }
+    // FIXME
+    //function setIlkMinAuctionBidIncrease_test(bytes32 ilk, uint256 pct_bps) public {
+    //    DssExecLib.setIlkMinAuctionBidIncrease(ilk, pct_bps);
+    //}
 
     function setIlkBidDuration_test(bytes32 ilk, uint256 duration) public {
         DssExecLib.setIlkBidDuration(ilk, duration);

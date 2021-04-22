@@ -509,10 +509,11 @@ library DssExecLib {
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
     */
-    function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
-        require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
-        Fileable(cat()).file("box", _amount * RAD);
-    }
+    //FIXME
+    //function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
+    //    require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
+    //    Fileable(cat()).file("box", _amount * RAD);
+    //}
     /**
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _duration Time in seconds to set for ES processing time
@@ -631,7 +632,7 @@ library DssExecLib {
     */
     function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(cat()).file(_ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        Fileable(dog()).file(_ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
@@ -640,7 +641,7 @@ library DssExecLib {
     */
     function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
-        Fileable(cat()).file(_ilk, "dunk", _amount * RAD);
+        Fileable(dog()).file(_ilk, "hole", _amount * RAD);
     }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
@@ -659,7 +660,6 @@ library DssExecLib {
         @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    // TODO
     function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
         Fileable(flip(_ilk)).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
@@ -834,7 +834,7 @@ library DssExecLib {
 
         // Allow ilk Join to modify Vat registry
         authorize(_vat, _join);
-		// Allow the ilk Clipper to reduce the Dog litterbox on deal()
+		// Allow the ilk Clipper to reduce the Dog hole on deal()
         authorize(_dog, _clip);
         // Allow Dog to kick auctions in ilk Clipper
         authorize(_clip, _dog);
@@ -887,11 +887,14 @@ library DssExecLib {
         setIlkStabilityFee(co.ilk, co.ilkStabilityFee, true);
 
         // Set the ilk percentage between bids
-        setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
+        // FIXME
+        //setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
         // Set the ilk time max time between bids
-        setIlkBidDuration(co.ilk, co.bidDuration);
+        // FIXME
+        // setIlkBidDuration(co.ilk, co.bidDuration);
         // Set the ilk max auction duration
-        setIlkAuctionDuration(co.ilk, co.auctionDuration);
+        // FIXME
+        //setIlkAuctionDuration(co.ilk, co.auctionDuration);
         // Set the ilk min collateralization ratio
         setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
 
