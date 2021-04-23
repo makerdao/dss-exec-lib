@@ -671,9 +671,14 @@ contract ActionTest is DSTest {
     //    assertEq(ilks["gold"].clip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
     //}
 
+    function test_setStartingPriceMultiplicativeFactor() public {
+        action.setStartingPriceMultiplicativeFactor_test("gold", 15000); // 150%
+        assertEq(ilks["gold"].clip.buf(), 150 * RAY / 100); // RAY pct
+    }
+
     // TODO
     //  clip.calc
-    //  clip.buf
+    //  clip.buf  // done
     //  clip.tail
     //  clip.cusp
     //  clip.chip
@@ -880,6 +885,7 @@ contract ActionTest is DSTest {
                     maxLiquidationAmount:  50 * THOUSAND,
                     liquidationPenalty:    1300,
                     ilkStabilityFee:       1000000001243680656318820312,
+                    startingPriceFactor:   13000,
                     bidIncrease:           500,
                     bidDuration:           6 hours,
                     auctionDuration:       6 hours,
@@ -927,6 +933,7 @@ contract ActionTest is DSTest {
             // FIXME assertEq(tokenClip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
             //assertEq(uint256(tokenClip.ttl()), 6 hours);
             //assertEq(uint256(tokenClip.tau()), 6 hours);
+            assertEq(tokenClip.buf(), 130 * RAY / 100);
 
             (, uint256 mat) = spot.ilks(ilk);
             assertEq(mat, ray(150 ether / 100)); // RAY pct

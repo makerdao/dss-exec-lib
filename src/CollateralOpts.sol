@@ -14,6 +14,7 @@ struct CollateralOpts {
     uint256 maxLiquidationAmount;
     uint256 liquidationPenalty;
     uint256 ilkStabilityFee;
+    uint256 startingPriceFactor;
     uint256 bidIncrease;
     uint256 bidDuration;
     uint256 auctionDuration;

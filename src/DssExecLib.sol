@@ -509,6 +509,14 @@ library DssExecLib {
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
     */
+    // FIXME
+    // dog.Hole
+    // dog.hole
+    // dog.chop
+    // dog.digs
+
+
+
     //FIXME
     //function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
     //    require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
@@ -654,34 +662,64 @@ library DssExecLib {
         require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // the liquidation ratio has to be bigger or equal to 100%
         Fileable(spotter()).file(_ilk, "mat", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
+
+    /**
+        @dev Set an auction starting multiplier. Amount will be converted to the correct internal precision.
+        @dev Equation used for conversion is pct * RAY / 10,000
+        @param _ilk      The ilk to update (ex. bytes32("ETH-A"))
+        @param _pct_bps  The pct, in basis points, to set in integer form (x100). (ex. 1.3x starting multiplier = 130% = 13000)
+    */
+    function setStartingPriceMultiplicativeFactor(bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < 10 * BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-ilk-mat-precision" // Fails if gt 10x
+        require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // fail if start price is less than OSM price
+        Fileable(clip(_ilk)).file("buf", _pct_bps * RAY / 10000);
+    }
+
+    // FIXME
+    // clip.tail
+    //Fileable(MCD_CLIP_YFI_A).file("tail", 140 minutes);
+    // clip.cusp
+    //Fileable(MCD_CLIP_YFI_A).file("cusp", 40 * RAY / 100);
+    // clip.chip
+    //Fileable(MCD_CLIP_YFI_A).file("chip", 1 * WAD / 1000);
+    // clip.tip
+    //Fileable(MCD_CLIP_YFI_A).file("tip", 0);
+    // clip.chost? (need to call when vat.dust or dog.chop change)
+
+    // clip.calc.cut
+    //Fileable(MCD_CLIP_CALC_YFI_A).file("cut", 99 * RAY / 100); // 1% cut
+    // clip.calc.step
+    //Fileable(MCD_CLIP_CALC_YFI_A).file("step", 90 seconds);
+
+
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is (1 + pct / 10,000) * WAD
         @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
-    function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(flip(_ilk)).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
-    }
+    //function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps) public {
+    //    require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
+    //    Fileable(flip(_ilk)).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+    //}
     /**
         @dev Set bid duration for a collateral type.
         @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
         @param _duration Amount of time for bids.
     */
     // TODO
-    function setIlkBidDuration(bytes32 _ilk, uint256 _duration) public {
-        Fileable(flip(_ilk)).file("ttl", _duration);
-    }
+    //function setIlkBidDuration(bytes32 _ilk, uint256 _duration) public {
+    //    Fileable(flip(_ilk)).file("ttl", _duration);
+    //}
     /**
         @dev Set auction duration for a collateral type.
         @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
         @param _duration Amount of time for auctions.
     */
     // TODO
-    function setIlkAuctionDuration(bytes32 _ilk, uint256 _duration) public {
-        Fileable(flip(_ilk)).file("tau", _duration);
-    }
+    //function setIlkAuctionDuration(bytes32 _ilk, uint256 _duration) public {
+    //    Fileable(flip(_ilk)).file("tau", _duration);
+    //}
     /**
         @dev Set the stability fee for a given ilk.
             Many of the settings that change weekly rely on the rate accumulator
@@ -888,6 +926,8 @@ library DssExecLib {
         // Set the ilk stability fee
         setIlkStabilityFee(co.ilk, co.ilkStabilityFee, true);
 
+        // Set the auction starting price multiplier
+        setStartingPriceMultiplicativeFactor(co.ilk, co.startingPriceFactor);
         // Set the ilk percentage between bids
         // FIXME
         //setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);

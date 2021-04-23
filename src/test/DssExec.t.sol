@@ -74,6 +74,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             maxLiquidationAmount:  50000,
             liquidationPenalty:    1300,
             ilkStabilityFee:       1000000000705562181084137268,
+            startingPriceFactor:   13000,
             bidIncrease:           300,
             bidDuration:           6 hours,
             auctionDuration:       6 hours,
@@ -84,11 +85,11 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         DssExecLib.setIlkLiquidationPenalty("XMPL-A", 1400);
 
         DssExecLib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
-        DssExecLib.setIlkMinAuctionBidIncrease("ETH-A", 400);
+        //DssExecLib.setIlkMinAuctionBidIncrease("ETH-A", 400);
         DssExecLib.setIlkLiquidationRatio("ETH-A", 16000);
         DssExecLib.setIlkLiquidationPenalty("ETH-A", 1400);
-        DssExecLib.setIlkBidDuration("ETH-A", 3 hours);
-        DssExecLib.setIlkAuctionDuration("ETH-A", 3 hours);
+        //DssExecLib.setIlkBidDuration("ETH-A", 3 hours);
+        //DssExecLib.setIlkAuctionDuration("ETH-A", 3 hours);
         DssExecLib.setGlobalDebtCeiling(10000 * MILLION);
     }
 }

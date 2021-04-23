@@ -232,6 +232,10 @@ contract DssTestAction is DssAction {
     //    DssExecLib.setIlkLiquidationPenalty(ilk, pct_bps);
     //}
 
+    function setStartingPriceMultiplicativeFactor_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setStartingPriceMultiplicativeFactor(ilk, pct_bps); // clip.buf
+    }
+
     function setIlkMaxLiquidationAmount_test(bytes32 ilk, uint256 amount) public {
         DssExecLib.setIlkMaxLiquidationAmount(ilk, amount);
     }
@@ -245,13 +249,13 @@ contract DssTestAction is DssAction {
     //    DssExecLib.setIlkMinAuctionBidIncrease(ilk, pct_bps);
     //}
 
-    function setIlkBidDuration_test(bytes32 ilk, uint256 duration) public {
-        DssExecLib.setIlkBidDuration(ilk, duration);
-    }
+    //function setIlkBidDuration_test(bytes32 ilk, uint256 duration) public {
+    //    DssExecLib.setIlkBidDuration(ilk, duration);
+    //}
 
-    function setIlkAuctionDuration_test(bytes32 ilk, uint256 duration) public {
-        DssExecLib.setIlkAuctionDuration(ilk, duration);
-    }
+    //function setIlkAuctionDuration_test(bytes32 ilk, uint256 duration) public {
+    //    DssExecLib.setIlkAuctionDuration(ilk, duration);
+    //}
 
     function setIlkStabilityFee_test(bytes32 ilk, uint256 rate) public {
         DssExecLib.setIlkStabilityFee(ilk, rate, true);
