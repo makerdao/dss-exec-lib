@@ -867,6 +867,8 @@ library DssExecLib {
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, spotter());
+            // Whitelist Clipper on pip
+            addReaderToOSMWhitelist(co.pip, co.clip);
             // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, end());
             // Set TOKEN OSM in the OsmMom for new ilk
