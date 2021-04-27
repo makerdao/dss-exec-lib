@@ -918,6 +918,8 @@ library DssExecLib {
 
         // Allow ilk Join to modify Vat registry
         authorize(_vat, _join);
+        // Allow ilk Join to suck dai for keepers
+        authorize(_vat, _clip);
 		// Allow the ilk Clipper to reduce the Dog hole on deal()
         authorize(_dog, _clip);
         // Allow Dog to kick auctions in ilk Clipper
@@ -989,6 +991,12 @@ library DssExecLib {
         // Set liquidation price tolerance to 50% by default
         // Call this again after the collateral is added to override.
         setLiquidationBreakerPriceTolerance(co.clip, 5000);
+
+        // OPTIONAL: Set a clip.tip()  (default: 0)
+        // setKeeperIncentiveFlatRate(_ilk, _amount)
+
+        // OPTIONAL: Set a clip.chip() (default: 0)
+        // setKeeperIncentivePercent(_ilk, _pct_bps)
 
         // Update ilk spot value in Vat
         updateCollateralPrice(co.ilk);

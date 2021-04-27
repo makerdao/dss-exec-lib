@@ -91,6 +91,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
 
         DssExecLib.addNewCollateral(XMPL_A);
         DssExecLib.setIlkLiquidationPenalty("XMPL-A", 1400);
+        DssExecLib.setKeeperIncentiveFlatRate("XMPL-A", 25); // 25 Dai keeper flat rate
 
         DssExecLib.setIlkDebtCeiling("LINK-A", 10 * MILLION);
         DssExecLib.setIlkMinVaultAmount("LINK-A", 800);
@@ -98,6 +99,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         DssExecLib.setIlkLiquidationPenalty("LINK-A", 1400);
         DssExecLib.setIlkMaxLiquidationAmount("LINK-A", 100000);
         DssExecLib.setAuctionTimeBeforeReset("LINK-A", 2 hours);
+        DssExecLib.setKeeperIncentivePercent("LINK-A", 2); // 0.02% keeper incentive
         DssExecLib.setGlobalDebtCeiling(10000 * MILLION);
 
     }
@@ -112,6 +114,9 @@ contract DssLibExecTest is DSTest, DSMath {
         uint256 hole;
         uint256 buf;
         uint256 tail;
+        uint256 cusp;
+        uint256 chip;
+        uint256 tip;
         uint256 pct;
         uint256 mat;
         uint256 beg;
@@ -269,7 +274,10 @@ contract DssLibExecTest is DSTest, DSMath {
             dust:         800,                  // In whole Dai units
             pct:          _duty,                // In basis points
             buf:          clip.buf()*10000/RAY, // In basis points
+            cusp:         clip.cusp()*10000/RAY,// In basis points
             chop:         1400,                 // In basis points
+            tip:          0,                    // In whole Dai units
+            chip:         2,                    // In basis points
             hole:         100000,               // In whole Dai units
             mat:          16000,                // In basis points
             beg:          400,                  // In basis points
@@ -284,7 +292,10 @@ contract DssLibExecTest is DSTest, DSMath {
             dust:         2000,                 // In whole Dai units
             pct:          225,                  // In basis points
             buf:          13000,                // In basis points
+            cusp:         4000,                 // In basis points
             chop:         1400,                 // In basis points
+            tip:          25,                   // In whole Dai units
+            chip:         0,                    // In basis points
             hole:         50 * THOUSAND,        // In whole Dai units
             mat:          15000,                // In basis points
             beg:          300,                  // In basis points
@@ -532,11 +543,12 @@ contract DssLibExecTest is DSTest, DSMath {
             // tail [seconds]
             assertEq(clip.tail(), values.collaterals[ilk].tail);
             // cusp
-
+            uint256 normalizedTestCusp = (values.collaterals[ilk].cusp * RAY / 10000);
+            assertEq(clip.cusp(), normalizedTestCusp);
             // chip
-
+            assertEq(clip.chip(), values.collaterals[ilk].chip * WAD / 10000);
             // tip
-
+            assertEq(clip.tip(), values.collaterals[ilk].tip * RAD);
 
             assertEq(clip.wards(address(dog)), values.collaterals[ilk].liquidations);  // liquidations == 1 => on
             assertEq(clip.wards(address(pauseProxy)), 1); // Check pause_proxy ward
