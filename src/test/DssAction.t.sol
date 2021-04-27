@@ -644,12 +644,11 @@ contract ActionTest is DSTest {
         assertEq(dust, 100 * RAD);
     }
 
-    //FIXME
-    //function test_setIlkLiquidationPenalty() public {
-    //    action.setIlkLiquidationPenalty_test("gold", 1325); // 13.25%
-    //    (, uint256 chop,,) = dog.ilks("gold");
-    //    assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
-    //}
+    function test_setIlkLiquidationPenalty() public {
+        action.setIlkLiquidationPenalty_test("gold", 1325); // 13.25%
+        (, uint256 chop,,) = dog.ilks("gold");
+        assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
+    }
 
     function test_setIlkMaxLiquidationAmount() public {
         action.setIlkMaxLiquidationAmount_test("gold", 50 * THOUSAND);
@@ -694,6 +693,12 @@ contract ActionTest is DSTest {
     function test_setKeeperIncentiveFlatRate() public {
         action.setKeeperIncentiveFlatRate_test("gold", 1000); // 1000 Dai
         assertEq(ilks["gold"].clip.tip(), 1000 * RAD);
+    }
+
+    function test_setMaxIlkDAILiquidationAmount() public {
+        action.setMaxIlkDAILiquidationAmount_test("gold", 1000); //1000 Dai
+        (,, uint256 hole,) = dog.ilks("gold");
+        assertEq(hole, 1000 * RAD);
     }
 
     function test_setLiquidationBreakerPriceTolerance() public {

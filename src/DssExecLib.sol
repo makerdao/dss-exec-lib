@@ -60,7 +60,6 @@ interface DssVat {
 
 interface AuctionLike {
     function vat() external returns (address);
-    function cat() external returns (address); // Only flip
     function dog() external returns (address); // Only clip
     function beg() external returns (uint256);
     function pad() external returns (uint256); // Only flop
@@ -167,7 +166,6 @@ library DssExecLib {
     function dai()        public view returns (address) { return getChangelogAddress("MCD_DAI"); }
     function mkr()        public view returns (address) { return getChangelogAddress("MCD_GOV"); }
     function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
-    function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
     function dog()        public view returns (address) { return getChangelogAddress("MCD_DOG"); }
     function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
     function pot()        public view returns (address) { return getChangelogAddress("MCD_POT"); }
@@ -508,14 +506,7 @@ library DssExecLib {
         Fileable(flop()).file("pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
 
-    // FIXME
 
-
-
-    // dog.Hole
-    // dog.hole
-    // dog.chop
-    // dog.digs
 
 
     /**
@@ -720,6 +711,21 @@ library DssExecLib {
         Fileable(clip(_ilk)).file("tip", _amount * RAD);
     }
 
+    // FIXME
+    /**
+        @dev Set maximum amount of Dai that can be liquidated per ilk. Amount will be converted to the correct internal precision.
+        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to set in DAI (ex. 1,000,000 DAI amount == 1000000)
+    */
+    function setMaxIlkDAILiquidationAmount(bytes32 _ilk, uint256 _amount) public {
+        require(_amount < WAD); // "LibDssExec/incorrect-dog-hole-precision"
+        Fileable(dog()).file(_ilk, "hole", _amount * RAD);
+    }
+
+
+
+    // dog.chop
+    // dog.digs
 
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.

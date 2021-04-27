@@ -226,10 +226,9 @@ contract DssTestAction is DssAction {
         DssExecLib.setIlkMinVaultAmount(ilk, amount);
     }
 
-    // FIXME
-    //function setIlkLiquidationPenalty_test(bytes32 ilk, uint256 pct_bps) public {
-    //    DssExecLib.setIlkLiquidationPenalty(ilk, pct_bps);
-    //}
+    function setIlkLiquidationPenalty_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setIlkLiquidationPenalty(ilk, pct_bps);
+    }
 
     function setStartingPriceMultiplicativeFactor_test(bytes32 ilk, uint256 pct_bps) public {
         DssExecLib.setStartingPriceMultiplicativeFactor(ilk, pct_bps); // clip.buf
@@ -257,6 +256,10 @@ contract DssTestAction is DssAction {
 
     function setKeeperIncentiveFlatRate_test(bytes32 ilk, uint256 amount) public {
         DssExecLib.setKeeperIncentiveFlatRate(ilk, amount);
+    }
+
+    function setMaxIlkDAILiquidationAmount_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.setMaxIlkDAILiquidationAmount(ilk, amount);
     }
 
     function setLiquidationBreakerPriceTolerance_test(address clip, uint256 pct_bps) public {
