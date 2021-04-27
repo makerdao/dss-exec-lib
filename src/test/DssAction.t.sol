@@ -953,6 +953,7 @@ contract ActionTest is DSTest {
             assertEq(line, 100 * MILLION * RAD);
             assertEq(dust, 100 * RAD);
             assertEq(hole, 50 * THOUSAND * RAD);
+            assertEq(dirt, 0);
             assertEq(chop, 113 ether / 100);  // WAD pct 113%
 
             (uint256 duty, uint256 rho) = jug.ilks(ilk);
@@ -961,10 +962,11 @@ contract ActionTest is DSTest {
         }
 
         {
-            // FIXME assertEq(tokenClip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
-            //assertEq(uint256(tokenClip.ttl()), 6 hours);
-            //assertEq(uint256(tokenClip.tau()), 6 hours);
             assertEq(tokenClip.buf(), 130 * RAY / 100);
+            assertEq(tokenClip.tail(), 6 hours);
+            assertEq(tokenClip.cusp(), 40 * RAY / 100);
+            assertEq(uint256(tokenClip.chip()), 0);
+            assertEq(uint256(tokenClip.tip()), 0);
 
             (, uint256 mat) = spot.ilks(ilk);
             assertEq(mat, ray(150 ether / 100)); // RAY pct
