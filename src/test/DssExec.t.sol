@@ -556,19 +556,6 @@ contract DssLibExecTest is DSTest, DSMath {
             revert(); // Old stuff. Not used here.
         }
 
-
-        // Convert BP to system expected value
-        // uint normalizedTestBeg = (values.collaterals[ilk].beg + 10000)  * 10**14;
-        // assertEq(uint(flip.beg()), normalizedTestBeg);
-        // assertTrue(flip.beg() >= WAD && flip.beg() < 105 * WAD / 100);  // gt eq 0% and lt 5%
-        // assertEq(uint(flip.ttl()), values.collaterals[ilk].ttl);
-        // assertTrue(flip.ttl() >= 600 && flip.ttl() < 10 hours);         // gt eq 10 minutes and lt 10 hours
-        // assertEq(uint(flip.tau()), values.collaterals[ilk].tau);
-        // assertTrue(flip.tau() >= 600 && flip.tau() <= 3 days);          // gt eq 10 minutes and lt eq 3 days
-
-        //assertEq(clip.wards(address(dog)), values.collaterals[ilk].liquidations);  // liquidations == 1 => on
-        //assertEq(clip.wards(address(pauseProxy)), 1); // Check pause_proxy ward
-        //assertEq(clip.wards(clip.calc()), 1);
         }
         {
         GemJoinAbstract join = GemJoinAbstract(reg.join(ilk));
