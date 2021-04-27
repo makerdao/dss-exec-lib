@@ -698,6 +698,12 @@ contract ActionTest is DSTest {
     //    assertEq(uint256(ilks["gold"].clip.tau()), 6 hours);
     //}
 
+    function test_setLiquidationBreakerPriceTolerance() public {
+        action.setLiquidationBreakerPriceTolerance_test(address(ilks["gold"].clip), 6000);
+        assertEq(clipperMom.tolerance(address(ilks["gold"].clip)), 600000000000000000000000000);
+
+    }
+
     function test_setIlkStabilityFee() public {
         hevm.warp(START_TIME + 1 days);
         action.setIlkStabilityFee_test("gold", 1000000001243680656318820312);

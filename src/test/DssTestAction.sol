@@ -257,6 +257,10 @@ contract DssTestAction is DssAction {
     //    DssExecLib.setIlkAuctionDuration(ilk, duration);
     //}
 
+    function setLiquidationBreakerPriceTolerance_test(address clip, uint256 pct_bps) public {
+        DssExecLib.setLiquidationBreakerPriceTolerance(clip, pct_bps);
+    }
+
     function setIlkStabilityFee_test(bytes32 ilk, uint256 rate) public {
         DssExecLib.setIlkStabilityFee(ilk, rate, true);
     }
