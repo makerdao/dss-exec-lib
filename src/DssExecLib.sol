@@ -633,6 +633,7 @@ library DssExecLib {
     function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dust-precision"
         Fileable(vat()).file(_ilk, "dust", _amount * RAD);
+        clip(_ilk).call(abi.encodeWithSignature("upchost()"));
     }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
@@ -643,6 +644,7 @@ library DssExecLib {
     function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
         Fileable(dog()).file(_ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        clip(_ilk).call(abi.encodeWithSignature("upchost()"));
     }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
