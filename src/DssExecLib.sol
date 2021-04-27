@@ -507,23 +507,25 @@ library DssExecLib {
     function setDebtAuctionMKRIncreaseRate(uint256 _pct_bps) public {
         Fileable(flop()).file("pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
-    /**
-        @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
-        @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
-    */
+
     // FIXME
+
+
+
     // dog.Hole
     // dog.hole
     // dog.chop
     // dog.digs
 
 
-
-    //FIXME
-    //function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
-    //    require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
-    //    Fileable(cat()).file("box", _amount * RAD);
-    //}
+    /**
+        @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
+        @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
+    */
+    function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
+        require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
+        Fileable(dog()).file("Hole", _amount * RAD);
+    }
     /**
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _duration Time in seconds to set for ES processing time

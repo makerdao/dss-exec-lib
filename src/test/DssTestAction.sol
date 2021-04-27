@@ -179,10 +179,9 @@ contract DssTestAction is DssAction {
         DssExecLib.setDebtAuctionMKRIncreaseRate(pct_bps);
     }
 
-    // FIXME
-    //function setMaxTotalDAILiquidationAmount_test(uint256 amount) public {
-    //    DssExecLib.setMaxTotalDAILiquidationAmount(amount);
-    //}
+    function setMaxTotalDAILiquidationAmount_test(uint256 amount) public {
+        DssExecLib.setMaxTotalDAILiquidationAmount(amount);
+    }
 
     function setEmergencyShutdownProcessingTime_test(uint256 duration) public {
         DssExecLib.setEmergencyShutdownProcessingTime(duration);

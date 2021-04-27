@@ -551,11 +551,10 @@ contract ActionTest is DSTest {
         assertEq(flop.pad(), 105.25 ether / 100); // WAD pct
     }
 
-    //FIXME
-    //function test_setMaxTotalDAILiquidationAmount() public {
-    //    action.setMaxTotalDAILiquidationAmount_test(50 * MILLION);
-    //    assertEq(dog.Hole(), 50 * MILLION * RAD); // WAD pct
-    //}
+    function test_setMaxTotalDAILiquidationAmount() public {
+        action.setMaxTotalDAILiquidationAmount_test(50 * MILLION);
+        assertEq(dog.Hole(), 50 * MILLION * RAD); // WAD pct
+    }
 
     function test_setEmergencyShutdownProcessingTime() public {
         action.setEmergencyShutdownProcessingTime_test(12 hours);
