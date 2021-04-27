@@ -93,6 +93,7 @@ interface OracleLike {
 
 interface MomLike {
     function setOsm(bytes32, address) external;
+    function setPriceTolerance(address, uint256) external;
 }
 
 interface RegistryLike {
@@ -687,11 +688,6 @@ library DssExecLib {
     //Fileable(MCD_CLIP_YFI_A).file("tip", 0);
     // clip.chost? (need to call when vat.dust or dog.chop change)
 
-    // clip.calc.cut
-    //Fileable(MCD_CLIP_CALC_YFI_A).file("cut", 99 * RAY / 100); // 1% cut
-    // clip.calc.step
-    //Fileable(MCD_CLIP_CALC_YFI_A).file("step", 90 seconds);
-
 
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
@@ -721,6 +717,33 @@ library DssExecLib {
     //function setIlkAuctionDuration(bytes32 _ilk, uint256 _duration) public {
     //    Fileable(flip(_ilk)).file("tau", _duration);
     //}
+
+    /*************************/
+    /*** Pricing Management ***/
+    /*************************/
+
+    //TODO
+    // clip tau
+    // clip cut
+    // clip step
+
+    // clip.calc.cut
+    //Fileable(MCD_CLIP_CALC_YFI_A).file("cut", 99 * RAY / 100); // 1% cut
+    // clip.calc.step
+    //Fileable(MCD_CLIP_CALC_YFI_A).file("step", 90 seconds);
+
+    /**
+        @dev Sets the circuit breaker price tolerance in the clipper mom.
+            This is somewhat counter-intuitive,
+             to accept a 25% price drop, use a value of 75%
+        @param _clip    The clipper to set the tolerance for
+        @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+    */
+    function setLiquidationBreakerPriceTolerance(address _clip, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
+        MomLike(clipperMom()).setPriceTolerance(_clip, _pct_bps * RAY / 10000);
+    }
+
     /**
         @dev Set the stability fee for a given ilk.
             Many of the settings that change weekly rely on the rate accumulator
@@ -868,6 +891,8 @@ library DssExecLib {
 
         // Set the ilk Clipper in the Cat
         setContract(_dog, _ilk, "clip", _clip);
+        // Set vow in the clip
+        setContract(_clip, "vow", vow());
         // Set the pricing function for the Clipper
         setContract(_clip, "calc", _calc);
 
@@ -881,7 +906,6 @@ library DssExecLib {
         authorize(_dog, _clip);
         // Allow Dog to kick auctions in ilk Clipper
         authorize(_clip, _dog);
-
         // Allow End to yank auctions in ilk Clipper
         authorize(_clip, end());
         // Authorize the ESM to ececut in the clipper
@@ -947,6 +971,10 @@ library DssExecLib {
         //setIlkAuctionDuration(co.ilk, co.auctionDuration);
         // Set the ilk min collateralization ratio
         setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
+
+        // Set liquidation price tolerance to 50% by default
+        // Call this again after the collateral is added to override.
+        setLiquidationBreakerPriceTolerance(co.clip, 5000);
 
         // Update ilk spot value in Vat
         updateCollateralPrice(co.ilk);
