@@ -546,7 +546,7 @@ library DssExecLib {
         @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
     function setDAIReferenceValue(uint256 _value) public {
-        require(_value < WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
+        require(_value < WAD);  // "LibDssExec/incorrect-par-precision"
         Fileable(spotter()).file("par", rdiv(_value, 1000));
     }
 
@@ -645,7 +645,7 @@ library DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public {
-        require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
+        require(_amount < WAD);  // "LibDssExec/incorrect-ilk-hole-precision"
         Fileable(dog()).file(_ilk, "hole", _amount * RAD);
     }
     /**
@@ -966,7 +966,7 @@ library DssExecLib {
         setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
         // Set the ilk dust
         setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
-        // Set the dunk size
+        // Set the hole size
         setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
         // Set the ilk liquidation penalty
         setIlkLiquidationPenalty(co.ilk, co.liquidationPenalty);
@@ -976,12 +976,6 @@ library DssExecLib {
 
         // Set the auction starting price multiplier
         setStartingPriceMultiplicativeFactor(co.ilk, co.startingPriceFactor);
-        // Set the ilk percentage between bids
-        // FIXME
-        //setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
-        // Set the ilk time max time between bids
-        // FIXME
-        // setIlkBidDuration(co.ilk, co.bidDuration);
 
         // Set the amount of time before an auction resets.
         setAuctionTimeBeforeReset(co.ilk, co.auctionDuration);
