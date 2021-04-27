@@ -666,12 +666,6 @@ contract ActionTest is DSTest {
         assertEq(mat, ray(150 ether / 100)); // RAY pct
     }
 
-    // TODO
-    //function test_setIlkMinAuctionBidIncrease() public {
-    //    action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
-    //    assertEq(ilks["gold"].clip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
-    //}
-
     function test_setStartingPriceMultiplicativeFactor() public {
         action.setStartingPriceMultiplicativeFactor_test("gold", 15000); // 150%
         assertEq(ilks["gold"].clip.buf(), 150 * RAY / 100); // RAY pct
@@ -924,8 +918,6 @@ contract ActionTest is DSTest {
                     liquidationPenalty:    1300,
                     ilkStabilityFee:       1000000001243680656318820312,
                     startingPriceFactor:   13000,
-                    bidIncrease:           500,
-                    bidDuration:           6 hours,
                     auctionDuration:       6 hours,
                     permittedDrop:         4000,
                     liquidationRatio:      15000

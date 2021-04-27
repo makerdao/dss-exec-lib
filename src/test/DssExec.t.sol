@@ -82,8 +82,6 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             liquidationPenalty:    1300,
             ilkStabilityFee:       1000000000705562181084137268,
             startingPriceFactor:   13000,
-            bidIncrease:           300,
-            bidDuration:           6 hours,
             auctionDuration:       10 hours,
             permittedDrop:         4000,
             liquidationRatio:      15000
@@ -508,8 +506,11 @@ contract DssLibExecTest is DSTest, DSMath {
         }
         {
         (, uint chop, uint hole, uint dirt) = dog.ilks(ilk);
-        // TODO test hole
-        // TODO test dirt
+        (,,,, uint dust) = vat.ilks(ilk);
+
+        assertEq(hole, values.collaterals[ilk].hole * RAD);
+        assertTrue(dirt <= hole + dust);
+
         // Convert BP to system expected value
         uint normalizedTestChop = (values.collaterals[ilk].chop * 10**14) + WAD;
         assertEq(chop, normalizedTestChop);
@@ -518,8 +519,7 @@ contract DssLibExecTest is DSTest, DSMath {
         // Convert whole Dai units to expected RAD
         uint normalizedTestHole = values.collaterals[ilk].hole * RAD;
         assertEq(hole, normalizedTestHole);
-        // put back in after LIQ-1.2
-        //assertTrue(hole >= RAD && hole < MILLION * RAD);
+        assertTrue(hole >= RAD && hole < MILLION * RAD);
         }
         {
         (,uint mat) = spot.ilks(ilk);

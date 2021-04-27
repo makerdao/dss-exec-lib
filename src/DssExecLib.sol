@@ -982,7 +982,7 @@ library DssExecLib {
         // Set the amount of time before an auction resets.
         setAuctionTimeBeforeReset(co.ilk, co.auctionDuration);
 
-        // Set the allowed auction drop percentage
+        // Set the allowed auction drop percentage before reset
         setAuctionPermittedDrop(co.ilk, co.permittedDrop);
 
         // Set the ilk min collateralization ratio
