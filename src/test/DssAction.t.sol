@@ -867,8 +867,9 @@ contract ActionTest is DSTest {
 
         assertEq(tokenClip.wards(address(end)),        1);
 
-        (,,uint256 class, uint256 _dec, address _gem, address _pip, address _join, address _xlip) = reg.info(ilk);
+        (,,uint256 _class, uint256 _dec, address _gem, address _pip, address _join, address _xlip) = reg.info(ilk);
 
+        assertEq(_class, 1);
         assertEq(_dec, 18);
         assertEq(_gem, address(token));
         assertEq(_pip, address(tokenPip));

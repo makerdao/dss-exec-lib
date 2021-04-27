@@ -161,7 +161,7 @@ contract DssLibExecTest is DSTest, DSMath {
     // XMPL-A specific
     GemAbstract           xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
     GemJoinAbstract  joinXMPLA;
-    OsmAbstract        pipXMPL = OsmAbstract(       0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+    OsmAbstract        pipXMPL = OsmAbstract(        0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
     ClipAbstract     clipXMPLA;
     MedianAbstract    medXMPLA = MedianAbstract(     0xcCe92282d9fe310F4c232b0DA9926d5F24611C7B);
 
@@ -262,8 +262,6 @@ contract DssLibExecTest is DSTest, DSMath {
         //
         // Test for all collateral based changes here
         //
-        (,,,, uint256 _dust) = vat.ilks("LINK-A");
-        (,, uint256 _hole,) = dog.ilks("LINK-A");
         (uint256 _duty,)  = jug.ilks("LINK-A");
         (address _clip,,,) = dog.ilks("LINK-A");
         ClipAbstract clip = ClipAbstract(_clip);
