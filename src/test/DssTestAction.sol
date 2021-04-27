@@ -252,18 +252,13 @@ contract DssTestAction is DssAction {
         DssExecLib.setIlkLiquidationRatio(ilk, pct_bps);
     }
 
-    // FIXME
-    //function setIlkMinAuctionBidIncrease_test(bytes32 ilk, uint256 pct_bps) public {
-    //    DssExecLib.setIlkMinAuctionBidIncrease(ilk, pct_bps);
-    //}
+    function setKeeperIncentivePercent_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setKeeperIncentivePercent(ilk, pct_bps);
+    }
 
-    //function setIlkBidDuration_test(bytes32 ilk, uint256 duration) public {
-    //    DssExecLib.setIlkBidDuration(ilk, duration);
-    //}
-
-    //function setIlkAuctionDuration_test(bytes32 ilk, uint256 duration) public {
-    //    DssExecLib.setIlkAuctionDuration(ilk, duration);
-    //}
+    function setKeeperIncentiveFlatRate_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.setKeeperIncentiveFlatRate(ilk, amount);
+    }
 
     function setLiquidationBreakerPriceTolerance_test(address clip, uint256 pct_bps) public {
         DssExecLib.setLiquidationBreakerPriceTolerance(clip, pct_bps);
@@ -272,7 +267,6 @@ contract DssTestAction is DssAction {
     function setIlkStabilityFee_test(bytes32 ilk, uint256 rate) public {
         DssExecLib.setIlkStabilityFee(ilk, rate, true);
     }
-
 
     /*************************/
     /*** Oracle Management ***/
@@ -328,13 +322,11 @@ contract DssTestAction is DssAction {
         DssExecLib.addCollateralBase(ilk, gem, join, clip, calc, pip);
     }
 
-
     function addNewCollateral_test(
         CollateralOpts memory co
     ) public {
         DssExecLib.addNewCollateral(co);
     }
-
 
     /***************/
     /*** Payment ***/

@@ -694,16 +694,29 @@ library DssExecLib {
         @param _pct_bps The pct, in basis points, of drop to permit (x100).
     */
     function setAuctionPermittedDrop(bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < BPS_ONE_HUNDRED_PCT);
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-cusp-precision"
         Fileable(clip(_ilk)).file("cusp", _pct_bps * RAY / 10000);
     }
 
+    /**
+        @dev Percentage of tab to suck from vow to incentivize keepers. Amount will be converted to the correct internal precision.
+        @param _ilk     The ilk to update (ex. bytes32("ETH-A"))
+        @param _pct_bps The pct, in basis points, of the tab to suck. (0.01% == 1)
+    */
+    function setKeeperIncentivePercent(bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-chip-precision"
+        Fileable(clip(_ilk)).file("chip", _pct_bps * WAD / 10000);
+    }
 
-    // clip.chip
-    //Fileable(MCD_CLIP_YFI_A).file("chip", 1 * WAD / 1000);
-    // clip.tip
-    //Fileable(MCD_CLIP_YFI_A).file("tip", 0);
-    // clip.chost? (need to call when vat.dust or dog.chop change)
+    /**
+        @dev Set max DAI amount for flat rate keeper incentive. Amount will be converted to the correct internal precision.
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to set in DAI (ex. 1000 DAI amount == 1000)
+    */
+    function setKeeperIncentiveFlatRate(bytes32 _ilk, uint256 _amount) public {
+        require(_amount < WAD); // "LibDssExec/incorrect-clip-tip-precision"
+        Fileable(clip(_ilk)).file("tip", _amount * RAD);
+    }
 
 
     /**

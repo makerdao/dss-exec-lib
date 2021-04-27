@@ -677,8 +677,6 @@ contract ActionTest is DSTest {
         assertEq(ilks["gold"].clip.buf(), 150 * RAY / 100); // RAY pct
     }
 
-    // TODO
-
     function test_setAuctionTimeBeforeReset() public {
         action.setAuctionTimeBeforeReset_test("gold", 12 hours);
         assertEq(ilks["gold"].clip.tail(), 12 hours);
@@ -688,21 +686,16 @@ contract ActionTest is DSTest {
         action.setAuctionPermittedDrop_test("gold", 8000);
         assertEq(ilks["gold"].clip.cusp(), 80 * RAY / 100);
     }
-    //  clip.chip
-    //  clip.tip
-    //  clip.chost
 
-    // FIXME
-    //function test_setIlkBidDuration() public {
-    //    action.setIlkBidDuration_test("gold", 6 hours);
-    //    assertEq(uint256(ilks["gold"].clip.ttl()), 6 hours);
-    //}
+    function test_setKeeperIncentivePercent() public {
+        action.setKeeperIncentivePercent_test("gold", 10); // 0.1 %
+        assertEq(ilks["gold"].clip.chip(), 10 * WAD / 10000);
+    }
 
-    // FIXME
-    //function test_setIlkAuctionDuration() public {
-    //    action.setIlkAuctionDuration_test("gold", 6 hours);
-    //    assertEq(uint256(ilks["gold"].clip.tau()), 6 hours);
-    //}
+    function test_setKeeperIncentiveFlatRate() public {
+        action.setKeeperIncentiveFlatRate_test("gold", 1000); // 1000 Dai
+        assertEq(ilks["gold"].clip.tip(), 1000 * RAD);
+    }
 
     function test_setLiquidationBreakerPriceTolerance() public {
         action.setLiquidationBreakerPriceTolerance_test(address(ilks["gold"].clip), 6000);
