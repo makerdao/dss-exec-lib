@@ -82,6 +82,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             bidIncrease:           300,
             bidDuration:           6 hours,
             auctionDuration:       6 hours,
+            permittedDrop:         4000,
             liquidationRatio:      15000
         });
 

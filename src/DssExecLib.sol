@@ -681,16 +681,24 @@ library DssExecLib {
 
     /**
         @dev Set the amout of time before an auction resets.
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
+        @param _ilk      The ilk to update (ex. bytes32("ETH-A"))
         @param _duration Amount of time before auction resets (in seconds).
     */
     function setAuctionTimeBeforeReset(bytes32 _ilk, uint256 _duration) public {
         Fileable(clip(_ilk)).file("tail", _duration);
     }
-    // clip.tail
-    //Fileable(MCD_CLIP_YFI_A).file("tail", 140 minutes);
-    // clip.cusp
-    //Fileable(MCD_CLIP_YFI_A).file("cusp", 40 * RAY / 100);
+
+    /**
+        @dev Percentage drop permitted before auction reset
+        @param _ilk     The ilk to update (ex. bytes32("ETH-A"))
+        @param _pct_bps The pct, in basis points, of drop to permit (x100).
+    */
+    function setAuctionPermittedDrop(bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT);
+        Fileable(clip(_ilk)).file("cusp", _pct_bps * RAY / 10000);
+    }
+
+
     // clip.chip
     //Fileable(MCD_CLIP_YFI_A).file("chip", 1 * WAD / 1000);
     // clip.tip
@@ -975,9 +983,13 @@ library DssExecLib {
         // Set the ilk time max time between bids
         // FIXME
         // setIlkBidDuration(co.ilk, co.bidDuration);
-        // Set the ilk max auction duration
-        // FIXME
-        //setIlkAuctionDuration(co.ilk, co.auctionDuration);
+
+        // Set the amount of time before an auction resets.
+        setAuctionTimeBeforeReset(co.ilk, co.auctionDuration);
+
+        // Set the allowed auction drop percentage
+        setAuctionPermittedDrop(co.ilk, co.permittedDrop);
+
         // Set the ilk min collateralization ratio
         setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
 

@@ -240,6 +240,10 @@ contract DssTestAction is DssAction {
         DssExecLib.setAuctionTimeBeforeReset(ilk, duration);
     }
 
+    function setAuctionPermittedDrop_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setAuctionPermittedDrop(ilk, pct_bps);
+    }
+
     function setIlkMaxLiquidationAmount_test(bytes32 ilk, uint256 amount) public {
         DssExecLib.setIlkMaxLiquidationAmount(ilk, amount);
     }

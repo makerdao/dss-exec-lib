@@ -683,8 +683,11 @@ contract ActionTest is DSTest {
         action.setAuctionTimeBeforeReset_test("gold", 12 hours);
         assertEq(ilks["gold"].clip.tail(), 12 hours);
     }
-    //  clip.tail
-    //  clip.cusp
+
+    function test_setAuctionPermittedDrop() public {
+        action.setAuctionPermittedDrop_test("gold", 8000);
+        assertEq(ilks["gold"].clip.cusp(), 80 * RAY / 100);
+    }
     //  clip.chip
     //  clip.tip
     //  clip.chost
@@ -905,6 +908,7 @@ contract ActionTest is DSTest {
                     bidIncrease:           500,
                     bidDuration:           6 hours,
                     auctionDuration:       6 hours,
+                    permittedDrop:         4000,
                     liquidationRatio:      15000
                 })
             );
