@@ -648,7 +648,6 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
         Fileable(dog()).file(_ilk, "hole", _amount * RAD);
     }
-
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * RAY / 10,000
@@ -660,7 +659,6 @@ library DssExecLib {
         require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // the liquidation ratio has to be bigger or equal to 100%
         Fileable(spotter()).file(_ilk, "mat", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
-
     /**
         @dev Set an auction starting multiplier. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * RAY / 10,000
@@ -712,48 +710,43 @@ library DssExecLib {
         Fileable(clip(_ilk)).file("tip", _amount * RAD);
     }
 
+    /**************************/
+    /*** Pricing Management ***/
+    /**************************/
+
     /**
-        @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is (1 + pct / 10,000) * WAD
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
-    */
-    //function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps) public {
-    //    require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
-    //    Fileable(flip(_ilk)).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
-    //}
-    /**
-        @dev Set bid duration for a collateral type.
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
-        @param _duration Amount of time for bids.
-    */
-    // TODO
-    //function setIlkBidDuration(bytes32 _ilk, uint256 _duration) public {
-    //    Fileable(flip(_ilk)).file("ttl", _duration);
-    //}
-    /**
-        @dev Set auction duration for a collateral type.
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
+        @dev Set the number of seconds from the start when the auction reaches zero price.
+        @dev Abacus:LinearDecrease only.
+        @param _calc     The address of the LinearDecrease pricing contract
         @param _duration Amount of time for auctions.
     */
-    // TODO
-    //function setIlkAuctionDuration(bytes32 _ilk, uint256 _duration) public {
-    //    Fileable(flip(_ilk)).file("tau", _duration);
-    //}
+    function initLinearDecrease(address _calc, uint256 _duration) public {
+        Fileable(_calc).file("tau", _duration);
+    }
 
-    /*************************/
-    /*** Pricing Management ***/
-    /*************************/
-
-    //TODO
-    // clip tau
-    // clip cut
-    // clip step
-
-    // clip.calc.cut
-    //Fileable(MCD_CLIP_CALC_YFI_A).file("cut", 99 * RAY / 100); // 1% cut
-    // clip.calc.step
-    //Fileable(MCD_CLIP_CALC_YFI_A).file("step", 90 seconds);
+    /**
+        @dev Set the number of seconds for each price step.
+        @dev Abacus:StairstepExponentialDecrease only.
+        @param _calc     The address of the StairstepExponentialDecrease pricing contract
+        @param _duration Length of time between price drops [seconds]
+        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
+    */
+    function initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
+        require(_pct_bps < 10000); // DssExecLib/cut-too-high
+        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
+        Fileable(_calc).file("step", _duration);
+    }
+    /**
+        @dev Set the number of seconds for each price step. (99% cut = 1% price drop per step)
+             Amounts will be converted to the correct internal precision.
+        @dev Abacus:ExponentialDecrease only
+        @param _calc     The address of the ExponentialDecrease pricing contract
+        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
+    */
+    function initExponentialDecrease(address _calc, uint256 _pct_bps) public {
+        require(_pct_bps < 10000); // DssExecLib/cut-too-high
+        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
+    }
 
     /**
         @dev Sets the circuit breaker price tolerance in the clipper mom.

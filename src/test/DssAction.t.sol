@@ -49,7 +49,9 @@ import {GemJoin,DaiJoin}  from 'dss/join.sol';
 import {End}              from 'dss/end.sol';
 import {Spotter}          from 'dss/spot.sol';
 import {Dai}              from 'dss/dai.sol';
-import {LinearDecrease}   from 'dss/abaci.sol';
+import {LinearDecrease,
+        StairstepExponentialDecrease,
+        ExponentialDecrease} from 'dss/abaci.sol';
 
 import "../CollateralOpts.sol";
 import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
@@ -707,6 +709,32 @@ contract ActionTest is DSTest {
         (uint256 duty, uint256 rho) = jug.ilks("gold");
         assertEq(duty, 1000000001243680656318820312);
         assertEq(rho, START_TIME + 1 days);
+    }
+
+    /**************************/
+    /*** Pricing Management ***/
+    /**************************/
+
+    function test_initLinearDecrease() public {
+        LinearDecrease calc = new LinearDecrease();
+        calc.rely(address(action));
+        action.initLinearDecrease_test(address(calc), 14 hours);
+        assertEq(calc.tau(), 14 hours);
+    }
+
+    function test_initStairstepExponentialDecrease() public {
+        StairstepExponentialDecrease calc = new StairstepExponentialDecrease();
+        calc.rely(address(action));
+        action.initStairstepExponentialDecrease_test(address(calc), 90, 9999); // 90 seconds per step, 99.99% multiplicative
+        assertEq(calc.step(), 90);
+        assertEq(calc.cut(), 999900000000000000000000000);
+    }
+
+    function test_initExponentialDecrease() public {
+        ExponentialDecrease calc = new ExponentialDecrease();
+        calc.rely(address(action));
+        action.initExponentialDecrease_test(address(calc), 9999); // 99.99% multiplicative
+        assertEq(calc.cut(), 999900000000000000000000000);
     }
 
 
