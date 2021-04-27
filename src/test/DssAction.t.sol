@@ -695,12 +695,6 @@ contract ActionTest is DSTest {
         assertEq(ilks["gold"].clip.tip(), 1000 * RAD);
     }
 
-    function test_setMaxIlkDAILiquidationAmount() public {
-        action.setMaxIlkDAILiquidationAmount_test("gold", 1000); //1000 Dai
-        (,, uint256 hole,) = dog.ilks("gold");
-        assertEq(hole, 1000 * RAD);
-    }
-
     function test_setLiquidationBreakerPriceTolerance() public {
         action.setLiquidationBreakerPriceTolerance_test(address(ilks["gold"].clip), 6000);
         assertEq(clipperMom.tolerance(address(ilks["gold"].clip)), 600000000000000000000000000);

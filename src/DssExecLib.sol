@@ -626,7 +626,7 @@ library DssExecLib {
     function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dust-precision"
         Fileable(vat()).file(_ilk, "dust", _amount * RAD);
-        clip(_ilk).call(abi.encodeWithSignature("upchost()"));
+        (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
@@ -637,7 +637,7 @@ library DssExecLib {
     function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
         Fileable(dog()).file(_ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
-        clip(_ilk).call(abi.encodeWithSignature("upchost()"));
+        (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
@@ -648,6 +648,7 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
         Fileable(dog()).file(_ilk, "hole", _amount * RAD);
     }
+
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
         @dev Equation used for conversion is pct * RAY / 10,000
@@ -710,22 +711,6 @@ library DssExecLib {
         require(_amount < WAD); // "LibDssExec/incorrect-clip-tip-precision"
         Fileable(clip(_ilk)).file("tip", _amount * RAD);
     }
-
-    // FIXME
-    /**
-        @dev Set maximum amount of Dai that can be liquidated per ilk. Amount will be converted to the correct internal precision.
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
-        @param _amount The amount to set in DAI (ex. 1,000,000 DAI amount == 1000000)
-    */
-    function setMaxIlkDAILiquidationAmount(bytes32 _ilk, uint256 _amount) public {
-        require(_amount < WAD); // "LibDssExec/incorrect-dog-hole-precision"
-        Fileable(dog()).file(_ilk, "hole", _amount * RAD);
-    }
-
-
-
-    // dog.chop
-    // dog.digs
 
     /**
         @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.

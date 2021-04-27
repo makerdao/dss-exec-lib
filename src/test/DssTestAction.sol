@@ -258,10 +258,6 @@ contract DssTestAction is DssAction {
         DssExecLib.setKeeperIncentiveFlatRate(ilk, amount);
     }
 
-    function setMaxIlkDAILiquidationAmount_test(bytes32 ilk, uint256 amount) public {
-        DssExecLib.setMaxIlkDAILiquidationAmount(ilk, amount);
-    }
-
     function setLiquidationBreakerPriceTolerance_test(address clip, uint256 pct_bps) public {
         DssExecLib.setLiquidationBreakerPriceTolerance(clip, pct_bps);
     }
