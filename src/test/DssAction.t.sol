@@ -678,8 +678,11 @@ contract ActionTest is DSTest {
     }
 
     // TODO
-    //  clip.calc
-    //  clip.buf  // done
+
+    function test_setAuctionTimeBeforeReset() public {
+        action.setAuctionTimeBeforeReset_test("gold", 12 hours);
+        assertEq(ilks["gold"].clip.tail(), 12 hours);
+    }
     //  clip.tail
     //  clip.cusp
     //  clip.chip

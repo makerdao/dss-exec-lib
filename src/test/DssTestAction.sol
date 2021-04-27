@@ -236,6 +236,10 @@ contract DssTestAction is DssAction {
         DssExecLib.setStartingPriceMultiplicativeFactor(ilk, pct_bps); // clip.buf
     }
 
+    function setAuctionTimeBeforeReset_test(bytes32 ilk, uint256 duration) public {
+        DssExecLib.setAuctionTimeBeforeReset(ilk, duration);
+    }
+
     function setIlkMaxLiquidationAmount_test(bytes32 ilk, uint256 amount) public {
         DssExecLib.setIlkMaxLiquidationAmount(ilk, amount);
     }

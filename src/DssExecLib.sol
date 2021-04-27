@@ -679,7 +679,14 @@ library DssExecLib {
         Fileable(clip(_ilk)).file("buf", _pct_bps * RAY / 10000);
     }
 
-    // FIXME
+    /**
+        @dev Set the amout of time before an auction resets.
+        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
+        @param _duration Amount of time before auction resets (in seconds).
+    */
+    function setAuctionTimeBeforeReset(bytes32 _ilk, uint256 _duration) public {
+        Fileable(clip(_ilk)).file("tail", _duration);
+    }
     // clip.tail
     //Fileable(MCD_CLIP_YFI_A).file("tail", 140 minutes);
     // clip.cusp
