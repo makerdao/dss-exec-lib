@@ -172,6 +172,7 @@ library DssExecLib {
     function pot()        public view returns (address) { return getChangelogAddress("MCD_POT"); }
     function vow()        public view returns (address) { return getChangelogAddress("MCD_VOW"); }
     function end()        public view returns (address) { return getChangelogAddress("MCD_END"); }
+    function esm()        public view returns (address) { return getChangelogAddress("MCD_ESM"); }
     function reg()        public view returns (address) { return getChangelogAddress("ILK_REGISTRY"); }
     function spotter()    public view returns (address) { return getChangelogAddress("MCD_SPOT"); }
     function flap()       public view returns (address) { return getChangelogAddress("MCD_FLAP"); }
@@ -839,6 +840,7 @@ library DssExecLib {
         @param _gem      Address of token contract
         @param _join     Address of join adapter
         @param _clip     Address of liquidation agent
+        @param _calc     Address of the pricing function
         @param _pip      Address of price feed
     */
     function addCollateralBase(
@@ -846,6 +848,7 @@ library DssExecLib {
         address _gem,
         address _join,
         address _clip,
+        address _calc,
         address _pip
     ) public {
         // Sanity checks
@@ -865,6 +868,8 @@ library DssExecLib {
 
         // Set the ilk Clipper in the Cat
         setContract(_dog, _ilk, "clip", _clip);
+        // Set the pricing function for the Clipper
+        setContract(_clip, "calc", _calc);
 
         // Init ilk in Vat & Jug
         Initializable(_vat).init(_ilk);  // Vat
@@ -876,8 +881,11 @@ library DssExecLib {
         authorize(_dog, _clip);
         // Allow Dog to kick auctions in ilk Clipper
         authorize(_clip, _dog);
+
         // Allow End to yank auctions in ilk Clipper
         authorize(_clip, end());
+        // Authorize the ESM to ececut in the clipper
+        authorize(_clip, esm());
 
         // Add new ilk to the IlkRegistry
         RegistryLike(reg()).add(_join);
@@ -886,7 +894,7 @@ library DssExecLib {
     // Complete collateral onboarding logic.
     function addNewCollateral(CollateralOpts memory co) public {
         // Add the collateral to the system.
-        addCollateralBase(co.ilk, co.gem, co.join, co.clip, co.pip);
+        addCollateralBase(co.ilk, co.gem, co.join, co.clip, co.calc, co.pip);
 
         if (co.isLiquidatable) {
             // Allow clipperMom to access to the ilk Clipper

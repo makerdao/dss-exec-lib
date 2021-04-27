@@ -5,6 +5,7 @@ struct CollateralOpts {
     address gem;
     address join;
     address clip;
+    address calc;
     address pip;
     bool    isLiquidatable;
     bool    isOSM;

@@ -25,6 +25,7 @@ import "ds-math/math.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
 import "dss/join.sol";
+import "dss/abaci.sol";
 
 import "dss-interfaces/Interfaces.sol";
 
@@ -57,6 +58,8 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         address xmpl_gem  = 0xCE4F3774620764Ea881a8F8840Cbe0F701372283;
         // https://etherscan.io/address/0x0716f25fbaaae9b63803917b6125c10c313df663#code
         address xmpl_clip = ClipFabLike(0x0716F25fBaAae9b63803917b6125c10c313dF663).newClip(DssExecLib.pauseProxy(), DssExecLib.vat(), DssExecLib.spotter(), DssExecLib.dog(), "XMPL-A");
+        LinearDecrease xmpl_calc = new LinearDecrease();
+        xmpl_calc.file("tau", 1);
         GemJoin xmpl_join = new GemJoin(DssExecLib.vat(), "XMPL-A", xmpl_gem);
         xmpl_join.rely(DssExecLib.pauseProxy());
 
@@ -65,6 +68,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             gem:                   xmpl_gem,
             join:                  address(xmpl_join),
             clip:                  xmpl_clip,
+            calc:                  address(xmpl_calc),
             pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, // Using LRC-A pip as a dummy
             isLiquidatable:        true,
             isOSM:                 true,

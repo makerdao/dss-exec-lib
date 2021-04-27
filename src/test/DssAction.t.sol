@@ -49,6 +49,7 @@ import {GemJoin,DaiJoin}  from 'dss/join.sol';
 import {End}              from 'dss/end.sol';
 import {Spotter}          from 'dss/spot.sol';
 import {Dai}              from 'dss/dai.sol';
+import {LinearDecrease}   from 'dss/abaci.sol';
 
 import "../CollateralOpts.sol";
 import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
@@ -823,6 +824,8 @@ contract ActionTest is DSTest {
         DSToken token     = new DSToken(ilk);
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
         Clipper tokenClip = new Clipper(address(vat), address(spot), address(dog), ilk);
+        LinearDecrease tokenCalc = new LinearDecrease();
+        tokenCalc.file("tau", 1);
         address tokenPip  = address(new DSValue());
 
         tokenPip = address(new OSM(address(tokenPip)));
@@ -832,7 +835,7 @@ contract ActionTest is DSTest {
         tokenClip.deny(address(this));
         tokenJoin.deny(address(this));
 
-        action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenClip), tokenPip);
+        action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenClip), address(tokenCalc), tokenPip);
 
         assertEq(vat.wards(address(tokenJoin)), 1);
         assertEq(dog.wards(address(tokenClip)), 1);
@@ -846,6 +849,7 @@ contract ActionTest is DSTest {
         assertEq(_pip, address(tokenPip));
         assertEq(_join, address(tokenJoin));
         assertEq(_xlip, address(tokenClip));
+        assertEq(address(tokenClip.calc()), address(tokenCalc));
     }
 
     function collateralOnboardingTest(bool liquidatable, bool isOsm, bool medianSrc) internal {
@@ -855,6 +859,8 @@ contract ActionTest is DSTest {
         address token     = address(new DSToken(ilk));
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, token);
         Clipper tokenClip = new Clipper(address(vat), address(spot), address(dog), ilk);
+        LinearDecrease tokenCalc = new LinearDecrease();
+        tokenCalc.file("tau", 1);
         address tokenPip  = address(new DSValue());
 
         if (isOsm) {
@@ -876,6 +882,7 @@ contract ActionTest is DSTest {
                     gem:                   token,
                     join:                  address(tokenJoin),
                     clip:                  address(tokenClip),
+                    calc:                  address(tokenCalc),
                     pip:                   tokenPip,
                     isLiquidatable:        liquidatable,
                     isOSM:                 isOsm,

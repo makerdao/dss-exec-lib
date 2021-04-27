@@ -311,9 +311,9 @@ contract DssTestAction is DssAction {
     /*****************************/
 
     function addCollateralBase_test(
-        bytes32 ilk, address gem, address join, address flip, address pip
+        bytes32 ilk, address gem, address join, address clip, address calc, address pip
     ) public {
-        DssExecLib.addCollateralBase(ilk, gem, join, flip, pip);
+        DssExecLib.addCollateralBase(ilk, gem, join, clip, calc, pip);
     }
 
 
