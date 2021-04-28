@@ -71,6 +71,7 @@ Below is an outline of all functions used in the library.
 - `mkr()`: MKR ERC20 Contract
 - `vat()`: MCD Core Accounting
 - `cat()`: MCD Liquidation Agent
+- `dog()`: MCD Liquidation 2.0 Agent
 - `jug()`: MCD Rates Module
 - `pot()`: MCD Savings Rates Module
 - `vow()`: MCD System Stabilizer Module
@@ -82,10 +83,12 @@ Below is an outline of all functions used in the library.
 - `osmMom()`: OSM Circuit Breaker
 - `govGuard()`: MKR Authority
 - `flipperMom()`: Flipper Governance Interface
+- `clipperMom()`: Clipper Governance Interface (Liquidations 2.0)
 - `pauseProxy()`: Governance Authority
 - `autoLine()`: Debt Ceiling Auto Adjustment
 - `daiJoin()`: MCD Join adapter for Dai
 - `flip(bytes32 _ilk)`: Collateral Auction Module (per ilk)
+- `clip(bytes32 _ilk)`: Collateral Auction Module (per ilk)
 
 ### Changelog Management
 - `getChangelogAddress(bytes32 _key)`: Get MCD address from key from MCD on-chain changelog.
@@ -94,15 +97,15 @@ Below is an outline of all functions used in the library.
 - `setChangelogIPFS(string memory _ipfsHash)`: Set IPFS hash of IPFS changelog in MCD on-chain changelog.
 - `setChangelogSHA256(string memory _SHA256Sum)`: Set SHA256 hash in MCD on-chain changelog.
 
-### Time Management
-- `canCast(uint40 _ts, bool _officeHours) returns (bool)`: Use to determine whether a timestamp is within the office hours window.
-- `nextCastTime(uint40 _eta, uint40 _ts, bool _officeHours) returns (uint256)`: Use to return the timestamp of the first available time after eta that a spell can be cast.
-
 ### Authorizations
 - `authorize(address _base, address _ward)`: Give an address authorization to perform auth actions on the contract.
 - `deauthorize(address _base, address _ward)`: Revoke contract authorization from an address.
 - `delegateVat(address _usr)`: Delegate vat authority to the specified address.
 - `undelegateVat(address _usr)`: Revoke vat authority to the specified address.
+
+### Time Management
+- `canCast(uint40 _ts, bool _officeHours) returns (bool)`: Use to determine whether a timestamp is within the office hours window.
+- `nextCastTime(uint40 _eta, uint40 _ts, bool _officeHours) returns (uint256)`: Use to return the timestamp of the first available time after eta that a spell can be cast.
 
 ### Accumulating Rates
 - `accumulateDSR()`: Update rate accumulation for the Dai Savings Rate (DSR).
@@ -112,7 +115,7 @@ Below is an outline of all functions used in the library.
 - `updateCollateralPrice(bytes32 _ilk)`: Update price of a given collateral type.
 
 ### System Configuration
-- `setContract(address _base, bytes32 _what, address _addr)`: Set a contract in another contract, defining the relationship (ex. set a new Cat contract in the Vat)
+- `setContract(address _base, bytes32 _what, address _addr)`: Set a contract in another contract, defining the relationship (ex. set a new Vow contract in the Dog)
 - `setContract(address _base, bytes32 _ilk, bytes32 _what, address _addr)`: Set a contract in another contract, defining the relationship for a given ilk.
 
 ### System Risk Parameters
@@ -148,15 +151,18 @@ Below is an outline of all functions used in the library.
 - `setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps)`: Set a collateral liquidation penalty.
 - `setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount)`: Set max DAI amount for liquidation per vault for a collateral type.
 - `setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps)`: Set a collateral liquidation ratio.
-- `setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps)`: Set minimum bid increase for collateral.
-- `setIlkBidDuration(bytes32 _ilk, uint256 _length)`: Set bid duration for a collateral type.
-- `setIlkAuctionDuration(bytes32 _ilk, uint256 _length)`: Set auction duration for a collateral type.
+- `setStartingPriceMultiplicativeFactor(bytes32 _ilk, uint256 _pct_bps)`: Set an auction starting price modifier.
+- `setAuctionTimeBeforeReset(bytes32 _ilk, uint256 _duration)`: Set the amount of time permitted before an auction can be reset.
+- `setAuctionPermittedDrop(bytes32 _ilk, uint256 _pct_bps)`: Set the percentage amount that an auction can drop in price before it is reset.
+- `setKeeperIncentivePercent(bytes32 _ilk, uint256 _pct_bps)`: Sets the percentage of an auction amount that can be paid to keepers.
+- `setKeeperIncentiveFlatRate(bytes32 _ilk, uint256 _amount) `: Set a flat amount of Dai that will be paid to a keeper for kicking an auction.
+- `setLiquidationBreakerPriceTolerance(address _clip, uint256 _pct_bps)`: Set the tolerance for the liquidation circuit-breaker in the clipper IAM.
 - `setIlkStabilityFee(bytes32 _ilk, uint256 _rate)`: Set the stability fee for a given ilk.
 
-### Core Management
-- `updateCollateralAuctionContract(bytes32 _ilk, address _newFlip, address _oldFlip)`: Update collateral auction contracts.
-- `updateSurplusAuctionContract(address _newFlap, address _oldFlap)`: Update surplus auction contracts.
-- `updateDebtAuctionContract(address _newFlop, address _oldFlop)`: Update debt auction contracts.
+### Abacus Management
+- `initLinearDecrease(address _calc, uint256 _duration)`: Initialize the variables in a LinearDecrease calculator.
+- `initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps)`: Initialize the variables in a StairstepExponentialDecrease calculator.
+- `initExponentialDecrease(address _calc, uint256 _pct_bps)`: Initialize the variables in an ExponentialDecrease calculator.
 
 ### Oracle Management
 - `addWritersToMedianWhitelist(address _median, address[] memory _feeds)`: Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
@@ -175,53 +181,68 @@ In order to onboard new collateral to the Maker protocol, the following must be 
 - Deploy a GemJoin contract
     - Rely the `MCD_PAUSE_PROXY` address
     - Deny the deployer address
-- Deploy a Flip contract
+- Deploy a Clip contract
     - Rely the `MCD_PAUSE_PROXY` address
     - Deny the deployer address
-- Deploy a Pip contract
+- Deploy an Abacus pricing contract
+    - Initialize values (or use initialization function in DssExecLib)
+    - Rely the `MCD_PAUSE_PROXY` address
+    - Deny the deployer address
+- Deploy a Pip contract (oracles team-managed)
+    - Rely the `MCD_PAUSE_PROXY` address
+    - Deny the deployer address
 
 Once these actions are done, add the following code (below is an example) to the `execute()` function in the spell. The `setChangelogAddress` function calls are required to add the collateral to the on-chain changelog. They must follow the following convention:
 - GEM: `TOKEN`
 - JOIN: `MCD_JOIN_TOKEN`
-- FLIP: `MCD_FLIP_TOKEN`
+- CLIP: `MCD_CLIP_TOKEN`
+- CALC: `MCD_CLIP_CALC_TOKEN`
 - PIP: `PIP_TOKEN`
 
 ```js
 import "src/CollateralOpts.sol";
 
+// Initialize the pricing function with the appropriate initializer
+address xmpl_calc = 0x1f206d7916Fd3B1b5B0Ce53d5Cab11FCebc124DA;
+DssExecLib.initStairstepExponentialDecrease(xmpl_calc, 60, 9900);
+
 CollateralOpts memory XMPL_A = CollateralOpts({
     ilk:                   "XMPL-A",
     gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
     join:                  0xa30925910067a2d9eB2a7358c017E6075F660842,
-    flip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
+    clip:                  0x9daCc11dcD0aa13386D295eAeeBBd38130897E6f,
+    calc:                  xmpl_calc,
     pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a,
     isLiquidatable:        true,
     isOSM:                 true,
     whitelistOSM:          true,
     ilkDebtCeiling:        3 * MILLION,
-    minVaultAmount:        100,
-    maxLiquidationAmount:  50000,
-    liquidationPenalty:    1300,
+    minVaultAmount:        100,         // 100 Dust
+    maxLiquidationAmount:  50000,       // 50,000 Dai
+    liquidationPenalty:    1300,        // 13% penalty
     ilkStabilityFee:       1000000000705562181084137268,
-    bidIncrease:           300,
-    bidDuration:           6 hours,
+    startingPriceFactor:   13000,       // 1.3x multiplier
     auctionDuration:       6 hours,
-    liquidationRatio:      15000
+    permittedDrop:         4000,        // 40% drop before reset
+    liquidationRatio:      15000        // 150% collateralization ratio
 });
 
-addNewCollateral(XMPL_A);
+DssExecLib.addNewCollateral(XMPL_A);
 
 DssExecLib.setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
 DssExecLib.setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
-DssExecLib.setChangelogAddress("MCD_JOIN_XMPL", 0xa30925910067a2d9eB2a7358c017E6075F660842);
-DssExecLib.setChangelogAddress("MCD_FLIP_XMPL", 0x32c6DF17f8E94694977aa41A595d8dc583836A51);
+DssExecLib.setChangelogAddress("MCD_JOIN_XMPL-A", 0xa30925910067a2d9eB2a7358c017E6075F660842);
+DssExecLib.setChangelogAddress("MCD_CLIP_XMPL-A", 0x9daCc11dcD0aa13386D295eAeeBBd38130897E6f);
+DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 ```
+
 - `ilk`:                  Collateral type
 - `gem`:                  Address of collateral token
 - `join`:                 Address of GemJoin contract
-- `flip`:                 Address of Flip contract
+- `clip`:                 Address of Clip contract
+- `calc`:                 Address of Abacus pricing contract
 - `pip`:                  Address of Pip contract
-- `isLiquidatable`:         Boolean indicating whether liquidations are enabled for collateral
+- `isLiquidatable`:       Boolean indicating whether liquidations are enabled for collateral
 - `isOsm`:                Boolean indicating whether pip address used is an OSM contract
 - `whitelistOsm`:         Boolean indicating whether median is src in OSM.
 - `ilkDebtCeiling`:       Debt ceiling for new collateral
@@ -229,9 +250,9 @@ DssExecLib.setChangelogAddress("MCD_FLIP_XMPL", 0x32c6DF17f8E94694977aa41A595d8d
 - `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
 - `liquidationPenalty`:   Percent liquidation penalty for new collateral [ex. 13.5% == 1350]
 - `ilkStabilityFee`:      Percent stability fee for new collateral       [ex. 4% == 1000000001243680656318820312]
-- `bidIncrease`:          Percent bid increase for new collateral        [ex. 13.5% == 1350]
-- `bidDuration`:          Bid period duration for new collateral
-- `auctionDuration`:      Total auction duration for new collateral
+- `startingPriceFactor`:  Percentage to multiply for initial auction price. [ex. 1.3x == 130% == 13000 bps]
+- `auctionDuration`:      Total auction duration before reset for new collateral
+- `permittedDrop`:        Percent an auction can drop before it can be reset.
 - `liquidationRatio`:     Percent liquidation ratio for new collateral   [ex. 150% == 15000]
 
 ### Payments

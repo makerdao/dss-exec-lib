@@ -166,6 +166,7 @@ library DssExecLib {
     function dai()        public view returns (address) { return getChangelogAddress("MCD_DAI"); }
     function mkr()        public view returns (address) { return getChangelogAddress("MCD_GOV"); }
     function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
+    function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
     function dog()        public view returns (address) { return getChangelogAddress("MCD_DOG"); }
     function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
     function pot()        public view returns (address) { return getChangelogAddress("MCD_POT"); }
@@ -438,14 +439,14 @@ library DssExecLib {
     }
     /**
         @dev Set bid duration for surplus auctions.
-        @param _duration Amount of time for bids.
+        @param _duration Amount of time for bids. (in seconds)
     */
     function setSurplusAuctionBidDuration(uint256 _duration) public {
         Fileable(flap()).file("ttl", _duration);
     }
     /**
         @dev Set total auction duration for surplus auctions.
-        @param _duration Amount of time for auctions.
+        @param _duration Amount of time for auctions. (in seconds)
     */
     function setSurplusAuctionDuration(uint256 _duration) public {
         Fileable(flap()).file("tau", _duration);
@@ -710,44 +711,6 @@ library DssExecLib {
         Fileable(clip(_ilk)).file("tip", _amount * RAD);
     }
 
-    /**************************/
-    /*** Pricing Management ***/
-    /**************************/
-
-    /**
-        @dev Set the number of seconds from the start when the auction reaches zero price.
-        @dev Abacus:LinearDecrease only.
-        @param _calc     The address of the LinearDecrease pricing contract
-        @param _duration Amount of time for auctions.
-    */
-    function initLinearDecrease(address _calc, uint256 _duration) public {
-        Fileable(_calc).file("tau", _duration);
-    }
-
-    /**
-        @dev Set the number of seconds for each price step.
-        @dev Abacus:StairstepExponentialDecrease only.
-        @param _calc     The address of the StairstepExponentialDecrease pricing contract
-        @param _duration Length of time between price drops [seconds]
-        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
-    */
-    function initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
-        require(_pct_bps < 10000); // DssExecLib/cut-too-high
-        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
-        Fileable(_calc).file("step", _duration);
-    }
-    /**
-        @dev Set the number of seconds for each price step. (99% cut = 1% price drop per step)
-             Amounts will be converted to the correct internal precision.
-        @dev Abacus:ExponentialDecrease only
-        @param _calc     The address of the ExponentialDecrease pricing contract
-        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
-    */
-    function initExponentialDecrease(address _calc, uint256 _pct_bps) public {
-        require(_pct_bps < 10000); // DssExecLib/cut-too-high
-        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
-    }
-
     /**
         @dev Sets the circuit breaker price tolerance in the clipper mom.
             This is somewhat counter-intuitive,
@@ -783,6 +746,44 @@ library DssExecLib {
         Fileable(_jug).file(_ilk, "duty", _rate);
     }
 
+
+    /*************************/
+    /*** Abacus Management ***/
+    /*************************/
+
+    /**
+        @dev Set the number of seconds from the start when the auction reaches zero price.
+        @dev Abacus:LinearDecrease only.
+        @param _calc     The address of the LinearDecrease pricing contract
+        @param _duration Amount of time for auctions.
+    */
+    function initLinearDecrease(address _calc, uint256 _duration) public {
+        Fileable(_calc).file("tau", _duration);
+    }
+
+    /**
+        @dev Set the number of seconds for each price step.
+        @dev Abacus:StairstepExponentialDecrease only.
+        @param _calc     The address of the StairstepExponentialDecrease pricing contract
+        @param _duration Length of time between price drops [seconds]
+        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
+    */
+    function initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
+        require(_pct_bps < 10000); // DssExecLib/cut-too-high
+        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
+        Fileable(_calc).file("step", _duration);
+    }
+    /**
+        @dev Set the number of seconds for each price step. (99% cut = 1% price drop per step)
+             Amounts will be converted to the correct internal precision.
+        @dev Abacus:ExponentialDecrease only
+        @param _calc     The address of the ExponentialDecrease pricing contract
+        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
+    */
+    function initExponentialDecrease(address _calc, uint256 _pct_bps) public {
+        require(_pct_bps < 10000); // DssExecLib/cut-too-high
+        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
+    }
 
     /*************************/
     /*** Oracle Management ***/
