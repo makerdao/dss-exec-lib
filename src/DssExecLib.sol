@@ -65,7 +65,7 @@ interface AuctionLike {
     function pad() external returns (uint256); // Only flop
     function ttl() external returns (uint256);
     function tau() external returns (uint256);
-    function ilk() external returns (bytes32); // Only flip
+    function ilk() external returns (bytes32); // Only clip
     function gem() external returns (bytes32); // Only flap/flop
 }
 
@@ -669,7 +669,8 @@ library DssExecLib {
     function setStartingPriceMultiplicativeFactor(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < 10 * BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-ilk-mat-precision" // Fails if gt 10x
         require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // fail if start price is less than OSM price
-        Fileable(clip(_ilk)).file("buf", _pct_bps * RAY / 10000);
+        //Fileable(clip(_ilk)).file("buf", _pct_bps * RAY / 10000);
+        Fileable(clip(_ilk)).file("buf", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /**
@@ -688,7 +689,7 @@ library DssExecLib {
     */
     function setAuctionPermittedDrop(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-cusp-precision"
-        Fileable(clip(_ilk)).file("cusp", _pct_bps * RAY / 10000);
+        Fileable(clip(_ilk)).file("cusp", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /**
@@ -698,7 +699,7 @@ library DssExecLib {
     */
     function setKeeperIncentivePercent(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-chip-precision"
-        Fileable(clip(_ilk)).file("chip", _pct_bps * WAD / 10000);
+        Fileable(clip(_ilk)).file("chip", wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /**
