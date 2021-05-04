@@ -948,7 +948,7 @@ library DssExecLib {
             authorize(co.clip, clipperMom());
         } else {
             // Disallow Dog to kick auctions in ilk Clipper
-            deauthorize(co.clip, dog());
+            Fileable(co.clip).file("stopped", 3);
         }
 
         if(co.isOSM) { // If pip == OSM
@@ -997,11 +997,11 @@ library DssExecLib {
         // Call this again after the collateral is added to override.
         setLiquidationBreakerPriceTolerance(co.clip, 5000);
 
-        // OPTIONAL: Set a clip.tip()  (default: 0)
-        // setKeeperIncentiveFlatRate(_ilk, _amount)
+        // Set a flat rate for the keeper reward
+        setKeeperIncentiveFlatRate(co.ilk, co.kprFlatReward);
 
-        // OPTIONAL: Set a clip.chip() (default: 0)
-        // setKeeperIncentivePercent(_ilk, _pct_bps)
+        // Set the percentage of liquidation as keeper award
+        setKeeperIncentivePercent(co.ilk, co.kprPctReward);
 
         // Update ilk spot value in Vat
         updateCollateralPrice(co.ilk);

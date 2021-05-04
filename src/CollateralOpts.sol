@@ -19,4 +19,6 @@ struct CollateralOpts {
     uint256 auctionDuration;
     uint256 permittedDrop;
     uint256 liquidationRatio;
+    uint256 kprFlatReward;
+    uint256 kprPctReward;
 }

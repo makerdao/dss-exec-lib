@@ -658,8 +658,6 @@ contract ActionTest is DSTest {
         assertEq(hole, 50 * THOUSAND * RAD);
     }
 
-    // TODO dog.dirt
-
     function test_setIlkLiquidationRatio() public {
         action.setIlkLiquidationRatio_test("gold", 15000); // 150% in bp
         (, uint256 mat) = spot.ilks("gold");
@@ -921,7 +919,9 @@ contract ActionTest is DSTest {
                     startingPriceFactor:   13000,
                     auctionDuration:       6 hours,
                     permittedDrop:         4000,
-                    liquidationRatio:      15000
+                    liquidationRatio:      15000,
+                    kprFlatReward:         100,
+                    kprPctReward:          10
                 })
             );
 
@@ -932,7 +932,7 @@ contract ActionTest is DSTest {
         assertEq(vat.wards(address(tokenJoin)), 1);
         assertEq(dog.wards(address(tokenClip)), 1);
 
-        assertEq(tokenClip.wards(address(end)),        1);
+        assertEq(tokenClip.wards(address(end)), 1);
 
         uint256 liq_ = (liquidatable) ? 1 : 0;
         assertEq(tokenClip.wards(address(dog)), liq_);
@@ -966,8 +966,9 @@ contract ActionTest is DSTest {
             assertEq(tokenClip.buf(), 130 * RAY / 100);
             assertEq(tokenClip.tail(), 6 hours);
             assertEq(tokenClip.cusp(), 40 * RAY / 100);
-            assertEq(uint256(tokenClip.chip()), 0);
-            assertEq(uint256(tokenClip.tip()), 0);
+
+            assertEq(uint256(tokenClip.tip()), 100 * RAD / 10000);
+            assertEq(uint256(tokenClip.chip()), 10 * WAD / 10000);
 
             (, uint256 mat) = spot.ilks(ilk);
             assertEq(mat, ray(150 ether / 100)); // RAY pct

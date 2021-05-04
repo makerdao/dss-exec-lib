@@ -84,12 +84,12 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             startingPriceFactor:   13000,
             auctionDuration:       10 hours,
             permittedDrop:         4000,
-            liquidationRatio:      15000
+            liquidationRatio:      15000,
+            kprFlatReward:         5, // 5 Dai
+            kprPctReward:          5  // 0.05%
         });
 
         DssExecLib.addNewCollateral(XMPL_A);
-        DssExecLib.setIlkLiquidationPenalty("XMPL-A", 1400);
-        DssExecLib.setKeeperIncentiveFlatRate("XMPL-A", 25); // 25 Dai keeper flat rate
 
         DssExecLib.setIlkDebtCeiling("LINK-A", 10 * MILLION);
         DssExecLib.setIlkMinVaultAmount("LINK-A", 800);
@@ -266,39 +266,39 @@ contract DssLibExecTest is DSTest, DSMath {
         (address _clip,,,) = dog.ilks("LINK-A");
         ClipAbstract clip = ClipAbstract(_clip);
         afterSpell.collaterals["LINK-A"] = CollateralValues({
-            line:         10 * MILLION,         // In whole Dai units
-            dust:         800,                  // In whole Dai units
-            pct:          _duty,                // In basis points
-            buf:          clip.buf()*10000/RAY, // In basis points
-            cusp:         clip.cusp()*10000/RAY,// In basis points
-            chop:         1400,                 // In basis points
-            tip:          0,                    // In whole Dai units
-            chip:         2,                    // In basis points
-            hole:         100000,               // In whole Dai units
-            mat:          16000,                // In basis points
-            beg:          400,                  // In basis points
-            tail:         2 hours,              // In seconds
-            ttl:          3 hours,              // In seconds
-            tau:          3 hours,              // In seconds
-            liquidations: 1                     // 1 if enabled
+            line:          10 * MILLION,         // In whole Dai units
+            dust:          800,                  // In whole Dai units
+            pct:           _duty,                // In basis points
+            buf:           clip.buf()*10000/RAY, // In basis points
+            cusp:          clip.cusp()*10000/RAY,// In basis points
+            chop:          1400,                 // In basis points
+            tip:           0,                    // In whole Dai units
+            chip:          2,                    // In basis points
+            hole:          100000,               // In whole Dai units
+            mat:           16000,                // In basis points
+            beg:           400,                  // In basis points
+            tail:          2 hours,              // In seconds
+            ttl:           3 hours,              // In seconds
+            tau:           3 hours,              // In seconds
+            liquidations:  1                     // 1 if enabled
         });
         // New collateral
         afterSpell.collaterals["XMPL-A"] = CollateralValues({
-            line:         3 * MILLION,          // In whole Dai units
-            dust:         2000,                 // In whole Dai units
-            pct:          225,                  // In basis points
-            buf:          13000,                // In basis points
-            cusp:         4000,                 // In basis points
-            chop:         1400,                 // In basis points
-            tip:          25,                   // In whole Dai units
-            chip:         0,                    // In basis points
-            hole:         50 * THOUSAND,        // In whole Dai units
-            mat:          15000,                // In basis points
-            beg:          300,                  // In basis points
-            tail:         10 hours,             // In seconds
-            ttl:          6 hours,              // In seconds
-            tau:          6 hours,              // In seconds
-            liquidations: 1                     // 1 if enabled
+            line:          3 * MILLION,          // In whole Dai units
+            dust:          2000,                 // In whole Dai units
+            pct:           225,                  // In basis points
+            buf:           13000,                // In basis points
+            cusp:          4000,                 // In basis points
+            chop:          1300,                 // In basis points
+            tip:           5,                    // In whole Dai units
+            chip:          5,                    // In basis points
+            hole:          50 * THOUSAND,        // In whole Dai units
+            mat:           15000,                // In basis points
+            beg:           300,                  // In basis points
+            tail:          10 hours,             // In seconds
+            ttl:           6 hours,              // In seconds
+            tau:           6 hours,              // In seconds
+            liquidations:  1                     // 1 if enabled
         });
     }
 
