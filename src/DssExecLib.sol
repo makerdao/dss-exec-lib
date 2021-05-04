@@ -719,7 +719,7 @@ library DssExecLib {
         @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setLiquidationBreakerPriceTolerance(address _clip, uint256 _pct_bps) public {
-        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-clippermom-price-tolerance"
         MomLike(clipperMom()).setPriceTolerance(_clip, _pct_bps * RAY / 10000);
     }
 
