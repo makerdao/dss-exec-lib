@@ -687,7 +687,7 @@ library DssExecLib {
         @param _pct_bps The pct, in basis points, of drop to permit (x100).
     */
     function setAuctionPermittedDrop(bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-cusp-precision"
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-cusp-value"
         Fileable(clip(_ilk)).file("cusp", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
