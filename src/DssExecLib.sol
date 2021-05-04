@@ -720,7 +720,7 @@ library DssExecLib {
     */
     function setLiquidationBreakerPriceTolerance(address _clip, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-clippermom-price-tolerance"
-        MomLike(clipperMom()).setPriceTolerance(_clip, _pct_bps * RAY / 10000);
+        MomLike(clipperMom()).setPriceTolerance(_clip, rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /**
@@ -770,7 +770,7 @@ library DssExecLib {
     */
     function initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
-        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
+        Fileable(_calc).file("cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
         Fileable(_calc).file("step", _duration);
     }
     /**
@@ -782,7 +782,7 @@ library DssExecLib {
     */
     function initExponentialDecrease(address _calc, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
-        Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
+        Fileable(_calc).file("cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /*************************/
