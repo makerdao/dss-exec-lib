@@ -769,7 +769,7 @@ library DssExecLib {
         @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
     */
     function initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
-        require(_pct_bps < 10000); // DssExecLib/cut-too-high
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
         Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
         Fileable(_calc).file("step", _duration);
     }
@@ -781,7 +781,7 @@ library DssExecLib {
         @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
     */
     function initExponentialDecrease(address _calc, uint256 _pct_bps) public {
-        require(_pct_bps < 10000); // DssExecLib/cut-too-high
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
         Fileable(_calc).file("cut", _pct_bps * RAY / 10000);
     }
 
