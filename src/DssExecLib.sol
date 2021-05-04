@@ -507,10 +507,6 @@ library DssExecLib {
     function setDebtAuctionMKRIncreaseRate(uint256 _pct_bps) public {
         Fileable(flop()).file("pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
-
-
-
-
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
