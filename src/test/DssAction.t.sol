@@ -934,8 +934,13 @@ contract ActionTest is DSTest {
 
         assertEq(tokenClip.wards(address(end)), 1);
 
+        assertEq(tokenClip.wards(address(dog)), 1); // Use "stopped" instead of ward to disable.
+        if (liquidatable) {
+            assertEq(tokenClip.stopped(), 0);
+        } else {
+            assertEq(tokenClip.stopped(), 3);
+        }
         uint256 liq_ = (liquidatable) ? 1 : 0;
-        assertEq(tokenClip.wards(address(dog)), liq_);
         assertEq(tokenClip.wards(address(clipperMom)), liq_);
         }
 
@@ -944,7 +949,7 @@ contract ActionTest is DSTest {
           assertEq(OSM(tokenPip).bud(address(spot)),     1);
           assertEq(OSM(tokenPip).bud(address(end)),      1);
 
-           if (medianSrc) assertEq(median.bud(tokenPip),   1);
+          if (medianSrc) assertEq(median.bud(tokenPip),   1);
           assertEq(osmMom.osms(ilk), tokenPip);
         }
 
@@ -967,7 +972,7 @@ contract ActionTest is DSTest {
             assertEq(tokenClip.tail(), 6 hours);
             assertEq(tokenClip.cusp(), 40 * RAY / 100);
 
-            assertEq(uint256(tokenClip.tip()), 100 * RAD / 10000);
+            assertEq(uint256(tokenClip.tip()), 100 * RAD);
             assertEq(uint256(tokenClip.chip()), 10 * WAD / 10000);
 
             (, uint256 mat) = spot.ilks(ilk);

@@ -85,8 +85,8 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             auctionDuration:       10 hours,
             permittedDrop:         4000,
             liquidationRatio:      15000,
-            kprFlatReward:         5, // 5 Dai
-            kprPctReward:          5  // 0.05%
+            kprFlatReward:         5,      // 5 Dai
+            kprPctReward:          5       // 0.05%
         });
 
         DssExecLib.addNewCollateral(XMPL_A);
