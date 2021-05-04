@@ -512,7 +512,7 @@ library DssExecLib {
         @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
     */
     function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
-        require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
+        require(_amount < WAD);  // "LibDssExec/incorrect-dog-Hole-precision"
         Fileable(dog()).file("Hole", _amount * RAD);
     }
     /**
