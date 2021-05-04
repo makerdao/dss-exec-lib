@@ -808,55 +808,55 @@ library DssExecLib {
 
     /**
         @dev Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
-        @param _median Median core contract address
-        @param _feeds      Array of oracle feed addresses to add to whitelist
+        @param _median  Median core contract address
+        @param _feeds   Array of oracle feed addresses to add to whitelist
     */
     function addWritersToMedianWhitelist(address _median, address[] memory _feeds) public {
         OracleLike(_median).lift(_feeds);
     }
     /**
         @dev Removes oracle feeds to the Median's writer whitelist, disallowing the feeds to write prices.
-        @param _median Median core contract address
-        @param _feeds      Array of oracle feed addresses to remove from whitelist
+        @param _median  Median core contract address
+        @param _feeds   Array of oracle feed addresses to remove from whitelist
     */
     function removeWritersFromMedianWhitelist(address _median, address[] memory _feeds) public {
         OracleLike(_median).drop(_feeds);
     }
     /**
         @dev Adds addresses to the Median's reader whitelist, allowing the addresses to read prices from the median.
-        @param _median Median core contract address
-        @param _readers    Array of addresses to add to whitelist
+        @param _median  Median core contract address
+        @param _readers Array of addresses to add to whitelist
     */
     function addReadersToMedianWhitelist(address _median, address[] memory _readers) public {
         OracleLike(_median).kiss(_readers);
     }
     /**
         @dev Adds an address to the Median's reader whitelist, allowing the address to read prices from the median.
-        @param _median Median core contract address
-        @param _reader     Address to add to whitelist
+        @param _median  Median core contract address
+        @param _reader  Address to add to whitelist
     */
     function addReaderToMedianWhitelist(address _median, address _reader) public {
         OracleLike(_median).kiss(_reader);
     }
     /**
         @dev Removes addresses from the Median's reader whitelist, disallowing the addresses to read prices from the median.
-        @param _median Median core contract address
-        @param _readers    Array of addresses to remove from whitelist
+        @param _median  Median core contract address
+        @param _readers Array of addresses to remove from whitelist
     */
     function removeReadersFromMedianWhitelist(address _median, address[] memory _readers) public {
         OracleLike(_median).diss(_readers);
     }
     /**
         @dev Removes an address to the Median's reader whitelist, disallowing the address to read prices from the median.
-        @param _median Median core contract address
-        @param _reader     Address to remove from whitelist
+        @param _median  Median core contract address
+        @param _reader  Address to remove from whitelist
     */
     function removeReaderFromMedianWhitelist(address _median, address _reader) public {
         OracleLike(_median).diss(_reader);
     }
     /**
         @dev Sets the minimum number of valid messages from whitelisted oracle feeds needed to update median price.
-        @param _median Median core contract address
+        @param _median     Median core contract address
         @param _minQuorum  Minimum number of valid messages from whitelisted oracle feeds needed to update median price (NOTE: MUST BE ODD NUMBER)
     */
     function setMedianWritersQuorum(address _median, uint256 _minQuorum) public {

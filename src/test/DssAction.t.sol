@@ -81,12 +81,12 @@ contract ActionTest is DSTest {
 
     DSToken gov;
 
-    IlkRegistry  reg;
-    Median median;
-    OsmMom       osmMom;
-    MkrAuthority govGuard;
-    ClipperMom clipperMom;
-    DssAutoLine autoLine;
+    IlkRegistry   reg;
+    Median        median;
+    OsmMom        osmMom;
+    ClipperMom    clipperMom;
+    MkrAuthority  govGuard;
+    DssAutoLine   autoLine;
 
     ChainLog clog;
 
@@ -183,8 +183,6 @@ contract ActionTest is DSTest {
         dog.rely(address(clip));
         dog.file(name, "clip", address(clip));
         dog.file(name, "chop", 1 ether);
-        // FIXME
-        //dog.file(name, "dunk", rad(25000 ether));
         dog.file("Hole", rad((10 ether) * MILLION));
 
         reg.add(address(gemA));
