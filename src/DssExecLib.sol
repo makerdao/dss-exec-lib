@@ -925,7 +925,7 @@ library DssExecLib {
         authorize(_vat, _join);
         // Allow ilk Join to suck dai for keepers
         authorize(_vat, _clip);
-		// Allow the ilk Clipper to reduce the Dog hole on deal()
+        // Allow the ilk Clipper to reduce the Dog hole on deal()
         authorize(_dog, _clip);
         // Allow Dog to kick auctions in ilk Clipper
         authorize(_clip, _dog);
