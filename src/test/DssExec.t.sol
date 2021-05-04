@@ -456,8 +456,7 @@ contract DssLibExecTest is DSTest, DSMath {
         }
         {
         // hump values in RAD
-        uint normalizedHump = values.vow_hump * RAD;
-        assertEq(vow.hump(), normalizedHump);
+        assertEq(vow.hump()/RAD, values.vow_hump);
         assertTrue(
             (vow.hump() >= RAD && vow.hump() < HUNDRED * MILLION * RAD) ||
             vow.hump() == 0
