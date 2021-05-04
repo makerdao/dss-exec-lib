@@ -281,6 +281,10 @@ contract DssTestAction is DssAction {
     /*************************/
     /*** Oracle Management ***/
     /*************************/
+    function whitelistOracle_test(address oracle) public {
+        DssExecLib.whitelistOracle(oracle);
+    }
+
     function addWritersToMedianWhitelist_test(address medianizer, address[] memory feeds) public {
         DssExecLib.addWritersToMedianWhitelist(medianizer, feeds);
     }

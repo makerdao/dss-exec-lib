@@ -734,6 +734,14 @@ contract ActionTest is DSTest {
     /*** Oracle Management ***/
     /*************************/
 
+    function test_whitelistOracle() public {
+        address tokenPip = address(new OSM(address(median)));
+
+        assertEq(median.bud(tokenPip), 0);
+        action.whitelistOracle_test(tokenPip);
+        assertEq(median.bud(tokenPip), 1);
+    }
+
     function test_addWritersToMedianWhitelist() public {
         address[] memory feeds = new address[](2);
         feeds[0] = address(this);   // Random addresses since 0x1 and 0x2 didnt work with bitshift
@@ -945,9 +953,10 @@ contract ActionTest is DSTest {
         }
 
         if (isOsm) {
-          assertEq(OSM(tokenPip).wards(address(osmMom)), 1);
-          assertEq(OSM(tokenPip).bud(address(spot)),     1);
-          assertEq(OSM(tokenPip).bud(address(end)),      1);
+          assertEq(OSM(tokenPip).wards(address(osmMom)),  1);
+          assertEq(OSM(tokenPip).bud(address(spot)),      1);
+          assertEq(OSM(tokenPip).bud(address(clipperMom)),1);
+          assertEq(OSM(tokenPip).bud(address(end)),       1);
 
           if (medianSrc) assertEq(median.bud(tokenPip),   1);
           assertEq(osmMom.osms(ilk), tokenPip);

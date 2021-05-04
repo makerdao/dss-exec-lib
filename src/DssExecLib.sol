@@ -85,6 +85,8 @@ interface OracleLike {
     function diss(address) external;
     function kiss(address[] calldata) external;
     function diss(address[] calldata) external;
+    function orb0() external view returns (address);
+    function orb1() external view returns (address);
 }
 
 interface MomLike {
@@ -787,6 +789,24 @@ library DssExecLib {
     /*** Oracle Management ***/
     /*************************/
     /**
+        @dev Allows an oracle to read prices from it's source feeds
+        @param _oracle  An OSM or LP oracle contract
+    */
+    function whitelistOracle(address _oracle) public {
+        address median;
+        (bool ok, bytes memory data) = _oracle.call(abi.encodeWithSignature("orb0()"));
+        if (ok) {
+            // Token is an LP oracle
+            median = abi.decode(data, (address));
+            addReaderToMedianWhitelist(median, _oracle);
+            addReaderToMedianWhitelist(OracleLike(_oracle).orb1(), _oracle);
+        } else {
+            // Standard OSM
+            addReaderToMedianWhitelist(OracleLike(_oracle).src(), _oracle);
+        }
+    }
+
+    /**
         @dev Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
         @param _median Median core contract address
         @param _feeds      Array of oracle feed addresses to add to whitelist
@@ -952,12 +972,14 @@ library DssExecLib {
             authorize(co.pip, osmMom());
             if (co.whitelistOSM) { // If median is src in OSM
                 // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-                addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
+                whitelistOracle(co.pip);
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, spotter());
             // Whitelist Clipper on pip
             addReaderToOSMWhitelist(co.pip, co.clip);
+            // Allow the clippermom to access the feed
+            addReaderToOSMWhitelist(co.pip, clipperMom());
             // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, end());
             // Set TOKEN OSM in the OsmMom for new ilk
