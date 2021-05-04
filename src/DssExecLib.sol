@@ -58,16 +58,12 @@ interface DssVat {
     function suck(address, address, uint) external;
 }
 
-interface AuctionLike {
+interface ClipLike {
     function vat() external returns (address);
-    function dog() external returns (address); // Only clip
-    function spotter() external returns (address); // only clip
-    function beg() external returns (uint256);
-    function pad() external returns (uint256); // Only flop
-    function ttl() external returns (uint256);
-    function tau() external returns (uint256);
-    function ilk() external returns (bytes32); // Only clip
-    function gem() external returns (bytes32); // Only flap/flop
+    function dog() external returns (address);
+    function spotter() external view returns (address);
+    function calc() external view returns (address);
+    function ilk() external returns (bytes32);
 }
 
 interface JoinLike {
@@ -192,6 +188,10 @@ library DssExecLib {
 
     function flip(bytes32 _ilk) public view returns (address _flip) {
         _flip = RegistryLike(reg()).xlip(_ilk);
+    }
+
+    function calc(bytes32 _ilk) public view returns (address _calc) {
+        _calc = ClipLike(clip(_ilk)).calc();
     }
 
     function getChangelogAddress(bytes32 _key) public view returns (address) {
@@ -898,10 +898,10 @@ library DssExecLib {
         require(JoinLike(_join).gem() == _gem);     // "join-gem-not-match"
         require(JoinLike(_join).dec() ==
                    ERC20(_gem).decimals());         // "join-dec-not-match"
-        require(AuctionLike(_clip).vat() == _vat);  // "clip-vat-not-match"
-        require(AuctionLike(_clip).dog() == _dog);  // "clip-dog-not-match"
-        require(AuctionLike(_clip).ilk() == _ilk);  // "clip-ilk-not-match"
-        require(AuctionLike(_clip).spotter() == _spotter);  // "clip-ilk-not-match"
+        require(ClipLike(_clip).vat() == _vat);     // "clip-vat-not-match"
+        require(ClipLike(_clip).dog() == _dog);     // "clip-dog-not-match"
+        require(ClipLike(_clip).ilk() == _ilk);     // "clip-ilk-not-match"
+        require(ClipLike(_clip).spotter() == _spotter);  // "clip-ilk-not-match"
 
         // Set the token PIP in the Spotter
         setContract(spotter(), _ilk, "pip", _pip);
