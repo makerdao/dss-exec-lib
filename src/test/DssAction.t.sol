@@ -30,28 +30,29 @@ import {MkrAuthority}     from "mkr-authority/MkrAuthority.sol";
 import {IlkRegistry}      from "ilk-registry/IlkRegistry.sol";
 import {ClipperMom}       from "clipper-mom/ClipperMom.sol";
 import {Median}           from "median/median.sol";
-import {OSM}              from 'osm/osm.sol';
+import {OSM}              from "osm/osm.sol";
+import {UNIV2LPOracle}    from "univ2-lp-oracle/UNIV2LPOracle.sol";
 import {OsmAbstract}      from "dss-interfaces/Interfaces.sol";
 import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 
-import {Vat}              from 'dss/vat.sol';
-import {Dog}              from 'dss/dog.sol';
-import {Cat}              from 'dss/cat.sol';
-import {Vow}              from 'dss/vow.sol';
-import {Pot}              from 'dss/pot.sol';
-import {Jug}              from 'dss/jug.sol';
-import {Clipper}          from 'dss/clip.sol';
-import {Flapper}          from 'dss/flap.sol';
-import {Flopper}          from 'dss/flop.sol';
-import {GemJoin,DaiJoin}  from 'dss/join.sol';
-import {End}              from 'dss/end.sol';
-import {Spotter}          from 'dss/spot.sol';
-import {Dai}              from 'dss/dai.sol';
+import {Vat}              from "dss/vat.sol";
+import {Dog}              from "dss/dog.sol";
+import {Cat}              from "dss/cat.sol";
+import {Vow}              from "dss/vow.sol";
+import {Pot}              from "dss/pot.sol";
+import {Jug}              from "dss/jug.sol";
+import {Clipper}          from "dss/clip.sol";
+import {Flapper}          from "dss/flap.sol";
+import {Flopper}          from "dss/flop.sol";
+import {GemJoin,DaiJoin}  from "dss/join.sol";
+import {End}              from "dss/end.sol";
+import {Spotter}          from "dss/spot.sol";
+import {Dai}              from "dss/dai.sol";
 import {LinearDecrease,
         StairstepExponentialDecrease,
-        ExponentialDecrease} from 'dss/abaci.sol';
+        ExponentialDecrease} from "dss/abaci.sol";
 
 import "../CollateralOpts.sol";
 import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
@@ -734,7 +735,15 @@ contract ActionTest is DSTest {
     /*** Oracle Management ***/
     /*************************/
 
-    function test_whitelistOracle() public {
+    function test_whitelistOracle_OSM() public {
+        address tokenPip = address(new OSM(address(median)));
+
+        assertEq(median.bud(tokenPip), 0);
+        action.whitelistOracle_test(tokenPip);
+        assertEq(median.bud(tokenPip), 1);
+    }
+
+    function test_whitelistOracle_LP() public {
         address tokenPip = address(new OSM(address(median)));
 
         assertEq(median.bud(tokenPip), 0);
