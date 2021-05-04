@@ -947,7 +947,7 @@ library DssExecLib {
         authorize(_clip, _dog);
         // Allow End to yank auctions in ilk Clipper
         authorize(_clip, end());
-        // Authorize the ESM to ececut in the clipper
+        // Authorize the ESM to execute in the clipper
         authorize(_clip, esm());
 
         // Add new ilk to the IlkRegistry
