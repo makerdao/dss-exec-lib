@@ -61,6 +61,7 @@ interface DssVat {
 interface AuctionLike {
     function vat() external returns (address);
     function dog() external returns (address); // Only clip
+    function spotter() external returns (address); // only clip
     function beg() external returns (uint256);
     function pad() external returns (uint256); // Only flop
     function ttl() external returns (uint256);
@@ -895,6 +896,7 @@ library DssExecLib {
         // Sanity checks
         address _vat = vat();
         address _dog = dog();
+        address _spotter = spotter();
         require(JoinLike(_join).vat() == _vat);     // "join-vat-not-match"
         require(JoinLike(_join).ilk() == _ilk);     // "join-ilk-not-match"
         require(JoinLike(_join).gem() == _gem);     // "join-gem-not-match"
@@ -903,11 +905,12 @@ library DssExecLib {
         require(AuctionLike(_clip).vat() == _vat);  // "clip-vat-not-match"
         require(AuctionLike(_clip).dog() == _dog);  // "clip-dog-not-match"
         require(AuctionLike(_clip).ilk() == _ilk);  // "clip-ilk-not-match"
+        require(AuctionLike(_clip).spotter() == _spotter);  // "clip-ilk-not-match"
 
         // Set the token PIP in the Spotter
         setContract(spotter(), _ilk, "pip", _pip);
 
-        // Set the ilk Clipper in the Cat
+        // Set the ilk Clipper in the Dog
         setContract(_dog, _ilk, "clip", _clip);
         // Set vow in the clip
         setContract(_clip, "vow", vow());
