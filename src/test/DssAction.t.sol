@@ -66,6 +66,13 @@ interface PipLike {
     function peek() external returns (bytes32, bool);
 }
 
+contract UniPairMock {
+    address public token0; address public token1;
+    constructor(address _token0, address _token1) public {
+        token0 = _token0;  token1 = _token1;
+    }
+}
+
 contract ActionTest is DSTest {
     Hevm hevm;
 
@@ -737,17 +744,28 @@ contract ActionTest is DSTest {
         address tokenPip = address(new OSM(address(median)));
 
         assertEq(median.bud(tokenPip), 0);
-        action.whitelistOracle_test(tokenPip);
+        action.whitelistOracleMedians_test(tokenPip);
         assertEq(median.bud(tokenPip), 1);
     }
 
     function test_whitelistOracle_LP() public {
-        address tokenPip = address(new OSM(address(median)));
+        // Mock an LP oracle and whitelist it
+        address token0 = address(new DSToken("nil"));
+        address token1 = address(new DSToken("one"));
+        Median  med0   = new Median();
+        Median  med1   = new Median();
+        address lperc  = address(new UniPairMock(token0, token1));
+        med0.rely(address(action));
+        med1.rely(address(action));
+        UNIV2LPOracle lorc = new UNIV2LPOracle(address(lperc), "NILONE", address(med0), address(med1));
 
-        assertEq(median.bud(tokenPip), 0);
-        action.whitelistOracle_test(tokenPip);
-        assertEq(median.bud(tokenPip), 1);
+        assertEq(med0.bud(address(lorc)), 0);
+        assertEq(med1.bud(address(lorc)), 0);
+        action.whitelistOracleMedians_test(address(lorc));
+        assertEq(med0.bud(address(lorc)), 1);
+        assertEq(med1.bud(address(lorc)), 1);
     }
+
 
     function test_addWritersToMedianWhitelist() public {
         address[] memory feeds = new address[](2);

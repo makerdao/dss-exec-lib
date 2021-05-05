@@ -792,17 +792,17 @@ library DssExecLib {
         @dev Allows an oracle to read prices from it's source feeds
         @param _oracle  An OSM or LP oracle contract
     */
-    function whitelistOracle(address _oracle) public {
-        address median;
+    function whitelistOracleMedians(address _oracle) public {
+        address median0;
         (bool ok, bytes memory data) = _oracle.call(abi.encodeWithSignature("orb0()"));
         if (ok) {
             // Token is an LP oracle
-            median = abi.decode(data, (address));
-            addReaderToMedianWhitelist(median, _oracle);
+            median0 = abi.decode(data, (address));
+            addReaderToMedianWhitelist(median0, _oracle);
             addReaderToMedianWhitelist(OracleLike(_oracle).orb1(), _oracle);
         } else {
             // Standard OSM
-            addReaderToMedianWhitelist(OracleLike(_oracle).src(), _oracle);
+            addReaderToOSMWhitelist(OracleLike(_oracle).src(), _oracle);
         }
     }
 
@@ -960,7 +960,7 @@ library DssExecLib {
         addCollateralBase(co.ilk, co.gem, co.join, co.clip, co.calc, co.pip);
 
         if (co.isLiquidatable) {
-            // Allow clipperMom to access to the ilk Clipper
+            // Grant ClipperMom access to the ilk Clipper
             authorize(co.clip, clipperMom());
         } else {
             // Disallow Dog to kick auctions in ilk Clipper
@@ -972,7 +972,8 @@ library DssExecLib {
             authorize(co.pip, osmMom());
             if (co.whitelistOSM) { // If median is src in OSM
                 // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-                whitelistOracle(co.pip);
+                //addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
+                whitelistOracleMedians(co.pip);
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, spotter());

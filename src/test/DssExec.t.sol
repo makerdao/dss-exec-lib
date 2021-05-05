@@ -390,7 +390,7 @@ contract DssLibExecTest is DSTest, DSMath {
             castTime += 14 hours - hour * 3600;
         }
 
-        hevm.warp(castTime);
+        hevm.warp(spell.nextCastTime());
         spell.cast();
     }
 
