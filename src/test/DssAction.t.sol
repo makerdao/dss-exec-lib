@@ -170,10 +170,10 @@ contract ActionTest is DSTest {
         spot.file(name, "mat", ray(2 ether));
         // initial collateral price of 6
         pip.poke(bytes32(6 * WAD));
-        pip.rely(address(clipperMom));
         spot.poke(name);
 
         OSM osm = new OSM(address(pip));
+        osm.rely(address(clipperMom));
 
         vat.init(name);
         GemJoin gemA = new GemJoin(address(vat), name, address(coin));
@@ -205,7 +205,6 @@ contract ActionTest is DSTest {
         ilks[name].gem = coin;
         ilks[name].gemA = gemA;
         ilks[name].clip = clip;
-
 
         return ilks[name];
     }
