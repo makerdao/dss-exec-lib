@@ -374,6 +374,15 @@ library DssExecLib {
     function setContract(address _base, bytes32 _ilk, bytes32 _what, address _addr) public {
         Fileable(_base).file(_ilk, _what, _addr);
     }
+    /**
+        @dev Set a value in a contract, via a governance authorized File pattern.
+        @param _base   The address of the contract where the new contract address will be filed
+        @param _what   Name of tag for the value (e.x. "Line")
+        @param _amt    The value to set or update
+    */
+    function setValue(address _base, bytes32 _what, uint256 _amt) public {
+        Fileable(_base).file(_what, _amt);
+    }
 
     /******************************/
     /*** System Risk Parameters ***/
@@ -385,7 +394,7 @@ library DssExecLib {
     */
     function setGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-global-Line-precision"
-        Fileable(vat()).file("Line", _amount * RAD);
+        setValue(vat(), "Line", _amount * RAD);
     }
     /**
         @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
@@ -394,7 +403,7 @@ library DssExecLib {
     function increaseGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-Line-increase-precision"
         address _vat = vat();
-        Fileable(_vat).file("Line", add(DssVat(_vat).Line(), _amount * RAD));
+        setValue(_vat, "Line", add(DssVat(_vat).Line(), _amount * RAD));
     }
     /**
         @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
@@ -403,7 +412,7 @@ library DssExecLib {
     function decreaseGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-Line-decrease-precision"
         address _vat = vat();
-        Fileable(_vat).file("Line", sub(DssVat(_vat).Line(), _amount * RAD));
+        setValue(_vat, "Line", sub(DssVat(_vat).Line(), _amount * RAD));
     }
     /**
         @dev Set the Dai Savings Rate. See: docs/rates.txt
@@ -413,7 +422,7 @@ library DssExecLib {
     function setDSR(uint256 _rate, bool _doDrip) public {
         require((_rate >= RAY) && (_rate <= RATES_ONE_HUNDRED_PCT));  // "LibDssExec/dsr-out-of-bounds"
         if (_doDrip) Drippable(pot()).drip();
-        Fileable(pot()).file("dsr", _rate);
+        setValue(pot(), "dsr", _rate);
     }
     /**
         @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
@@ -421,7 +430,7 @@ library DssExecLib {
     */
     function setSurplusAuctionAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-bump-precision"
-        Fileable(vow()).file("bump", _amount * RAD);
+        setValue(vow(), "bump", _amount * RAD);
     }
     /**
         @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
@@ -516,6 +525,14 @@ library DssExecLib {
     function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-dog-Hole-precision"
         Fileable(dog()).file("Hole", _amount * RAD);
+    }
+    /**
+        @dev (LIQ 1.2) Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
+        @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
+    */
+    function setMaxTotalDAILiquidationAmountLEGACY(uint256 _amount) public {
+        require(_amount < WAD);  // "LibDssExec/incorrect-cat-box-amount"
+        Fileable(cat()).file("box", _amount * RAD);
     }
     /**
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
