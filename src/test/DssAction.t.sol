@@ -60,6 +60,7 @@ import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol'
 interface Hevm {
     function warp(uint256) external;
     function store(address,bytes32,bytes32) external;
+    function load(address,bytes32) external view returns (bytes32);
 }
 
 interface PipLike {
@@ -169,6 +170,7 @@ contract ActionTest is DSTest {
         spot.file(name, "mat", ray(2 ether));
         // initial collateral price of 6
         pip.poke(bytes32(6 * WAD));
+        pip.rely(address(clipperMom));
         spot.poke(name);
 
         OSM osm = new OSM(address(pip));
@@ -766,7 +768,6 @@ contract ActionTest is DSTest {
         assertEq(med1.bud(address(lorc)), 1);
     }
 
-
     function test_addWritersToMedianWhitelist() public {
         address[] memory feeds = new address[](2);
         feeds[0] = address(this);   // Random addresses since 0x1 and 0x2 didnt work with bitshift
@@ -896,7 +897,7 @@ contract ActionTest is DSTest {
         assertEq(vat.wards(address(tokenJoin)), 1);
         assertEq(dog.wards(address(tokenClip)), 1);
 
-        assertEq(tokenClip.wards(address(end)),        1);
+        assertEq(tokenClip.wards(address(end)), 1);
 
         (,,uint256 _class, uint256 _dec, address _gem, address _pip, address _join, address _xlip) = reg.info(ilk);
 
@@ -966,24 +967,22 @@ contract ActionTest is DSTest {
         assertEq(dog.wards(address(tokenClip)), 1);
 
         assertEq(tokenClip.wards(address(end)), 1);
-
         assertEq(tokenClip.wards(address(dog)), 1); // Use "stopped" instead of ward to disable.
+        assertEq(tokenClip.wards(address(clipperMom)), 1);
         if (liquidatable) {
             assertEq(tokenClip.stopped(), 0);
         } else {
             assertEq(tokenClip.stopped(), 3);
         }
-        uint256 liq_ = (liquidatable) ? 1 : 0;
-        assertEq(tokenClip.wards(address(clipperMom)), liq_);
         }
 
         if (isOsm) {
-          assertEq(OSM(tokenPip).wards(address(osmMom)),  1);
-          assertEq(OSM(tokenPip).bud(address(spot)),      1);
-          assertEq(OSM(tokenPip).bud(address(clipperMom)),1);
-          assertEq(OSM(tokenPip).bud(address(end)),       1);
+          assertEq(OSM(tokenPip).wards(address(osmMom)),     1);
+          assertEq(OSM(tokenPip).bud(address(spot)),         1);
+          assertEq(OSM(tokenPip).bud(address(clipperMom)),   1);
+          assertEq(OSM(tokenPip).bud(address(end)),          1);
 
-          if (medianSrc) assertEq(median.bud(tokenPip),   1);
+          if (medianSrc) assertEq(median.bud(tokenPip),      1);
           assertEq(osmMom.osms(ilk), tokenPip);
         }
 

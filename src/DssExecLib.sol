@@ -975,11 +975,12 @@ library DssExecLib {
     function addNewCollateral(CollateralOpts memory co) public {
         // Add the collateral to the system.
         addCollateralBase(co.ilk, co.gem, co.join, co.clip, co.calc, co.pip);
+        address clipperMom_ = clipperMom();
 
-        if (co.isLiquidatable) {
-            // Grant ClipperMom access to the ilk Clipper
-            authorize(co.clip, clipperMom());
-        } else {
+        // Grant ClipperMom access to the ilk Clipper
+        authorize(co.clip, clipperMom_);
+
+        if (!co.isLiquidatable) {
             // Disallow Dog to kick auctions in ilk Clipper
             setValue(co.clip, "stopped", 3);
         }
@@ -989,7 +990,6 @@ library DssExecLib {
             authorize(co.pip, osmMom());
             if (co.whitelistOSM) { // If median is src in OSM
                 // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-                //addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
                 whitelistOracleMedians(co.pip);
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
@@ -997,7 +997,7 @@ library DssExecLib {
             // Whitelist Clipper on pip
             addReaderToOSMWhitelist(co.pip, co.clip);
             // Allow the clippermom to access the feed
-            addReaderToOSMWhitelist(co.pip, clipperMom());
+            addReaderToOSMWhitelist(co.pip, clipperMom_);
             // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, end());
             // Set TOKEN OSM in the OsmMom for new ilk
