@@ -6,4 +6,11 @@ set -e
 # shellcheck disable=SC1091
 source "./allow-optimize.sh"
 
-DAPP_BUILD_OPTIMIZE=1 DAPP_BUILD_OPTIMIZE_RUNS=200 dapp --use solc:0.6.12 test -v --rpc-url="$ETH_RPC_URL"
+export DAPP_BUILD_OPTIMIZE=1
+export DAPP_BUILD_OPTIMIZE_RUNS=200
+
+if [[ -z "$1" ]]; then
+  dapp --use solc:0.6.12 test --rpc-url="$ETH_RPC_URL" -v
+else
+  dapp --use solc:0.6.12 test --rpc-url="$ETH_RPC_URL" --match "$1" -vv
+fi
