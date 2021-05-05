@@ -356,7 +356,7 @@ library DssExecLib {
     /*** System Configuration ***/
     /****************************/
     /**
-        @dev Set a contract in another contract, defining the relationship (ex. set a new Cat contract in the Vat)
+        @dev Set a contract in another contract, defining the relationship (ex. set a new Calc contract in Clip)
         @param _base   The address of the contract where the new contract address will be filed
         @param _what   Name of contract to file
         @param _addr   Address of contract to file
@@ -365,7 +365,7 @@ library DssExecLib {
         Fileable(_base).file(_what, _addr);
     }
     /**
-        @dev Set a contract in another contract, defining the relationship (ex. set a new Cat contract in the Vat)
+        @dev Set a contract in another contract, defining the relationship (ex. set a new Calc contract in a Clip)
         @param _base   The address of the contract where the new contract address will be filed
         @param _ilk    Collateral type
         @param _what   Name of contract to file
@@ -981,7 +981,7 @@ library DssExecLib {
             authorize(co.clip, clipperMom());
         } else {
             // Disallow Dog to kick auctions in ilk Clipper
-            Fileable(co.clip).file("stopped", 3);
+            setValue(co.clip, "stopped", 3);
         }
 
         if(co.isOSM) { // If pip == OSM
