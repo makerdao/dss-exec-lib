@@ -819,7 +819,7 @@ library DssExecLib {
             addReaderToMedianWhitelist(OracleLike(_oracle).orb1(), _oracle);
         } else {
             // Standard OSM
-            addReaderToOSMWhitelist(OracleLike(_oracle).src(), _oracle);
+            addReaderToMedianWhitelist(OracleLike(_oracle).src(), _oracle);
         }
     }
 
