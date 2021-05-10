@@ -383,6 +383,16 @@ library DssExecLib {
     function setValue(address _base, bytes32 _what, uint256 _amt) public {
         Fileable(_base).file(_what, _amt);
     }
+    /**
+        @dev Set a value in a contract, via a governance authorized File pattern.
+        @param _base   The address of the contract where the new contract address will be filed
+        @param _ilk    Collateral type
+        @param _what   Name of tag for the value (e.x. "Line")
+        @param _amt    The value to set or update
+    */
+    function setValue(address _base, bytes32 _ilk, bytes32 _what, uint256 _amt) public {
+        Fileable(_base).file(_ilk, _what, _amt);
+    }
 
     /******************************/
     /*** System Risk Parameters ***/
@@ -438,7 +448,7 @@ library DssExecLib {
     */
     function setSurplusBuffer(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-hump-precision"
-        Fileable(vow()).file("hump", _amount * RAD);
+        setValue(vow(), "hump", _amount * RAD);
     }
     /**
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
@@ -447,28 +457,28 @@ library DssExecLib {
     */
     function setMinSurplusAuctionBidIncrease(uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(flap()).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flap(), "beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for surplus auctions.
         @param _duration Amount of time for bids. (in seconds)
     */
     function setSurplusAuctionBidDuration(uint256 _duration) public {
-        Fileable(flap()).file("ttl", _duration);
+        setValue(flap(), "ttl", _duration);
     }
     /**
         @dev Set total auction duration for surplus auctions.
         @param _duration Amount of time for auctions. (in seconds)
     */
     function setSurplusAuctionDuration(uint256 _duration) public {
-        Fileable(flap()).file("tau", _duration);
+        setValue(flap(), "tau", _duration);
     }
     /**
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
         @param _duration Duration in seconds
     */
     function setDebtAuctionDelay(uint256 _duration) public {
-        Fileable(vow()).file("wait", _duration);
+        setValue(vow(), "wait", _duration);
     }
     /**
         @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
@@ -476,7 +486,7 @@ library DssExecLib {
     */
     function setDebtAuctionDAIAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-sump-precision"
-        Fileable(vow()).file("sump", _amount * RAD);
+        setValue(vow(), "sump", _amount * RAD);
     }
     /**
         @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
@@ -484,7 +494,7 @@ library DssExecLib {
     */
     function setDebtAuctionMKRAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
-        Fileable(vow()).file("dump", _amount * WAD);
+        setValue(vow(), "dump", _amount * WAD);
     }
     /**
         @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
@@ -493,21 +503,21 @@ library DssExecLib {
     */
     function setMinDebtAuctionBidIncrease(uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(flop()).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flop(), "beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for debt auctions.
         @param _duration Amount of time for bids.
     */
     function setDebtAuctionBidDuration(uint256 _duration) public {
-        Fileable(flop()).file("ttl", _duration);
+        setValue(flop(), "ttl", _duration);
     }
     /**
         @dev Set total auction duration for debt auctions.
         @param _duration Amount of time for auctions.
     */
     function setDebtAuctionDuration(uint256 _duration) public {
-        Fileable(flop()).file("tau", _duration);
+        setValue(flop(), "tau", _duration);
     }
     /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
@@ -516,7 +526,7 @@ library DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setDebtAuctionMKRIncreaseRate(uint256 _pct_bps) public {
-        Fileable(flop()).file("pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flop(), "pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
@@ -524,7 +534,7 @@ library DssExecLib {
     */
     function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-dog-Hole-precision"
-        Fileable(dog()).file("Hole", _amount * RAD);
+        setValue(dog(), "Hole", _amount * RAD);
     }
     /**
         @dev (LIQ 1.2) Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
@@ -532,14 +542,14 @@ library DssExecLib {
     */
     function setMaxTotalDAILiquidationAmountLEGACY(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-cat-box-amount"
-        Fileable(cat()).file("box", _amount * RAD);
+        setValue(cat(), "box", _amount * RAD);
     }
     /**
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _duration Time in seconds to set for ES processing time
     */
     function setEmergencyShutdownProcessingTime(uint256 _duration) public {
-        Fileable(end()).file("wait", _duration);
+        setValue(end(), "wait", _duration);
     }
     /**
         @dev Set the global stability fee (is not typically used, currently is 0).
@@ -555,7 +565,7 @@ library DssExecLib {
     */
     function setGlobalStabilityFee(uint256 _rate) public {
         require((_rate >= RAY) && (_rate <= RATES_ONE_HUNDRED_PCT));  // "LibDssExec/global-stability-fee-out-of-bounds"
-        Fileable(jug()).file("base", _rate);
+        setValue(jug(), "base", _rate);
     }
     /**
         @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
@@ -564,7 +574,7 @@ library DssExecLib {
     */
     function setDAIReferenceValue(uint256 _value) public {
         require(_value < WAD);  // "LibDssExec/incorrect-par-precision"
-        Fileable(spotter()).file("par", rdiv(_value, 1000));
+        setValue(spotter(), "par", rdiv(_value, 1000));
     }
 
     /*****************************/
@@ -577,7 +587,7 @@ library DssExecLib {
     */
     function setIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
-        Fileable(vat()).file(_ilk, "line", _amount * RAD);
+        setValue(vat(), _ilk, "line", _amount * RAD);
     }
     /**
         @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
@@ -589,7 +599,7 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         address _vat = vat();
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        Fileable(_vat).file(_ilk, "line", add(line_, _amount * RAD));
+        setValue(_vat, _ilk, "line", add(line_, _amount * RAD));
         if (_global) { increaseGlobalDebtCeiling(_amount); }
     }
     /**
@@ -602,7 +612,7 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         address _vat = vat();
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        Fileable(_vat).file(_ilk, "line", sub(line_, _amount * RAD));
+        setValue(_vat, _ilk, "line", sub(line_, _amount * RAD));
         if (_global) { decreaseGlobalDebtCeiling(_amount); }
     }
     /**
@@ -642,7 +652,7 @@ library DssExecLib {
     */
     function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dust-precision"
-        Fileable(vat()).file(_ilk, "dust", _amount * RAD);
+        setValue(vat(), _ilk, "dust", _amount * RAD);
         (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
     /**
@@ -653,7 +663,7 @@ library DssExecLib {
     */
     function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(dog()).file(_ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(dog(), _ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
         (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
     /**
@@ -663,7 +673,7 @@ library DssExecLib {
     */
     function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-hole-precision"
-        Fileable(dog()).file(_ilk, "hole", _amount * RAD);
+        setValue(dog(), _ilk, "hole", _amount * RAD);
     }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
@@ -674,7 +684,7 @@ library DssExecLib {
     function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < 10 * BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-ilk-mat-precision" // Fails if pct >= 1000%
         require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // the liquidation ratio has to be bigger or equal to 100%
-        Fileable(spotter()).file(_ilk, "mat", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(spotter(), _ilk, "mat", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
     /**
         @dev Set an auction starting multiplier. Amount will be converted to the correct internal precision.
@@ -685,8 +695,7 @@ library DssExecLib {
     function setStartingPriceMultiplicativeFactor(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < 10 * BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-ilk-mat-precision" // Fails if gt 10x
         require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // fail if start price is less than OSM price
-        //Fileable(clip(_ilk)).file("buf", _pct_bps * RAY / 10000);
-        Fileable(clip(_ilk)).file("buf", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(clip(_ilk), "buf", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /**
@@ -695,7 +704,7 @@ library DssExecLib {
         @param _duration Amount of time before auction resets (in seconds).
     */
     function setAuctionTimeBeforeReset(bytes32 _ilk, uint256 _duration) public {
-        Fileable(clip(_ilk)).file("tail", _duration);
+        setValue(clip(_ilk), "tail", _duration);
     }
 
     /**
@@ -705,7 +714,7 @@ library DssExecLib {
     */
     function setAuctionPermittedDrop(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-cusp-value"
-        Fileable(clip(_ilk)).file("cusp", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(clip(_ilk), "cusp", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /**
@@ -715,7 +724,7 @@ library DssExecLib {
     */
     function setKeeperIncentivePercent(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-chip-precision"
-        Fileable(clip(_ilk)).file("chip", wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(clip(_ilk), "chip", wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /**
@@ -725,7 +734,7 @@ library DssExecLib {
     */
     function setKeeperIncentiveFlatRate(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD); // "LibDssExec/incorrect-clip-tip-precision"
-        Fileable(clip(_ilk)).file("tip", _amount * RAD);
+        setValue(clip(_ilk), "tip", _amount * RAD);
     }
 
     /**
@@ -760,7 +769,7 @@ library DssExecLib {
         address _jug = jug();
         if (_doDrip) Drippable(_jug).drip(_ilk);
 
-        Fileable(_jug).file(_ilk, "duty", _rate);
+        setValue(_jug, _ilk, "duty", _rate);
     }
 
 
@@ -775,7 +784,7 @@ library DssExecLib {
         @param _duration Amount of time for auctions.
     */
     function initLinearDecrease(address _calc, uint256 _duration) public {
-        Fileable(_calc).file("tau", _duration);
+        setValue(_calc, "tau", _duration);
     }
 
     /**
@@ -787,8 +796,8 @@ library DssExecLib {
     */
     function initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
-        Fileable(_calc).file("cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
-        Fileable(_calc).file("step", _duration);
+        setValue(_calc, "cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(_calc, "step", _duration);
     }
     /**
         @dev Set the number of seconds for each price step. (99% cut = 1% price drop per step)
@@ -799,7 +808,7 @@ library DssExecLib {
     */
     function initExponentialDecrease(address _calc, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
-        Fileable(_calc).file("cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(_calc, "cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
 
     /*************************/
