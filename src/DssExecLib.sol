@@ -977,12 +977,12 @@ library DssExecLib {
         addCollateralBase(co.ilk, co.gem, co.join, co.clip, co.calc, co.pip);
         address clipperMom_ = clipperMom();
 
-        // Grant ClipperMom access to the ilk Clipper
-        authorize(co.clip, clipperMom_);
-
         if (!co.isLiquidatable) {
             // Disallow Dog to kick auctions in ilk Clipper
             setValue(co.clip, "stopped", 3);
+        } else {
+            // Grant ClipperMom access to the ilk Clipper
+            authorize(co.clip, clipperMom_);
         }
 
         if(co.isOSM) { // If pip == OSM

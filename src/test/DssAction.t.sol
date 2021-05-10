@@ -967,11 +967,13 @@ contract ActionTest is DSTest {
 
         assertEq(tokenClip.wards(address(end)), 1);
         assertEq(tokenClip.wards(address(dog)), 1); // Use "stopped" instead of ward to disable.
-        assertEq(tokenClip.wards(address(clipperMom)), 1);
+
         if (liquidatable) {
             assertEq(tokenClip.stopped(), 0);
+            assertEq(tokenClip.wards(address(clipperMom)), 1);
         } else {
             assertEq(tokenClip.stopped(), 3);
+            assertEq(tokenClip.wards(address(clipperMom)), 0);
         }
         }
 
