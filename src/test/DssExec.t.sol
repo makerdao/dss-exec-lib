@@ -61,7 +61,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         GemJoin xmpl_join = new GemJoin(DssExecLib.vat(), "XMPL-A", address(xmpl_gem));
         xmpl_clip.rely(DssExecLib.pauseProxy());
         xmpl_join.rely(DssExecLib.pauseProxy());
-        address xmpl_pip = 0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a; // Using LRC-A pip as a dummy
+        address xmpl_pip = 0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C; // Using USDT pip as a dummy
 
         LinearDecrease xmpl_calc = new LinearDecrease();
         DssExecLib.initLinearDecrease(address(xmpl_calc), 1);
@@ -161,9 +161,9 @@ contract DssLibExecTest is DSTest, DSMath {
     // XMPL-A specific
     GemAbstract           xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
     GemJoinAbstract  joinXMPLA;
-    OsmAbstract        pipXMPL = OsmAbstract(        0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
+    OsmAbstract        pipXMPL = OsmAbstract(        0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C);
     ClipAbstract     clipXMPLA;
-    MedianAbstract    medXMPLA = MedianAbstract(     0xcCe92282d9fe310F4c232b0DA9926d5F24611C7B);
+    MedianAbstract    medXMPLA = MedianAbstract(     0x56D4bBF358D7790579b55eA6Af3f605BcA2c0C3A); // USDT median
 
     ChainlogAbstract chainlog  = ChainlogAbstract(   0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
