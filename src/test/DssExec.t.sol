@@ -64,7 +64,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         address xmpl_pip = 0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C; // Using USDT pip as a dummy
 
         LinearDecrease xmpl_calc = new LinearDecrease();
-        DssExecLib.initLinearDecrease(address(xmpl_calc), 1);
+        DssExecLib.setLinearDecrease(address(xmpl_calc), 1);
 
         CollateralOpts memory XMPL_A = CollateralOpts({
             ilk:                   "XMPL-A",

@@ -783,7 +783,7 @@ library DssExecLib {
         @param _calc     The address of the LinearDecrease pricing contract
         @param _duration Amount of time for auctions.
     */
-    function initLinearDecrease(address _calc, uint256 _duration) public {
+    function setLinearDecrease(address _calc, uint256 _duration) public {
         setValue(_calc, "tau", _duration);
     }
 
@@ -794,7 +794,7 @@ library DssExecLib {
         @param _duration Length of time between price drops [seconds]
         @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
     */
-    function initStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
+    function setStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
         setValue(_calc, "cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
         setValue(_calc, "step", _duration);
@@ -806,7 +806,7 @@ library DssExecLib {
         @param _calc     The address of the ExponentialDecrease pricing contract
         @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
     */
-    function initExponentialDecrease(address _calc, uint256 _pct_bps) public {
+    function setExponentialDecrease(address _calc, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
         setValue(_calc, "cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }

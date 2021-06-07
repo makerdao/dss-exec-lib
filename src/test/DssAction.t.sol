@@ -714,25 +714,25 @@ contract ActionTest is DSTest {
     /*** Pricing Management ***/
     /**************************/
 
-    function test_initLinearDecrease() public {
+    function test_setLinearDecrease() public {
         LinearDecrease calc = new LinearDecrease();
         calc.rely(address(action));
-        action.initLinearDecrease_test(address(calc), 14 hours);
+        action.setLinearDecrease_test(address(calc), 14 hours);
         assertEq(calc.tau(), 14 hours);
     }
 
-    function test_initStairstepExponentialDecrease() public {
+    function test_setStairstepExponentialDecrease() public {
         StairstepExponentialDecrease calc = new StairstepExponentialDecrease();
         calc.rely(address(action));
-        action.initStairstepExponentialDecrease_test(address(calc), 90, 9999); // 90 seconds per step, 99.99% multiplicative
+        action.setStairstepExponentialDecrease_test(address(calc), 90, 9999); // 90 seconds per step, 99.99% multiplicative
         assertEq(calc.step(), 90);
         assertEq(calc.cut(), 999900000000000000000000000);
     }
 
-    function test_initExponentialDecrease() public {
+    function test_setExponentialDecrease() public {
         ExponentialDecrease calc = new ExponentialDecrease();
         calc.rely(address(action));
-        action.initExponentialDecrease_test(address(calc), 9999); // 99.99% multiplicative
+        action.setExponentialDecrease_test(address(calc), 9999); // 99.99% multiplicative
         assertEq(calc.cut(), 999900000000000000000000000);
     }
 

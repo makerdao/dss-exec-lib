@@ -266,16 +266,16 @@ contract DssTestAction is DssAction {
         DssExecLib.setIlkStabilityFee(ilk, rate, true);
     }
 
-    function initLinearDecrease_test(address calc, uint256 duration) public {
-        DssExecLib.initLinearDecrease(calc, duration);
+    function setLinearDecrease_test(address calc, uint256 duration) public {
+        DssExecLib.setLinearDecrease(calc, duration);
     }
 
-    function initStairstepExponentialDecrease_test(address calc, uint256 duration, uint256 pct_bps) public {
-        DssExecLib.initStairstepExponentialDecrease(calc, duration, pct_bps);
+    function setStairstepExponentialDecrease_test(address calc, uint256 duration, uint256 pct_bps) public {
+        DssExecLib.setStairstepExponentialDecrease(calc, duration, pct_bps);
     }
 
-    function initExponentialDecrease_test(address calc, uint256 pct_bps) public {
-        DssExecLib.initExponentialDecrease(calc, pct_bps);
+    function setExponentialDecrease_test(address calc, uint256 pct_bps) public {
+        DssExecLib.setExponentialDecrease(calc, pct_bps);
     }
 
     /*************************/
