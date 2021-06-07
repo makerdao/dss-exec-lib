@@ -385,7 +385,7 @@ library DssExecLib {
     }
     /**
         @dev Set a value in a contract, via a governance authorized File pattern.
-        @param _base   The address of the contract where the new contract address will be filed
+        @param _base   The address of the contract where the new value will be filed
         @param _ilk    Collateral type
         @param _what   Name of tag for the value (e.x. "Line")
         @param _amt    The value to set or update
