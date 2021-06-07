@@ -272,7 +272,7 @@ contract DssLibExecTest is DSTest, DSMath {
             buf:           clip.buf()*10000/RAY, // In basis points
             cusp:          clip.cusp()*10000/RAY,// In basis points
             chop:          1400,                 // In basis points
-            tip:           0,                    // In whole Dai units
+            tip:           clip.tip()/RAD,       // In whole Dai units
             chip:          2,                    // In basis points
             hole:          100000,               // In whole Dai units
             mat:           16000,                // In basis points
