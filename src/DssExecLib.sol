@@ -1038,9 +1038,8 @@ library DssExecLib {
         // Set the ilk min collateralization ratio
         setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
 
-        // Set liquidation price tolerance to 50% by default
-        // Call this again after the collateral is added to override.
-        setLiquidationBreakerPriceTolerance(co.clip, 5000);
+        // Set the price tolerance in the liquidation circuit breaker
+        setLiquidationBreakerPriceTolerance(co.clip, co.breakerTolerance);
 
         // Set a flat rate for the keeper reward
         setKeeperIncentiveFlatRate(co.ilk, co.kprFlatReward);

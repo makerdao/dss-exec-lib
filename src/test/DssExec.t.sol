@@ -82,6 +82,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
             liquidationPenalty:    1300,
             ilkStabilityFee:       1000000000705562181084137268,
             startingPriceFactor:   13000,
+            breakerTolerance:      7000,   // Allows for a 30% hourly price drop before disabling liquidations
             auctionDuration:       10 hours,
             permittedDrop:         4000,
             liquidationRatio:      15000,

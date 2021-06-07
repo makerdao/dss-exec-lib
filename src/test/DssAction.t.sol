@@ -950,6 +950,7 @@ contract ActionTest is DSTest {
                     liquidationPenalty:    1300,
                     ilkStabilityFee:       1000000001243680656318820312,
                     startingPriceFactor:   13000,
+                    breakerTolerance:      6000,
                     auctionDuration:       6 hours,
                     permittedDrop:         4000,
                     liquidationRatio:      15000,
@@ -1005,6 +1006,8 @@ contract ActionTest is DSTest {
             assertEq(tokenClip.buf(), 130 * RAY / 100);
             assertEq(tokenClip.tail(), 6 hours);
             assertEq(tokenClip.cusp(), 40 * RAY / 100);
+
+            assertEq(clipperMom.tolerance(address(tokenClip)), 6000 * RAY / 10000);
 
             assertEq(uint256(tokenClip.tip()), 100 * RAD);
             assertEq(uint256(tokenClip.chip()), 10 * WAD / 10000);
