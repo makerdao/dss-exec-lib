@@ -815,7 +815,7 @@ library DssExecLib {
     /*** Oracle Management ***/
     /*************************/
     /**
-        @dev Allows an oracle to read prices from it's source feeds
+        @dev Allows an oracle to read prices from its source feeds
         @param _oracle  An OSM or LP oracle contract
     */
     function whitelistOracleMedians(address _oracle) public {
