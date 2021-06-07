@@ -819,11 +819,10 @@ library DssExecLib {
         @param _oracle  An OSM or LP oracle contract
     */
     function whitelistOracleMedians(address _oracle) public {
-        address median0;
         (bool ok, bytes memory data) = _oracle.call(abi.encodeWithSignature("orb0()"));
         if (ok) {
             // Token is an LP oracle
-            median0 = abi.decode(data, (address));
+            address median0 = abi.decode(data, (address));
             addReaderToMedianWhitelist(median0, _oracle);
             addReaderToMedianWhitelist(OracleLike(_oracle).orb1(), _oracle);
         } else {
