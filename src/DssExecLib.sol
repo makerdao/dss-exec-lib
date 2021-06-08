@@ -58,15 +58,12 @@ interface DssVat {
     function suck(address, address, uint) external;
 }
 
-interface AuctionLike {
+interface ClipLike {
     function vat() external returns (address);
-    function cat() external returns (address); // Only flip
-    function beg() external returns (uint256);
-    function pad() external returns (uint256); // Only flop
-    function ttl() external returns (uint256);
-    function tau() external returns (uint256);
-    function ilk() external returns (bytes32); // Only flip
-    function gem() external returns (bytes32); // Only flap/flop
+    function dog() external returns (address);
+    function spotter() external view returns (address);
+    function calc() external view returns (address);
+    function ilk() external returns (bytes32);
 }
 
 interface JoinLike {
@@ -88,27 +85,18 @@ interface OracleLike {
     function diss(address) external;
     function kiss(address[] calldata) external;
     function diss(address[] calldata) external;
+    function orb0() external view returns (address);
+    function orb1() external view returns (address);
 }
 
 interface MomLike {
     function setOsm(bytes32, address) external;
+    function setPriceTolerance(address, uint256) external;
 }
 
 interface RegistryLike {
     function add(address) external;
-    function info(bytes32) external view returns (
-        string memory, string memory, uint256, address, address, address, address
-    );
-    function ilkData(bytes32) external view returns (
-        uint256       pos,
-        address       gem,
-        address       pip,
-        address       join,
-        address       flip,
-        uint256       dec,
-        string memory name,
-        string memory symbol
-    );
+    function xlip(bytes32) external view returns (address);
 }
 
 // https://github.com/makerdao/dss-chain-log
@@ -178,10 +166,12 @@ library DssExecLib {
     function mkr()        public view returns (address) { return getChangelogAddress("MCD_GOV"); }
     function vat()        public view returns (address) { return getChangelogAddress("MCD_VAT"); }
     function cat()        public view returns (address) { return getChangelogAddress("MCD_CAT"); }
+    function dog()        public view returns (address) { return getChangelogAddress("MCD_DOG"); }
     function jug()        public view returns (address) { return getChangelogAddress("MCD_JUG"); }
     function pot()        public view returns (address) { return getChangelogAddress("MCD_POT"); }
     function vow()        public view returns (address) { return getChangelogAddress("MCD_VOW"); }
     function end()        public view returns (address) { return getChangelogAddress("MCD_END"); }
+    function esm()        public view returns (address) { return getChangelogAddress("MCD_ESM"); }
     function reg()        public view returns (address) { return getChangelogAddress("ILK_REGISTRY"); }
     function spotter()    public view returns (address) { return getChangelogAddress("MCD_SPOT"); }
     function flap()       public view returns (address) { return getChangelogAddress("MCD_FLAP"); }
@@ -189,12 +179,21 @@ library DssExecLib {
     function osmMom()     public view returns (address) { return getChangelogAddress("OSM_MOM"); }
     function govGuard()   public view returns (address) { return getChangelogAddress("GOV_GUARD"); }
     function flipperMom() public view returns (address) { return getChangelogAddress("FLIPPER_MOM"); }
+    function clipperMom() public view returns (address) { return getChangelogAddress("CLIPPER_MOM"); }
     function pauseProxy() public view returns (address) { return getChangelogAddress("MCD_PAUSE_PROXY"); }
     function autoLine()   public view returns (address) { return getChangelogAddress("MCD_IAM_AUTO_LINE"); }
     function daiJoin()    public view returns (address) { return getChangelogAddress("MCD_JOIN_DAI"); }
 
+    function clip(bytes32 _ilk) public view returns (address _clip) {
+        _clip = RegistryLike(reg()).xlip(_ilk);
+    }
+
     function flip(bytes32 _ilk) public view returns (address _flip) {
-        (,,,, _flip,,,) = RegistryLike(reg()).ilkData(_ilk);
+        _flip = RegistryLike(reg()).xlip(_ilk);
+    }
+
+    function calc(bytes32 _ilk) public view returns (address _calc) {
+        _calc = ClipLike(clip(_ilk)).calc();
     }
 
     function getChangelogAddress(bytes32 _key) public view returns (address) {
@@ -357,7 +356,7 @@ library DssExecLib {
     /*** System Configuration ***/
     /****************************/
     /**
-        @dev Set a contract in another contract, defining the relationship (ex. set a new Cat contract in the Vat)
+        @dev Set a contract in another contract, defining the relationship (ex. set a new Calc contract in Clip)
         @param _base   The address of the contract where the new contract address will be filed
         @param _what   Name of contract to file
         @param _addr   Address of contract to file
@@ -366,7 +365,7 @@ library DssExecLib {
         Fileable(_base).file(_what, _addr);
     }
     /**
-        @dev Set a contract in another contract, defining the relationship (ex. set a new Cat contract in the Vat)
+        @dev Set a contract in another contract, defining the relationship (ex. set a new Calc contract in a Clip)
         @param _base   The address of the contract where the new contract address will be filed
         @param _ilk    Collateral type
         @param _what   Name of contract to file
@@ -374,6 +373,25 @@ library DssExecLib {
     */
     function setContract(address _base, bytes32 _ilk, bytes32 _what, address _addr) public {
         Fileable(_base).file(_ilk, _what, _addr);
+    }
+    /**
+        @dev Set a value in a contract, via a governance authorized File pattern.
+        @param _base   The address of the contract where the new contract address will be filed
+        @param _what   Name of tag for the value (e.x. "Line")
+        @param _amt    The value to set or update
+    */
+    function setValue(address _base, bytes32 _what, uint256 _amt) public {
+        Fileable(_base).file(_what, _amt);
+    }
+    /**
+        @dev Set an ilk-specific value in a contract, via a governance authorized File pattern.
+        @param _base   The address of the contract where the new value will be filed
+        @param _ilk    Collateral type
+        @param _what   Name of tag for the value (e.x. "Line")
+        @param _amt    The value to set or update
+    */
+    function setValue(address _base, bytes32 _ilk, bytes32 _what, uint256 _amt) public {
+        Fileable(_base).file(_ilk, _what, _amt);
     }
 
     /******************************/
@@ -386,7 +404,7 @@ library DssExecLib {
     */
     function setGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-global-Line-precision"
-        Fileable(vat()).file("Line", _amount * RAD);
+        setValue(vat(), "Line", _amount * RAD);
     }
     /**
         @dev Increase the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
@@ -395,7 +413,7 @@ library DssExecLib {
     function increaseGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-Line-increase-precision"
         address _vat = vat();
-        Fileable(_vat).file("Line", add(DssVat(_vat).Line(), _amount * RAD));
+        setValue(_vat, "Line", add(DssVat(_vat).Line(), _amount * RAD));
     }
     /**
         @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
@@ -404,7 +422,7 @@ library DssExecLib {
     function decreaseGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-Line-decrease-precision"
         address _vat = vat();
-        Fileable(_vat).file("Line", sub(DssVat(_vat).Line(), _amount * RAD));
+        setValue(_vat, "Line", sub(DssVat(_vat).Line(), _amount * RAD));
     }
     /**
         @dev Set the Dai Savings Rate. See: docs/rates.txt
@@ -414,7 +432,7 @@ library DssExecLib {
     function setDSR(uint256 _rate, bool _doDrip) public {
         require((_rate >= RAY) && (_rate <= RATES_ONE_HUNDRED_PCT));  // "LibDssExec/dsr-out-of-bounds"
         if (_doDrip) Drippable(pot()).drip();
-        Fileable(pot()).file("dsr", _rate);
+        setValue(pot(), "dsr", _rate);
     }
     /**
         @dev Set the DAI amount for system surplus auctions. Amount will be converted to the correct internal precision.
@@ -422,7 +440,7 @@ library DssExecLib {
     */
     function setSurplusAuctionAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-bump-precision"
-        Fileable(vow()).file("bump", _amount * RAD);
+        setValue(vow(), "bump", _amount * RAD);
     }
     /**
         @dev Set the DAI amount for system surplus buffer, must be exceeded before surplus auctions start. Amount will be converted to the correct internal precision.
@@ -430,7 +448,7 @@ library DssExecLib {
     */
     function setSurplusBuffer(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-hump-precision"
-        Fileable(vow()).file("hump", _amount * RAD);
+        setValue(vow(), "hump", _amount * RAD);
     }
     /**
         @dev Set minimum bid increase for surplus auctions. Amount will be converted to the correct internal precision.
@@ -439,28 +457,28 @@ library DssExecLib {
     */
     function setMinSurplusAuctionBidIncrease(uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(flap()).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flap(), "beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for surplus auctions.
-        @param _duration Amount of time for bids.
+        @param _duration Amount of time for bids. (in seconds)
     */
     function setSurplusAuctionBidDuration(uint256 _duration) public {
-        Fileable(flap()).file("ttl", _duration);
+        setValue(flap(), "ttl", _duration);
     }
     /**
         @dev Set total auction duration for surplus auctions.
-        @param _duration Amount of time for auctions.
+        @param _duration Amount of time for auctions. (in seconds)
     */
     function setSurplusAuctionDuration(uint256 _duration) public {
-        Fileable(flap()).file("tau", _duration);
+        setValue(flap(), "tau", _duration);
     }
     /**
         @dev Set the number of seconds that pass before system debt is auctioned for MKR tokens.
         @param _duration Duration in seconds
     */
     function setDebtAuctionDelay(uint256 _duration) public {
-        Fileable(vow()).file("wait", _duration);
+        setValue(vow(), "wait", _duration);
     }
     /**
         @dev Set the DAI amount for system debt to be covered by each debt auction. Amount will be converted to the correct internal precision.
@@ -468,7 +486,7 @@ library DssExecLib {
     */
     function setDebtAuctionDAIAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-sump-precision"
-        Fileable(vow()).file("sump", _amount * RAD);
+        setValue(vow(), "sump", _amount * RAD);
     }
     /**
         @dev Set the starting MKR amount to be auctioned off to cover system debt in debt auctions. Amount will be converted to the correct internal precision.
@@ -476,7 +494,7 @@ library DssExecLib {
     */
     function setDebtAuctionMKRAmount(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
-        Fileable(vow()).file("dump", _amount * WAD);
+        setValue(vow(), "dump", _amount * WAD);
     }
     /**
         @dev Set minimum bid increase for debt auctions. Amount will be converted to the correct internal precision.
@@ -485,21 +503,21 @@ library DssExecLib {
     */
     function setMinDebtAuctionBidIncrease(uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
-        Fileable(flop()).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flop(), "beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for debt auctions.
         @param _duration Amount of time for bids.
     */
     function setDebtAuctionBidDuration(uint256 _duration) public {
-        Fileable(flop()).file("ttl", _duration);
+        setValue(flop(), "ttl", _duration);
     }
     /**
         @dev Set total auction duration for debt auctions.
         @param _duration Amount of time for auctions.
     */
     function setDebtAuctionDuration(uint256 _duration) public {
-        Fileable(flop()).file("tau", _duration);
+        setValue(flop(), "tau", _duration);
     }
     /**
         @dev Set the rate of increasing amount of MKR out for auction during debt auctions. Amount will be converted to the correct internal precision.
@@ -508,22 +526,30 @@ library DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setDebtAuctionMKRIncreaseRate(uint256 _pct_bps) public {
-        Fileable(flop()).file("pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flop(), "pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
         @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
     */
     function setMaxTotalDAILiquidationAmount(uint256 _amount) public {
-        require(_amount < WAD);  // "LibDssExec/incorrect-vow-dump-precision"
-        Fileable(cat()).file("box", _amount * RAD);
+        require(_amount < WAD);  // "LibDssExec/incorrect-dog-Hole-precision"
+        setValue(dog(), "Hole", _amount * RAD);
+    }
+    /**
+        @dev (LIQ 1.2) Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
+        @param _amount The amount to set in DAI (ex. 250,000 DAI amount == 250000)
+    */
+    function setMaxTotalDAILiquidationAmountLEGACY(uint256 _amount) public {
+        require(_amount < WAD);  // "LibDssExec/incorrect-cat-box-amount"
+        setValue(cat(), "box", _amount * RAD);
     }
     /**
         @dev Set the duration of time that has to pass during emergency shutdown before collateral can start being claimed by DAI holders.
         @param _duration Time in seconds to set for ES processing time
     */
     function setEmergencyShutdownProcessingTime(uint256 _duration) public {
-        Fileable(end()).file("wait", _duration);
+        setValue(end(), "wait", _duration);
     }
     /**
         @dev Set the global stability fee (is not typically used, currently is 0).
@@ -539,7 +565,7 @@ library DssExecLib {
     */
     function setGlobalStabilityFee(uint256 _rate) public {
         require((_rate >= RAY) && (_rate <= RATES_ONE_HUNDRED_PCT));  // "LibDssExec/global-stability-fee-out-of-bounds"
-        Fileable(jug()).file("base", _rate);
+        setValue(jug(), "base", _rate);
     }
     /**
         @dev Set the value of DAI in the reference asset (e.g. $1 per DAI). Value will be converted to the correct internal precision.
@@ -547,8 +573,8 @@ library DssExecLib {
         @param _value The value to set as integer (x1000) (ex. $1.025 == 1025)
     */
     function setDAIReferenceValue(uint256 _value) public {
-        require(_value < WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
-        Fileable(spotter()).file("par", rdiv(_value, 1000));
+        require(_value < WAD);  // "LibDssExec/incorrect-par-precision"
+        setValue(spotter(), "par", rdiv(_value, 1000));
     }
 
     /*****************************/
@@ -561,7 +587,7 @@ library DssExecLib {
     */
     function setIlkDebtCeiling(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
-        Fileable(vat()).file(_ilk, "line", _amount * RAD);
+        setValue(vat(), _ilk, "line", _amount * RAD);
     }
     /**
         @dev Increase a collateral debt ceiling. Amount will be converted to the correct internal precision.
@@ -573,7 +599,7 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         address _vat = vat();
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        Fileable(_vat).file(_ilk, "line", add(line_, _amount * RAD));
+        setValue(_vat, _ilk, "line", add(line_, _amount * RAD));
         if (_global) { increaseGlobalDebtCeiling(_amount); }
     }
     /**
@@ -586,7 +612,7 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         address _vat = vat();
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        Fileable(_vat).file(_ilk, "line", sub(line_, _amount * RAD));
+        setValue(_vat, _ilk, "line", sub(line_, _amount * RAD));
         if (_global) { decreaseGlobalDebtCeiling(_amount); }
     }
     /**
@@ -626,7 +652,8 @@ library DssExecLib {
     */
     function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dust-precision"
-        Fileable(vat()).file(_ilk, "dust", _amount * RAD);
+        setValue(vat(), _ilk, "dust", _amount * RAD);
+        (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
     /**
         @dev Set a collateral liquidation penalty. Amount will be converted to the correct internal precision.
@@ -636,7 +663,8 @@ library DssExecLib {
     */
     function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(cat()).file(_ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(dog(), _ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
     /**
         @dev Set max DAI amount for liquidation per vault for collateral. Amount will be converted to the correct internal precision.
@@ -644,8 +672,8 @@ library DssExecLib {
         @param _amount The amount to set in DAI (ex. 10m DAI amount == 10000000)
     */
     function setIlkMaxLiquidationAmount(bytes32 _ilk, uint256 _amount) public {
-        require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dunk-precision"
-        Fileable(cat()).file(_ilk, "dunk", _amount * RAD);
+        require(_amount < WAD);  // "LibDssExec/incorrect-ilk-hole-precision"
+        setValue(dog(), _ilk, "hole", _amount * RAD);
     }
     /**
         @dev Set a collateral liquidation ratio. Amount will be converted to the correct internal precision.
@@ -656,34 +684,71 @@ library DssExecLib {
     function setIlkLiquidationRatio(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < 10 * BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-ilk-mat-precision" // Fails if pct >= 1000%
         require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // the liquidation ratio has to be bigger or equal to 100%
-        Fileable(spotter()).file(_ilk, "mat", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(spotter(), _ilk, "mat", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
     /**
-        @dev Set minimum bid increase for collateral. Amount will be converted to the correct internal precision.
-        @dev Equation used for conversion is (1 + pct / 10,000) * WAD
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
-        @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+        @dev Set an auction starting multiplier. Amount will be converted to the correct internal precision.
+        @dev Equation used for conversion is pct * RAY / 10,000
+        @param _ilk      The ilk to update (ex. bytes32("ETH-A"))
+        @param _pct_bps  The pct, in basis points, to set in integer form (x100). (ex. 1.3x starting multiplier = 130% = 13000)
     */
-    function setIlkMinAuctionBidIncrease(bytes32 _ilk, uint256 _pct_bps) public {
-        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
-        Fileable(flip(_ilk)).file("beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+    function setStartingPriceMultiplicativeFactor(bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < 10 * BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-ilk-mat-precision" // Fails if gt 10x
+        require(_pct_bps >= BPS_ONE_HUNDRED_PCT); // fail if start price is less than OSM price
+        setValue(clip(_ilk), "buf", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
+
     /**
-        @dev Set bid duration for a collateral type.
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
-        @param _duration Amount of time for bids.
+        @dev Set the amout of time before an auction resets.
+        @param _ilk      The ilk to update (ex. bytes32("ETH-A"))
+        @param _duration Amount of time before auction resets (in seconds).
     */
-    function setIlkBidDuration(bytes32 _ilk, uint256 _duration) public {
-        Fileable(flip(_ilk)).file("ttl", _duration);
+    function setAuctionTimeBeforeReset(bytes32 _ilk, uint256 _duration) public {
+        setValue(clip(_ilk), "tail", _duration);
     }
+
     /**
-        @dev Set auction duration for a collateral type.
-        @param _ilk   The ilk to update (ex. bytes32("ETH-A"))
-        @param _duration Amount of time for auctions.
+        @dev Percentage drop permitted before auction reset
+        @param _ilk     The ilk to update (ex. bytes32("ETH-A"))
+        @param _pct_bps The pct, in basis points, of drop to permit (x100).
     */
-    function setIlkAuctionDuration(bytes32 _ilk, uint256 _duration) public {
-        Fileable(flip(_ilk)).file("tau", _duration);
+    function setAuctionPermittedDrop(bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-cusp-value"
+        setValue(clip(_ilk), "cusp", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
+
+    /**
+        @dev Percentage of tab to suck from vow to incentivize keepers. Amount will be converted to the correct internal precision.
+        @param _ilk     The ilk to update (ex. bytes32("ETH-A"))
+        @param _pct_bps The pct, in basis points, of the tab to suck. (0.01% == 1)
+    */
+    function setKeeperIncentivePercent(bytes32 _ilk, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // "LibDssExec/incorrect-clip-chip-precision"
+        setValue(clip(_ilk), "chip", wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+    }
+
+    /**
+        @dev Set max DAI amount for flat rate keeper incentive. Amount will be converted to the correct internal precision.
+        @param _ilk    The ilk to update (ex. bytes32("ETH-A"))
+        @param _amount The amount to set in DAI (ex. 1000 DAI amount == 1000)
+    */
+    function setKeeperIncentiveFlatRate(bytes32 _ilk, uint256 _amount) public {
+        require(_amount < WAD); // "LibDssExec/incorrect-clip-tip-precision"
+        setValue(clip(_ilk), "tip", _amount * RAD);
+    }
+
+    /**
+        @dev Sets the circuit breaker price tolerance in the clipper mom.
+            This is somewhat counter-intuitive,
+             to accept a 25% price drop, use a value of 75%
+        @param _clip    The clipper to set the tolerance for
+        @param _pct_bps The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
+    */
+    function setLiquidationBreakerPriceTolerance(address _clip, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-clippermom-price-tolerance"
+        MomLike(clipperMom()).setPriceTolerance(_clip, rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+    }
+
     /**
         @dev Set the stability fee for a given ilk.
             Many of the settings that change weekly rely on the rate accumulator
@@ -704,64 +769,119 @@ library DssExecLib {
         address _jug = jug();
         if (_doDrip) Drippable(_jug).drip(_ilk);
 
-        Fileable(_jug).file(_ilk, "duty", _rate);
+        setValue(_jug, _ilk, "duty", _rate);
     }
 
+
+    /*************************/
+    /*** Abacus Management ***/
+    /*************************/
+
+    /**
+        @dev Set the number of seconds from the start when the auction reaches zero price.
+        @dev Abacus:LinearDecrease only.
+        @param _calc     The address of the LinearDecrease pricing contract
+        @param _duration Amount of time for auctions.
+    */
+    function setLinearDecrease(address _calc, uint256 _duration) public {
+        setValue(_calc, "tau", _duration);
+    }
+
+    /**
+        @dev Set the number of seconds for each price step.
+        @dev Abacus:StairstepExponentialDecrease only.
+        @param _calc     The address of the StairstepExponentialDecrease pricing contract
+        @param _duration Length of time between price drops [seconds]
+        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
+    */
+    function setStairstepExponentialDecrease(address _calc, uint256 _duration, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
+        setValue(_calc, "cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+        setValue(_calc, "step", _duration);
+    }
+    /**
+        @dev Set the number of seconds for each price step. (99% cut = 1% price drop per step)
+             Amounts will be converted to the correct internal precision.
+        @dev Abacus:ExponentialDecrease only
+        @param _calc     The address of the ExponentialDecrease pricing contract
+        @param _pct_bps Per-step multiplicative factor in basis points. (ex. 99% == 9900)
+    */
+    function setExponentialDecrease(address _calc, uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
+        setValue(_calc, "cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
+    }
 
     /*************************/
     /*** Oracle Management ***/
     /*************************/
     /**
+        @dev Allows an oracle to read prices from its source feeds
+        @param _oracle  An OSM or LP oracle contract
+    */
+    function whitelistOracleMedians(address _oracle) public {
+        (bool ok, bytes memory data) = _oracle.call(abi.encodeWithSignature("orb0()"));
+        if (ok) {
+            // Token is an LP oracle
+            address median0 = abi.decode(data, (address));
+            addReaderToMedianWhitelist(median0, _oracle);
+            addReaderToMedianWhitelist(OracleLike(_oracle).orb1(), _oracle);
+        } else {
+            // Standard OSM
+            addReaderToMedianWhitelist(OracleLike(_oracle).src(), _oracle);
+        }
+    }
+
+    /**
         @dev Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
-        @param _median Median core contract address
-        @param _feeds      Array of oracle feed addresses to add to whitelist
+        @param _median  Median core contract address
+        @param _feeds   Array of oracle feed addresses to add to whitelist
     */
     function addWritersToMedianWhitelist(address _median, address[] memory _feeds) public {
         OracleLike(_median).lift(_feeds);
     }
     /**
         @dev Removes oracle feeds to the Median's writer whitelist, disallowing the feeds to write prices.
-        @param _median Median core contract address
-        @param _feeds      Array of oracle feed addresses to remove from whitelist
+        @param _median  Median core contract address
+        @param _feeds   Array of oracle feed addresses to remove from whitelist
     */
     function removeWritersFromMedianWhitelist(address _median, address[] memory _feeds) public {
         OracleLike(_median).drop(_feeds);
     }
     /**
         @dev Adds addresses to the Median's reader whitelist, allowing the addresses to read prices from the median.
-        @param _median Median core contract address
-        @param _readers    Array of addresses to add to whitelist
+        @param _median  Median core contract address
+        @param _readers Array of addresses to add to whitelist
     */
     function addReadersToMedianWhitelist(address _median, address[] memory _readers) public {
         OracleLike(_median).kiss(_readers);
     }
     /**
         @dev Adds an address to the Median's reader whitelist, allowing the address to read prices from the median.
-        @param _median Median core contract address
-        @param _reader     Address to add to whitelist
+        @param _median  Median core contract address
+        @param _reader  Address to add to whitelist
     */
     function addReaderToMedianWhitelist(address _median, address _reader) public {
         OracleLike(_median).kiss(_reader);
     }
     /**
         @dev Removes addresses from the Median's reader whitelist, disallowing the addresses to read prices from the median.
-        @param _median Median core contract address
-        @param _readers    Array of addresses to remove from whitelist
+        @param _median  Median core contract address
+        @param _readers Array of addresses to remove from whitelist
     */
     function removeReadersFromMedianWhitelist(address _median, address[] memory _readers) public {
         OracleLike(_median).diss(_readers);
     }
     /**
         @dev Removes an address to the Median's reader whitelist, disallowing the address to read prices from the median.
-        @param _median Median core contract address
-        @param _reader     Address to remove from whitelist
+        @param _median  Median core contract address
+        @param _reader  Address to remove from whitelist
     */
     function removeReaderFromMedianWhitelist(address _median, address _reader) public {
         OracleLike(_median).diss(_reader);
     }
     /**
         @dev Sets the minimum number of valid messages from whitelisted oracle feeds needed to update median price.
-        @param _median Median core contract address
+        @param _median     Median core contract address
         @param _minQuorum  Minimum number of valid messages from whitelisted oracle feeds needed to update median price (NOTE: MUST BE ODD NUMBER)
     */
     function setMedianWritersQuorum(address _median, uint256 _minQuorum) public {
@@ -802,33 +922,41 @@ library DssExecLib {
         @param _ilk      Collateral type key code [Ex. "ETH-A"]
         @param _gem      Address of token contract
         @param _join     Address of join adapter
-        @param _flip     Address of flipper
+        @param _clip     Address of liquidation agent
+        @param _calc     Address of the pricing function
         @param _pip      Address of price feed
     */
     function addCollateralBase(
         bytes32 _ilk,
         address _gem,
         address _join,
-        address _flip,
+        address _clip,
+        address _calc,
         address _pip
     ) public {
         // Sanity checks
         address _vat = vat();
-        address _cat = cat();
+        address _dog = dog();
+        address _spotter = spotter();
         require(JoinLike(_join).vat() == _vat);     // "join-vat-not-match"
         require(JoinLike(_join).ilk() == _ilk);     // "join-ilk-not-match"
         require(JoinLike(_join).gem() == _gem);     // "join-gem-not-match"
         require(JoinLike(_join).dec() ==
                    ERC20(_gem).decimals());         // "join-dec-not-match"
-        require(AuctionLike(_flip).vat() == _vat);  // "flip-vat-not-match"
-        require(AuctionLike(_flip).cat() == _cat);  // "flip-cat-not-match"
-        require(AuctionLike(_flip).ilk() == _ilk);  // "flip-ilk-not-match"
+        require(ClipLike(_clip).vat() == _vat);     // "clip-vat-not-match"
+        require(ClipLike(_clip).dog() == _dog);     // "clip-dog-not-match"
+        require(ClipLike(_clip).ilk() == _ilk);     // "clip-ilk-not-match"
+        require(ClipLike(_clip).spotter() == _spotter);  // "clip-ilk-not-match"
 
         // Set the token PIP in the Spotter
         setContract(spotter(), _ilk, "pip", _pip);
 
-        // Set the ilk Flipper in the Cat
-        setContract(_cat, _ilk, "flip", _flip);
+        // Set the ilk Clipper in the Dog
+        setContract(_dog, _ilk, "clip", _clip);
+        // Set vow in the clip
+        setContract(_clip, "vow", vow());
+        // Set the pricing function for the Clipper
+        setContract(_clip, "calc", _calc);
 
         // Init ilk in Vat & Jug
         Initializable(_vat).init(_ilk);  // Vat
@@ -836,12 +964,16 @@ library DssExecLib {
 
         // Allow ilk Join to modify Vat registry
         authorize(_vat, _join);
-		// Allow the ilk Flipper to reduce the Cat litterbox on deal()
-        authorize(_cat, _flip);
-        // Allow Cat to kick auctions in ilk Flipper
-        authorize(_flip, _cat);
-        // Allow End to yank auctions in ilk Flipper
-        authorize(_flip, end());
+        // Allow ilk Join to suck dai for keepers
+        authorize(_vat, _clip);
+        // Allow the ilk Clipper to reduce the Dog hole on deal()
+        authorize(_dog, _clip);
+        // Allow Dog to kick auctions in ilk Clipper
+        authorize(_clip, _dog);
+        // Allow End to yank auctions in ilk Clipper
+        authorize(_clip, end());
+        // Authorize the ESM to execute in the clipper
+        authorize(_clip, esm());
 
         // Add new ilk to the IlkRegistry
         RegistryLike(reg()).add(_join);
@@ -850,14 +982,15 @@ library DssExecLib {
     // Complete collateral onboarding logic.
     function addNewCollateral(CollateralOpts memory co) public {
         // Add the collateral to the system.
-        addCollateralBase(co.ilk, co.gem, co.join, co.flip, co.pip);
+        addCollateralBase(co.ilk, co.gem, co.join, co.clip, co.calc, co.pip);
+        address clipperMom_ = clipperMom();
 
-        if (co.isLiquidatable) {
-            // Allow FlipperMom to access to the ilk Flipper
-            authorize(co.flip, flipperMom());
+        if (!co.isLiquidatable) {
+            // Disallow Dog to kick auctions in ilk Clipper
+            setValue(co.clip, "stopped", 3);
         } else {
-            // Disallow Cat to kick auctions in ilk Flipper
-            deauthorize(co.flip, cat());
+            // Grant ClipperMom access to the ilk Clipper
+            authorize(co.clip, clipperMom_);
         }
 
         if(co.isOSM) { // If pip == OSM
@@ -865,10 +998,14 @@ library DssExecLib {
             authorize(co.pip, osmMom());
             if (co.whitelistOSM) { // If median is src in OSM
                 // Whitelist OSM to read the Median data (only necessary if it is the first time the token is being added to an ilk)
-                addReaderToMedianWhitelist(address(OracleLike(co.pip).src()), co.pip);
+                whitelistOracleMedians(co.pip);
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, spotter());
+            // Whitelist Clipper on pip
+            addReaderToOSMWhitelist(co.pip, co.clip);
+            // Allow the clippermom to access the feed
+            addReaderToOSMWhitelist(co.pip, clipperMom_);
             // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
             addReaderToOSMWhitelist(co.pip, end());
             // Set TOKEN OSM in the OsmMom for new ilk
@@ -880,7 +1017,7 @@ library DssExecLib {
         setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
         // Set the ilk dust
         setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
-        // Set the dunk size
+        // Set the hole size
         setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
         // Set the ilk liquidation penalty
         setIlkLiquidationPenalty(co.ilk, co.liquidationPenalty);
@@ -888,14 +1025,26 @@ library DssExecLib {
         // Set the ilk stability fee
         setIlkStabilityFee(co.ilk, co.ilkStabilityFee, true);
 
-        // Set the ilk percentage between bids
-        setIlkMinAuctionBidIncrease(co.ilk, co.bidIncrease);
-        // Set the ilk time max time between bids
-        setIlkBidDuration(co.ilk, co.bidDuration);
-        // Set the ilk max auction duration
-        setIlkAuctionDuration(co.ilk, co.auctionDuration);
+        // Set the auction starting price multiplier
+        setStartingPriceMultiplicativeFactor(co.ilk, co.startingPriceFactor);
+
+        // Set the amount of time before an auction resets.
+        setAuctionTimeBeforeReset(co.ilk, co.auctionDuration);
+
+        // Set the allowed auction drop percentage before reset
+        setAuctionPermittedDrop(co.ilk, co.permittedDrop);
+
         // Set the ilk min collateralization ratio
         setIlkLiquidationRatio(co.ilk, co.liquidationRatio);
+
+        // Set the price tolerance in the liquidation circuit breaker
+        setLiquidationBreakerPriceTolerance(co.clip, co.breakerTolerance);
+
+        // Set a flat rate for the keeper reward
+        setKeeperIncentiveFlatRate(co.ilk, co.kprFlatReward);
+
+        // Set the percentage of liquidation as keeper award
+        setKeeperIncentivePercent(co.ilk, co.kprPctReward);
 
         // Update ilk spot value in Vat
         updateCollateralPrice(co.ilk);

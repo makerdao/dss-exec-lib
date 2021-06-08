@@ -24,6 +24,8 @@ import "ds-test/test.sol";
 import "ds-math/math.sol";
 import "ds-token/token.sol";
 import "ds-value/value.sol";
+import "dss/join.sol";
+import "dss/abaci.sol";
 
 import "dss-interfaces/Interfaces.sol";
 
@@ -37,39 +39,68 @@ interface Hevm {
     function store(address,bytes32,bytes32) external;
 }
 
+interface SpellLike {
+    function done() external view returns (bool);
+    function cast() external;
+    function nextCastTime() external returns (uint256);
+}
+
+interface ClipFabLike {
+    function newClip(address owner, address vat, address spotter, address dog, bytes32 ilk) external returns (address clip);
+}
+
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
 
     uint256 constant MILLION  = 10 ** 6;
 
     function actions() public override {
+
+        // Basic cob setup
+        DSToken xmpl_gem  = DSToken(0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
+        ClipAbstract xmpl_clip = ClipAbstract(ClipFabLike(0x0716F25fBaAae9b63803917b6125c10c313dF663).newClip(DssExecLib.pauseProxy(), DssExecLib.vat(), DssExecLib.spotter(), DssExecLib.dog(), "XMPL-A"));
+        GemJoin xmpl_join = new GemJoin(DssExecLib.vat(), "XMPL-A", address(xmpl_gem));
+        xmpl_clip.rely(DssExecLib.pauseProxy());
+        xmpl_join.rely(DssExecLib.pauseProxy());
+        address xmpl_pip = 0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C; // Using USDT pip as a dummy
+
+        LinearDecrease xmpl_calc = new LinearDecrease();
+        DssExecLib.setLinearDecrease(address(xmpl_calc), 1);
+
         CollateralOpts memory XMPL_A = CollateralOpts({
             ilk:                   "XMPL-A",
-            gem:                   0xCE4F3774620764Ea881a8F8840Cbe0F701372283,
-            join:                  0xa30925910067a2d9eB2a7358c017E6075F660842,
-            flip:                  0x32c6DF17f8E94694977aa41A595d8dc583836A51,
-            pip:                   0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a, // Using LRC-A pip as a dummy
+            gem:                   address(xmpl_gem),
+            join:                  address(xmpl_join),
+            clip:                  address(xmpl_clip),
+            calc:                  address(xmpl_calc),
+            pip:                   xmpl_pip,
             isLiquidatable:        true,
             isOSM:                 true,
             whitelistOSM:          true,
             ilkDebtCeiling:        3 * MILLION,
-            minVaultAmount:        100,
+            minVaultAmount:        2000,
             maxLiquidationAmount:  50000,
             liquidationPenalty:    1300,
             ilkStabilityFee:       1000000000705562181084137268,
-            bidIncrease:           300,
-            bidDuration:           6 hours,
-            auctionDuration:       6 hours,
-            liquidationRatio:      15000
+            startingPriceFactor:   13000,
+            breakerTolerance:      7000,   // Allows for a 30% hourly price drop before disabling liquidations
+            auctionDuration:       10 hours,
+            permittedDrop:         4000,
+            liquidationRatio:      15000,
+            kprFlatReward:         5,      // 5 Dai
+            kprPctReward:          5       // 0.05%
         });
+
         DssExecLib.addNewCollateral(XMPL_A);
 
-        DssExecLib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
-        DssExecLib.setIlkLiquidationPenalty("ETH-A", 1400);
-        DssExecLib.setIlkMinAuctionBidIncrease("ETH-A", 400);
-        DssExecLib.setIlkLiquidationRatio("ETH-A", 16000);
-        DssExecLib.setIlkBidDuration("ETH-A", 3 hours);
-        DssExecLib.setIlkAuctionDuration("ETH-A", 3 hours);
+        DssExecLib.setIlkDebtCeiling("LINK-A", 10 * MILLION);
+        DssExecLib.setIlkMinVaultAmount("LINK-A", 800);
+        DssExecLib.setIlkLiquidationRatio("LINK-A", 16000);
+        DssExecLib.setIlkLiquidationPenalty("LINK-A", 1400);
+        DssExecLib.setIlkMaxLiquidationAmount("LINK-A", 100000);
+        DssExecLib.setAuctionTimeBeforeReset("LINK-A", 2 hours);
+        DssExecLib.setKeeperIncentivePercent("LINK-A", 2); // 0.02% keeper incentive
         DssExecLib.setGlobalDebtCeiling(10000 * MILLION);
+
     }
 }
 
@@ -79,7 +110,12 @@ contract DssLibExecTest is DSTest, DSMath {
         uint256 line;
         uint256 dust;
         uint256 chop;
-        uint256 dunk;
+        uint256 hole;
+        uint256 buf;
+        uint256 tail;
+        uint256 cusp;
+        uint256 chip;
+        uint256 tip;
         uint256 pct;
         uint256 mat;
         uint256 beg;
@@ -97,7 +133,7 @@ contract DssLibExecTest is DSTest, DSMath {
         uint256 vow_sump;
         uint256 vow_bump;
         uint256 vow_hump;
-        uint256 cat_box;
+        uint256 dog_Hole;
         uint256 ilk_count;
         mapping (bytes32 => CollateralValues) collaterals;
     }
@@ -111,27 +147,26 @@ contract DssLibExecTest is DSTest, DSMath {
     VatAbstract            vat = VatAbstract(        0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
     VowAbstract            vow = VowAbstract(        0xA950524441892A31ebddF91d3cEEFa04Bf454466);
     CatAbstract            cat = CatAbstract(        0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
+    DogAbstract            dog = DogAbstract(        0x135954d155898D42C90D2a57824C690e0c7BEf1B);
     PotAbstract            pot = PotAbstract(        0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
     JugAbstract            jug = JugAbstract(        0x19c0976f590D67707E62397C87829d896Dc0f1F1);
     SpotAbstract          spot = SpotAbstract(       0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
 
     DSTokenAbstract        gov = DSTokenAbstract(    0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
-    EndAbstract            end = EndAbstract(        0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5);
-    IlkRegistryAbstract    reg = IlkRegistryAbstract(0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24);
+    EndAbstract            end = EndAbstract(        0xBB856d1742fD182a90239D7AE85706C2FE4e5922);
+    IlkRegistryAbstract    reg = IlkRegistryAbstract(0x5a464C28D19848f44199D003BeF5ecc87d090F87);
 
     OsmMomAbstract      osmMom = OsmMomAbstract(     0x76416A4d5190d071bfed309861527431304aA14f);
-    FlipperMomAbstract flipMom = FlipperMomAbstract( 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472);
+    ClipperMomAbstract clipMom = ClipperMomAbstract( 0x79FBDF16b366DFb14F66cE4Ac2815Ca7296405A0);
 
     // XMPL-A specific
     GemAbstract           xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
-    GemJoinAbstract  joinXMPLA = GemJoinAbstract(    0xa30925910067a2d9eB2a7358c017E6075F660842);
-    OsmAbstract         pipXMPL = OsmAbstract(       0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
-    FlipAbstract     flipXMPLA = FlipAbstract(       0x32c6DF17f8E94694977aa41A595d8dc583836A51);
-    MedianAbstract    medXMPLA = MedianAbstract(     0xcCe92282d9fe310F4c232b0DA9926d5F24611C7B);
+    GemJoinAbstract  joinXMPLA;
+    OsmAbstract        pipXMPL = OsmAbstract(        0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C);
+    ClipAbstract     clipXMPLA;
+    MedianAbstract    medXMPLA = MedianAbstract(     0x56D4bBF358D7790579b55eA6Af3f605BcA2c0C3A); // USDT median
 
     ChainlogAbstract chainlog  = ChainlogAbstract(   0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
-
-    address    makerDeployer05 = 0xDa0FaB05039809e63C5D068c897c3e602fA97457;
 
     SystemValues afterSpell;
 
@@ -201,6 +236,8 @@ contract DssLibExecTest is DSTest, DSMath {
         hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
+        castPreviousSpell();
+
         spell = new DssExec(
             "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
@@ -219,41 +256,63 @@ contract DssLibExecTest is DSTest, DSMath {
             vow_sump:     vow.sump()/RAD,  // In whole Dai units
             vow_bump:     vow.bump()/RAD,  // In whole Dai units
             vow_hump:     vow.hump()/RAD,  // In whole Dai units
-            cat_box:      cat.box()/RAD,   // In whole Dai units
+            dog_Hole:     dog.Hole()/RAD,  // In whole Dai units
             ilk_count:    reg.count() + 1  // Num expected in system
         });
 
         //
         // Test for all collateral based changes here
         //
-        (,,,, uint256 _dust) = vat.ilks("ETH-A");
-        (,, uint256 _dunk) = cat.ilks("ETH-A");
-        (uint256 _duty,)  = jug.ilks("ETH-A");
-        afterSpell.collaterals["ETH-A"] = CollateralValues({
-            line:         10 * MILLION,    // In whole Dai units
-            dust:         _dust/RAD,       // In whole Dai units
-            pct:          _duty,           // In basis points
-            chop:         1400,            // In basis points
-            dunk:         _dunk/RAD,       // In whole Dai units
-            mat:          16000,           // In basis points
-            beg:          400,             // In basis points
-            ttl:          3 hours,         // In seconds
-            tau:          3 hours,         // In seconds
-            liquidations: 1                // 1 if enabled
+        (uint256 _duty,)  = jug.ilks("LINK-A");
+        (address _clip,,,) = dog.ilks("LINK-A");
+        ClipAbstract clip = ClipAbstract(_clip);
+        afterSpell.collaterals["LINK-A"] = CollateralValues({
+            line:          10 * MILLION,         // In whole Dai units
+            dust:          800,                  // In whole Dai units
+            pct:           _duty,                // In basis points
+            buf:           clip.buf()*10000/RAY, // In basis points
+            cusp:          clip.cusp()*10000/RAY,// In basis points
+            chop:          1400,                 // In basis points
+            tip:           clip.tip()/RAD,       // In whole Dai units
+            chip:          2,                    // In basis points
+            hole:          100000,               // In whole Dai units
+            mat:           16000,                // In basis points
+            beg:           400,                  // In basis points
+            tail:          2 hours,              // In seconds
+            ttl:           3 hours,              // In seconds
+            tau:           3 hours,              // In seconds
+            liquidations:  1                     // 1 if enabled
         });
         // New collateral
         afterSpell.collaterals["XMPL-A"] = CollateralValues({
-            line:         3 * MILLION,     // In whole Dai units
-            dust:         500,             // In whole Dai units
-            pct:          225,             // In basis points
-            chop:         1300,            // In basis points
-            dunk:         50 * THOUSAND,   // In whole Dai units
-            mat:          15000,           // In basis points
-            beg:          300,             // In basis points
-            ttl:          6 hours,         // In seconds
-            tau:          6 hours,         // In seconds
-            liquidations: 1                // 1 if enabled
+            line:          3 * MILLION,          // In whole Dai units
+            dust:          2000,                 // In whole Dai units
+            pct:           225,                  // In basis points
+            buf:           13000,                // In basis points
+            cusp:          4000,                 // In basis points
+            chop:          1300,                 // In basis points
+            tip:           5,                    // In whole Dai units
+            chip:          5,                    // In basis points
+            hole:          50 * THOUSAND,        // In whole Dai units
+            mat:           15000,                // In basis points
+            beg:           300,                  // In basis points
+            tail:          10 hours,             // In seconds
+            ttl:           6 hours,              // In seconds
+            tau:           6 hours,              // In seconds
+            liquidations:  1                     // 1 if enabled
         });
+    }
+
+    // TODO remove after April 25, 2021
+    function castPreviousSpell() internal {
+        SpellLike prevSpell = SpellLike(0xDb0D1af4531F59E4E7EfA4ec0AcADec7518D42B6);
+        // warp and cast previous spell so values are up-to-date to test against
+        if (prevSpell != SpellLike(0) && !prevSpell.done()) {
+            hevm.warp(1619372356);
+            // jump to nextCastTime to be a little more forgiving on the spell execution time
+            hevm.warp(prevSpell.nextCastTime());
+            prevSpell.cast();
+        }
     }
 
     function vote() private {
@@ -332,7 +391,7 @@ contract DssLibExecTest is DSTest, DSMath {
             castTime += 14 hours - hour * 3600;
         }
 
-        hevm.warp(castTime);
+        hevm.warp(spell.nextCastTime());
         spell.cast();
     }
 
@@ -398,18 +457,17 @@ contract DssLibExecTest is DSTest, DSMath {
         }
         {
         // hump values in RAD
-        uint normalizedHump = values.vow_hump * RAD;
-        assertEq(vow.hump(), normalizedHump);
+        assertEq(vow.hump()/RAD, values.vow_hump);
         assertTrue(
             (vow.hump() >= RAD && vow.hump() < HUNDRED * MILLION * RAD) ||
             vow.hump() == 0
         );
         }
 
-        // box values in RAD
+        // Hole values in RAD
         {
-            uint normalizedBox = values.cat_box * RAD;
-            assertEq(cat.box(), normalizedBox);
+            uint normalizedHole = values.dog_Hole * RAD;
+            assertEq(dog.Hole(), normalizedHole);
         }
 
         // check number of ilks
@@ -442,20 +500,24 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue((line >= RAD && line < BILLION * RAD) || line == 0);  // eq 0 or gt eq 1 RAD and lt 1B
         uint normalizedTestDust = values.collaterals[ilk].dust * RAD;
         assertEq(dust, normalizedTestDust);
-        assertTrue((dust >= RAD && dust < 10 * THOUSAND * RAD) || dust == 0); // eq 0 or gt eq 1 and lt 10k
+        assertTrue((dust >= RAD && dust < 100 * THOUSAND * RAD) || dust == 0); // eq 0 or gt eq 1 and lt 10k
         }
         {
-        (, uint chop, uint dunk) = cat.ilks(ilk);
+        (, uint chop, uint hole, uint dirt) = dog.ilks(ilk);
+        (,,,, uint dust) = vat.ilks(ilk);
+
+        assertEq(hole, values.collaterals[ilk].hole * RAD);
+        assertTrue(dirt <= hole + dust);
+
         // Convert BP to system expected value
         uint normalizedTestChop = (values.collaterals[ilk].chop * 10**14) + WAD;
         assertEq(chop, normalizedTestChop);
         // make sure chop is less than 100%
         assertTrue(chop >= WAD && chop < 2 * WAD);   // penalty gt eq 0% and lt 100%
         // Convert whole Dai units to expected RAD
-        uint normalizedTestDunk = values.collaterals[ilk].dunk * RAD;
-        assertEq(dunk, normalizedTestDunk);
-        // put back in after LIQ-1.2
-        assertTrue(dunk >= RAD && dunk < MILLION * RAD);
+        uint normalizedTestHole = values.collaterals[ilk].hole * RAD;
+        assertEq(hole, normalizedTestHole);
+        assertTrue(hole >= RAD && hole < MILLION * RAD);
         }
         {
         (,uint mat) = spot.ilks(ilk);
@@ -465,24 +527,36 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue(mat >= RAY && mat < 10 * RAY);    // cr eq 100% and lt 1000%
         }
         {
-        (address flipper,,) = cat.ilks(ilk);
-        FlipAbstract flip = FlipAbstract(flipper);
-        // Convert BP to system expected value
-        uint normalizedTestBeg = (values.collaterals[ilk].beg + 10000)  * 10**14;
-        assertEq(uint(flip.beg()), normalizedTestBeg);
-        assertTrue(flip.beg() >= WAD && flip.beg() < 105 * WAD / 100);  // gt eq 0% and lt 5%
-        assertEq(uint(flip.ttl()), values.collaterals[ilk].ttl);
-        assertTrue(flip.ttl() >= 600 && flip.ttl() < 10 hours);         // gt eq 10 minutes and lt 10 hours
-        assertEq(uint(flip.tau()), values.collaterals[ilk].tau);
-        assertTrue(flip.tau() >= 600 && flip.tau() <= 3 days);          // gt eq 10 minutes and lt eq 3 days
+        uint256 class = reg.class(ilk);
+        if (class == 1) {
+            (address clipper,,,) = dog.ilks(ilk);
+            ClipAbstract clip = ClipAbstract(clipper);
 
-        assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);  // liquidations == 1 => on
-        assertEq(flip.wards(address(makerDeployer05)), 0); // Check deployer denied
-        assertEq(flip.wards(address(pauseProxy)), 1); // Check pause_proxy ward
+            assertEq(clip.ilk(), ilk);
+            assertEq(address(clip.vat()), address(vat));
+
+            // buf [RAY]
+            uint256 normalizedTestBuf = (values.collaterals[ilk].buf * RAY / 10000);
+            assertEq(clip.buf(), normalizedTestBuf);
+            // tail [seconds]
+            assertEq(clip.tail(), values.collaterals[ilk].tail);
+            // cusp
+            uint256 normalizedTestCusp = (values.collaterals[ilk].cusp * RAY / 10000);
+            assertEq(clip.cusp(), normalizedTestCusp);
+            // chip
+            assertEq(clip.chip(), values.collaterals[ilk].chip * WAD / 10000);
+            // tip
+            assertEq(clip.tip(), values.collaterals[ilk].tip * RAD);
+
+            assertEq(clip.wards(address(dog)), values.collaterals[ilk].liquidations);  // liquidations == 1 => on
+            assertEq(clip.wards(address(pauseProxy)), 1); // Check pause_proxy ward
+        } else if (class == 2) {
+            revert(); // Old stuff. Not used here.
+        }
+
         }
         {
         GemJoinAbstract join = GemJoinAbstract(reg.join(ilk));
-        assertEq(join.wards(address(makerDeployer05)), 0); // Check deployer denied
         assertEq(join.wards(address(pauseProxy)), 1); // Check pause_proxy ward
         }
     }
@@ -493,13 +567,12 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue(spell.done());
 
         checkSystemValues(afterSpell);
-        checkCollateralValues("ETH-A",  afterSpell);
+        checkCollateralValues("LINK-A",  afterSpell);
+        checkCollateralValues("XMPL-A",  afterSpell);
 
         assertTrue(spell.officeHours());
         assertTrue(spell.action() != address(0));
     }
-
-    event Debug(uint, uint);
 
     function testSpellIsCast_XMPL_INTEGRATION() public {
         vote();
@@ -520,14 +593,19 @@ contract DssLibExecTest is DSTest, DSMath {
         // Check median matches pip.src()
         assertEq(pipXMPL.src(), address(medXMPLA));
 
+
+        (address clip,,,) = dog.ilks("XMPL-A");
+        clipXMPLA = ClipAbstract(clip);
+        joinXMPLA = GemJoinAbstract(reg.join("XMPL-A"));
+
         // Authorization
         assertEq(joinXMPLA.wards(pauseProxy), 1);
         assertEq(vat.wards(address(joinXMPLA)), 1);
-        assertEq(cat.wards(address(flipXMPLA)), 1);
-        assertEq(flipXMPLA.wards(address(cat)), 1);
-        assertEq(flipXMPLA.wards(pauseProxy), 1);
-        assertEq(flipXMPLA.wards(address(end)), 1);
-        assertEq(flipXMPLA.wards(address(flipMom)), 1);
+        assertEq(dog.wards(address(clipXMPLA)), 1);
+        assertEq(clipXMPLA.wards(address(dog)), 1);
+        assertEq(clipXMPLA.wards(pauseProxy), 1);
+        assertEq(clipXMPLA.wards(address(end)), 1);
+        assertEq(clipXMPLA.wards(address(clipMom)), 1);
         assertEq(pipXMPL.wards(address(osmMom)), 1);
         assertEq(pipXMPL.bud(address(spot)), 1);
         assertEq(pipXMPL.bud(address(end)), 1);
@@ -543,12 +621,12 @@ contract DssLibExecTest is DSTest, DSMath {
 
         // Deposit collateral, generate DAI
         assertEq(vat.dai(address(this)), 0);
-        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(100 * WAD));
+        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(2500 * WAD));
         assertEq(vat.gem("XMPL-A", address(this)), 0);
-        assertEq(vat.dai(address(this)), 100 * RAD);
+        assertEq(vat.dai(address(this)), 2500 * RAD);
 
         // Payback DAI, withdraw collateral
-        vat.frob("XMPL-A", address(this), address(this), address(this), -int(10 * THOUSAND * WAD), -int(100 * WAD));
+        vat.frob("XMPL-A", address(this), address(this), address(this), -int(10 * THOUSAND * WAD), -int(2500 * WAD));
         assertEq(vat.gem("XMPL-A", address(this)), 10 * THOUSAND * WAD);
         assertEq(vat.dai(address(this)), 0);
 
@@ -565,8 +643,8 @@ contract DssLibExecTest is DSTest, DSMath {
         vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(mul(10 * THOUSAND * WAD, spotV) / RAY));
         hevm.warp(now + 1);
         jug.drip("XMPL-A");
-        assertEq(flipXMPLA.kicks(), 0);
-        cat.bite("XMPL-A", address(this));
-        assertEq(flipXMPLA.kicks(), 1);
+        assertEq(clipXMPLA.kicks(), 0);
+        dog.bark("XMPL-A", address(this), address(this));
+        assertEq(clipXMPLA.kicks(), 1);
     }
 }

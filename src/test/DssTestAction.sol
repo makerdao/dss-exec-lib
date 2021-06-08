@@ -230,6 +230,18 @@ contract DssTestAction is DssAction {
         DssExecLib.setIlkLiquidationPenalty(ilk, pct_bps);
     }
 
+    function setStartingPriceMultiplicativeFactor_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setStartingPriceMultiplicativeFactor(ilk, pct_bps); // clip.buf
+    }
+
+    function setAuctionTimeBeforeReset_test(bytes32 ilk, uint256 duration) public {
+        DssExecLib.setAuctionTimeBeforeReset(ilk, duration);
+    }
+
+    function setAuctionPermittedDrop_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setAuctionPermittedDrop(ilk, pct_bps);
+    }
+
     function setIlkMaxLiquidationAmount_test(bytes32 ilk, uint256 amount) public {
         DssExecLib.setIlkMaxLiquidationAmount(ilk, amount);
     }
@@ -238,26 +250,42 @@ contract DssTestAction is DssAction {
         DssExecLib.setIlkLiquidationRatio(ilk, pct_bps);
     }
 
-    function setIlkMinAuctionBidIncrease_test(bytes32 ilk, uint256 pct_bps) public {
-        DssExecLib.setIlkMinAuctionBidIncrease(ilk, pct_bps);
+    function setKeeperIncentivePercent_test(bytes32 ilk, uint256 pct_bps) public {
+        DssExecLib.setKeeperIncentivePercent(ilk, pct_bps);
     }
 
-    function setIlkBidDuration_test(bytes32 ilk, uint256 duration) public {
-        DssExecLib.setIlkBidDuration(ilk, duration);
+    function setKeeperIncentiveFlatRate_test(bytes32 ilk, uint256 amount) public {
+        DssExecLib.setKeeperIncentiveFlatRate(ilk, amount);
     }
 
-    function setIlkAuctionDuration_test(bytes32 ilk, uint256 duration) public {
-        DssExecLib.setIlkAuctionDuration(ilk, duration);
+    function setLiquidationBreakerPriceTolerance_test(address clip, uint256 pct_bps) public {
+        DssExecLib.setLiquidationBreakerPriceTolerance(clip, pct_bps);
     }
 
     function setIlkStabilityFee_test(bytes32 ilk, uint256 rate) public {
         DssExecLib.setIlkStabilityFee(ilk, rate, true);
     }
 
+    function setLinearDecrease_test(address calc, uint256 duration) public {
+        DssExecLib.setLinearDecrease(calc, duration);
+    }
+
+    function setStairstepExponentialDecrease_test(address calc, uint256 duration, uint256 pct_bps) public {
+        DssExecLib.setStairstepExponentialDecrease(calc, duration, pct_bps);
+    }
+
+    function setExponentialDecrease_test(address calc, uint256 pct_bps) public {
+        DssExecLib.setExponentialDecrease(calc, pct_bps);
+    }
 
     /*************************/
     /*** Oracle Management ***/
     /*************************/
+
+    function whitelistOracleMedians_test(address oracle) public {
+        DssExecLib.whitelistOracleMedians(oracle);
+    }
+
     function addWritersToMedianWhitelist_test(address medianizer, address[] memory feeds) public {
         DssExecLib.addWritersToMedianWhitelist(medianizer, feeds);
     }
@@ -304,18 +332,16 @@ contract DssTestAction is DssAction {
     /*****************************/
 
     function addCollateralBase_test(
-        bytes32 ilk, address gem, address join, address flip, address pip
+        bytes32 ilk, address gem, address join, address clip, address calc, address pip
     ) public {
-        DssExecLib.addCollateralBase(ilk, gem, join, flip, pip);
+        DssExecLib.addCollateralBase(ilk, gem, join, clip, calc, pip);
     }
-
 
     function addNewCollateral_test(
         CollateralOpts memory co
     ) public {
         DssExecLib.addNewCollateral(co);
     }
-
 
     /***************/
     /*** Payment ***/

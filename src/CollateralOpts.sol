@@ -4,7 +4,8 @@ struct CollateralOpts {
     bytes32 ilk;
     address gem;
     address join;
-    address flip;
+    address clip;
+    address calc;
     address pip;
     bool    isLiquidatable;
     bool    isOSM;
@@ -14,8 +15,11 @@ struct CollateralOpts {
     uint256 maxLiquidationAmount;
     uint256 liquidationPenalty;
     uint256 ilkStabilityFee;
-    uint256 bidIncrease;
-    uint256 bidDuration;
+    uint256 startingPriceFactor;
+    uint256 breakerTolerance;
     uint256 auctionDuration;
+    uint256 permittedDrop;
     uint256 liquidationRatio;
+    uint256 kprFlatReward;
+    uint256 kprPctReward;
 }
