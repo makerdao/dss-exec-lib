@@ -321,6 +321,7 @@ contract ActionTest is DSTest {
         median.rely(address(action));
         clog.rely(address(action));
         autoLine.rely(address(action));
+        lerpFab.rely(address(action));
 
         clipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
