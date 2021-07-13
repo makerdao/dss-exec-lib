@@ -41,6 +41,3 @@
 [submodule "lib/univ2-lp-oracle"]
 	path = lib/univ2-lp-oracle
 	url = https://github.com/makerdao/univ2-lp-oracle
-[submodule "lib/dss-lerp"]
-	path = lib/dss-lerp
-	url = https://github.com/makerdao/dss-lerp
