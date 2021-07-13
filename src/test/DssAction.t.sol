@@ -1077,13 +1077,11 @@ contract ActionTest is DSTest {
     /************/
 
     function test_lerp_Line() public {
-        // TODO - need to update dss-interfaces and add factory contract
-        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test(address(0x0), address(vat), "Line", rad(2400 ether), rad(0 ether), 1 days));
+        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), "Line", block.timestamp, rad(2400 ether), rad(0 ether), 1 days));
         assertEq(lerp.what(), "Line");
         assertEq(lerp.start(), rad(2400 ether));
         assertEq(lerp.end(), rad(0 ether));
         assertEq(lerp.duration(), 1 days);
-        assertTrue(lerp.started());
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(vat.Line(), rad(2400 ether));

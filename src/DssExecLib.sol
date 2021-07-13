@@ -117,12 +117,12 @@ interface IAMLike {
 }
 
 interface LerpFactoryLike {
-    function newLerp(address target_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) external returns (address);
-    function newIlkLerp(address target_, bytes32 ilk_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) external returns (address);
+    function newLerp(bytes32 name_, address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external returns (address);
+    function newIlkLerp(bytes32 name_, address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external returns (address);
 }
 
 interface LerpLike {
-    function init() external;
+    function tick() external;
 }
 
 
@@ -1079,29 +1079,33 @@ library DssExecLib {
     /************/
     /**
         @dev Initiate linear interpolation on an administrative value over time.
+        @param _name        The label for this lerp instance
         @param _target      The target contract
         @param _what        The target parameter to adjust
+        @param _startTime   The time for this lerp
         @param _start       The start value for the target parameter
         @param _end         The end value for the target parameter
         @param _duration    The duration of the interpolation
     */
-    function linearInterpolation(address _target, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
-        address lerp = LerpFactoryLike(lerpFab()).newLerp(_target, _what, _start, _end, _duration);
+    function linearInterpolation(bytes32 _name, address _target, bytes32 _what, uint256 _startTime, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        address lerp = LerpFactoryLike(lerpFab()).newLerp(_name, _target, _what, _startTime, _start, _end, _duration);
         Authorizable(_target).rely(lerp);
         LerpLike(lerp).tick();
         return lerp;
     }
     /**
         @dev Initiate linear interpolation on an administrative value over time.
+        @param _name        The label for this lerp instance
         @param _target      The target contract
         @param _ilk         The ilk to target
         @param _what        The target parameter to adjust
+        @param _startTime   The time for this lerp
         @param _start       The start value for the target parameter
         @param _end         The end value for the target parameter
         @param _duration    The duration of the interpolation
     */
-    function linearInterpolation(address _target, bytes32 _ilk, bytes32 _what, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
-        address lerp = LerpFactoryLike(lerpFab()).newIlkLerp(_target, _ilk, _what, _start, _end, _duration);
+    function linearInterpolation(bytes32 _name, address _target, bytes32 _ilk, bytes32 _what, uint256 _startTime, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        address lerp = LerpFactoryLike(lerpFab()).newIlkLerp(_name, _target, _ilk, _what, _startTime, _start, _end, _duration);
         Authorizable(_target).rely(lerp);
         LerpLike(lerp).tick();
         return lerp;
