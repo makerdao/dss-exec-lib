@@ -17,7 +17,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.11;
+pragma solidity ^0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "ds-test/test.sol";
 import "ds-token/token.sol";
@@ -27,27 +28,33 @@ import {ChainLog}         from "dss-chain-log/ChainLog.sol";
 import {OsmMom}           from "osm-mom/OsmMom.sol";
 import {MkrAuthority}     from "mkr-authority/MkrAuthority.sol";
 import {IlkRegistry}      from "ilk-registry/IlkRegistry.sol";
-import {FlipperMom}       from "flipper-mom/FlipperMom.sol";
+import {ClipperMom}       from "clipper-mom/ClipperMom.sol";
 import {Median}           from "median/median.sol";
 import {OSM}              from 'osm/osm.sol';
 import {OsmAbstract,
         LerpAbstract}     from "dss-interfaces/Interfaces.sol";
+import {UNIV2LPOracle}    from "univ2-lp-oracle/UNIV2LPOracle.sol";
 import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 import {LerpFactory}      from "dss-lerp/LerpFactory.sol";
 
-import {Vat}              from 'dss/vat.sol';
-import {Cat}              from 'dss/cat.sol';
-import {Vow}              from 'dss/vow.sol';
-import {Pot}              from 'dss/pot.sol';
-import {Jug}              from 'dss/jug.sol';
-import {Flipper}          from 'dss/flip.sol';
-import {Flapper}          from 'dss/flap.sol';
-import {Flopper}          from 'dss/flop.sol';
-import {GemJoin}          from 'dss/join.sol';
-import {End}              from 'dss/end.sol';
-import {Spotter}          from 'dss/spot.sol';
+import {Vat}              from "dss/vat.sol";
+import {Dog}              from "dss/dog.sol";
+import {Cat}              from "dss/cat.sol";
+import {Vow}              from "dss/vow.sol";
+import {Pot}              from "dss/pot.sol";
+import {Jug}              from "dss/jug.sol";
+import {Clipper}          from "dss/clip.sol";
+import {Flapper}          from "dss/flap.sol";
+import {Flopper}          from "dss/flop.sol";
+import {GemJoin,DaiJoin}  from "dss/join.sol";
+import {End}              from "dss/end.sol";
+import {Spotter}          from "dss/spot.sol";
+import {Dai}              from "dss/dai.sol";
+import {LinearDecrease,
+        StairstepExponentialDecrease,
+        ExponentialDecrease} from "dss/abaci.sol";
 
 import "../CollateralOpts.sol";
 import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
@@ -55,33 +62,44 @@ import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol'
 interface Hevm {
     function warp(uint256) external;
     function store(address,bytes32,bytes32) external;
+    function load(address,bytes32) external view returns (bytes32);
 }
 
 interface PipLike {
     function peek() external returns (bytes32, bool);
 }
 
+contract UniPairMock {
+    address public token0; address public token1;
+    constructor(address _token0, address _token1) public {
+        token0 = _token0;  token1 = _token1;
+    }
+}
+
 contract ActionTest is DSTest {
     Hevm hevm;
 
-    Vat   vat;
-    End   end;
-    Vow   vow;
-    Pot   pot;
-    Jug   jug;
-    Cat   cat;
+    Vat         vat;
+    End         end;
+    Vow         vow;
+    Pot         pot;
+    Jug         jug;
+    Dog         dog;
+    Cat         cat;
+    Dai         daiToken;
+    DaiJoin     daiJoin;
 
     DSToken gov;
 
-    IlkRegistry  reg;
-    Median median;
-    OsmMom       osmMom;
-    MkrAuthority govGuard;
-    FlipperMom flipperMom;
-    DssAutoLine autoLine;
-    LerpFactory lerpFab;
+    IlkRegistry   reg;
+    Median        median;
+    OsmMom        osmMom;
+    ClipperMom    clipperMom;
+    MkrAuthority  govGuard;
+    DssAutoLine   autoLine;
+    LerpFactory   lerpFab;
 
-    ChainLog log;
+    ChainLog clog;
 
     Spotter spot;
     Flapper flap;
@@ -94,7 +112,7 @@ contract ActionTest is DSTest {
         OSM     osm;
         DSToken gem;
         GemJoin gemA;
-        Flipper flip;
+        Clipper clip;
     }
 
     mapping (bytes32 => Ilk) ilks;
@@ -158,6 +176,7 @@ contract ActionTest is DSTest {
         spot.poke(name);
 
         OSM osm = new OSM(address(pip));
+        osm.rely(address(clipperMom));
 
         vat.init(name);
         GemJoin gemA = new GemJoin(address(vat), name, address(coin));
@@ -169,19 +188,18 @@ contract ActionTest is DSTest {
 
         vat.rely(address(gemA));
 
-        Flipper flip = new Flipper(address(vat), address(cat), name);
-        vat.hope(address(flip));
-        flip.rely(address(end));
-        flip.rely(address(cat));
-        cat.rely(address(flip));
-        cat.file(name, "flip", address(flip));
-        cat.file(name, "chop", 1 ether);
-        cat.file(name, "dunk", rad(25000 ether));
-        cat.file("box", rad((10 ether) * MILLION));
+        Clipper clip = new Clipper(address(vat), address(spot), address(dog), name);
+        vat.hope(address(clip));
+        clip.rely(address(end));
+        clip.rely(address(dog));
+        dog.rely(address(clip));
+        dog.file(name, "clip", address(clip));
+        dog.file(name, "chop", 1 ether);
+        dog.file("Hole", rad((10 ether) * MILLION));
 
         reg.add(address(gemA));
 
-        flip.rely(_action);
+        clip.rely(_action);
         gemA.rely(_action);
         osm.rely(_action);
 
@@ -189,8 +207,7 @@ contract ActionTest is DSTest {
         ilks[name].osm = osm;
         ilks[name].gem = coin;
         ilks[name].gemA = gemA;
-        ilks[name].flip = flip;
-
+        ilks[name].clip = clip;
 
         return ilks[name];
     }
@@ -212,6 +229,11 @@ contract ActionTest is DSTest {
         vat.rely(address(pot));
         pot.file("vow", address(vow));
 
+        dog = new Dog(address(vat));
+        dog.file("vow", address(vow));
+        vat.rely(address(dog));
+        vow.rely(address(dog));
+
         cat = new Cat(address(vat));
         cat.file("vow", address(vow));
         vat.rely(address(cat));
@@ -224,9 +246,14 @@ contract ActionTest is DSTest {
         jug = new Jug(address(vat));
         vat.rely(address(jug));
 
+        daiToken = new Dai(1);
+        daiJoin = new DaiJoin(address(vat), address(daiToken));
+        daiToken.rely(address(daiJoin));
+        daiToken.deny(address(this));
+
         end = new End();
         end.file("vat", address(vat));
-        end.file("cat", address(cat));
+        end.file("dog", address(dog));
         end.file("vow", address(vow));
         end.file("pot", address(pot));
         end.file("spot", address(spot));
@@ -235,15 +262,15 @@ contract ActionTest is DSTest {
         vow.rely(address(end));
         spot.rely(address(end));
         pot.rely(address(end));
-        cat.rely(address(end));
+        dog.rely(address(end));
         flap.rely(address(vow));
         flop.rely(address(vow));
 
 
-        reg        = new IlkRegistry(address(vat), address(cat), address(spot));
+        reg        = new IlkRegistry(address(vat), address(dog), address(cat), address(spot));
         osmMom     = new OsmMom();
         govGuard   = new MkrAuthority();
-        flipperMom = new FlipperMom(address(cat));
+        clipperMom = new ClipperMom(address(dog));
 
         autoLine   = new DssAutoLine(address(vat));
         vat.rely(address(autoLine));
@@ -257,24 +284,25 @@ contract ActionTest is DSTest {
             keccak256(abi.encode(address(this), uint256(0))), // Grant auth to test contract
             bytes32(uint256(1))
         );
+        clog = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
 
-        log = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
-
-        log.setAddress("MCD_VAT",           address(vat));
-        log.setAddress("MCD_CAT",           address(cat));
-        log.setAddress("MCD_JUG",           address(jug));
-        log.setAddress("MCD_POT",           address(pot));
-        log.setAddress("MCD_VOW",           address(vow));
-        log.setAddress("MCD_SPOT",          address(spot));
-        log.setAddress("MCD_FLAP",          address(flap));
-        log.setAddress("MCD_FLOP",          address(flop));
-        log.setAddress("MCD_END",           address(end));
-        log.setAddress("ILK_REGISTRY",      address(reg));
-        log.setAddress("OSM_MOM",           address(osmMom));
-        log.setAddress("GOV_GUARD",         address(govGuard));
-        log.setAddress("FLIPPER_MOM",       address(flipperMom));
-        log.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
-        log.setAddress("LERP_FAB",          address(lerpFab));
+        clog.setAddress("MCD_VAT",           address(vat));
+        clog.setAddress("MCD_DOG",           address(dog));
+        clog.setAddress("MCD_JUG",           address(jug));
+        clog.setAddress("MCD_POT",           address(pot));
+        clog.setAddress("MCD_VOW",           address(vow));
+        clog.setAddress("MCD_SPOT",          address(spot));
+        clog.setAddress("MCD_FLAP",          address(flap));
+        clog.setAddress("MCD_FLOP",          address(flop));
+        clog.setAddress("MCD_END",           address(end));
+        clog.setAddress("MCD_DAI",           address(daiToken));
+        clog.setAddress("MCD_JOIN_DAI",      address(daiJoin));
+        clog.setAddress("ILK_REGISTRY",      address(reg));
+        clog.setAddress("OSM_MOM",           address(osmMom));
+        clog.setAddress("GOV_GUARD",         address(govGuard));
+        clog.setAddress("CLIPPER_MOM",       address(clipperMom));
+        clog.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
+        clog.setAddress("LERP_FAB",          address(lerpFab));
 
         action = new DssTestAction();
 
@@ -282,21 +310,53 @@ contract ActionTest is DSTest {
 
         vat.rely(address(action));
         spot.rely(address(action));
-        cat.rely(address(action));
+        dog.rely(address(action));
         vow.rely(address(action));
         end.rely(address(action));
         pot.rely(address(action));
         jug.rely(address(action));
         flap.rely(address(action));
         flop.rely(address(action));
+        daiJoin.rely(address(action));
         median.rely(address(action));
-        log.rely(address(action));
+        clog.rely(address(action));
         autoLine.rely(address(action));
 
-        flipperMom.setOwner(address(action));
+        clipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
 
         govGuard.setRoot(address(action));
+    }
+
+    // /******************************/
+    // /*** OfficeHours Management ***/
+    // /******************************/
+
+    function test_canCast() public {
+        assertTrue(action.canCast_test(1616169600, true));  // Friday   2021/03/19, 4:00:00 PM GMT
+
+        assertTrue(action.canCast_test(1616169600, false)); // Friday   2021/03/19, 4:00:00 PM GMT
+        assertTrue(action.canCast_test(1616256000, false)); // Saturday 2021/03/20, 4:00:00 PM GMT
+    }
+
+    function testFail_canCast() public {
+        assertTrue(action.canCast_test(1616256000, true)); // Saturday 2021/03/20, 4:00:00 PM GMT
+    }
+
+    function test_nextCastTime() public {
+        assertEq(action.nextCastTime_test(1616169600, 1616169600, true), 1616169600);
+        assertEq(action.nextCastTime_test(1616169600, 1616169600, false), 1616169600);
+
+        assertEq(action.nextCastTime_test(1616256000, 1616256000, true), 1616421600);
+        assertEq(action.nextCastTime_test(1616256000, 1616256000, false), 1616256000);
+    }
+
+    function testFail_nextCastTime_eta_zero() public {
+        action.nextCastTime_test(0, 1616256000, false);
+    }
+
+    function testFail_nextCastTime_ts_zero() public {
+        action.nextCastTime_test(1616256000, 0, false);
     }
 
     // /**********************/
@@ -318,6 +378,21 @@ contract ActionTest is DSTest {
         assertEq(vat.wards(address(1)), 0);
     }
 
+    function test_delegateVat() public {
+        assertEq(vat.can(address(action), address(1)), 0);
+        action.delegateVat_test(address(1));
+        assertEq(vat.can(address(action), address(1)), 1);
+    }
+
+    function test_undelegateVat() public {
+        assertEq(vat.can(address(action), address(1)), 0);
+        action.delegateVat_test(address(1));
+        assertEq(vat.can(address(action), address(1)), 1);
+
+        action.undelegateVat_test(address(1));
+        assertEq(vat.can(address(action), address(1)), 0);
+    }
+
     /****************************/
     /*** Changelog Management ***/
     /****************************/
@@ -325,25 +400,25 @@ contract ActionTest is DSTest {
     function test_setAddress() public {
         bytes32 ilk = "silver";
         action.setChangelogAddress_test(ilk, address(this));
-        assertEq(log.getAddress(ilk), address(this));
+        assertEq(clog.getAddress(ilk), address(this));
     }
 
     function test_setVersion() public {
         string memory version = "9001.0.0";
         action.setChangelogVersion_test(version);
-        assertEq(log.version(), version);
+        assertEq(clog.version(), version);
     }
 
     function test_setIPFS() public {
         string memory ipfs = "QmefQMseb3AiTapiAKKexdKHig8wroKuZbmLtPLv4u2YwW";
         action.setChangelogIPFS_test(ipfs);
-        assertEq(log.ipfs(), ipfs);
+        assertEq(clog.ipfs(), ipfs);
     }
 
     function test_setSHA256() public {
         string memory SHA256 = "e42dc9d043a57705f3f097099e6b2de4230bca9a020c797508da079f9079e35b";
         action.setChangelogSHA256_test(SHA256);
-        assertEq(log.sha256sum(), SHA256);
+        assertEq(clog.sha256sum(), SHA256);
     }
 
     /**************************/
@@ -493,7 +568,7 @@ contract ActionTest is DSTest {
 
     function test_setMaxTotalDAILiquidationAmount() public {
         action.setMaxTotalDAILiquidationAmount_test(50 * MILLION);
-        assertEq(cat.box(), 50 * MILLION * RAD); // WAD pct
+        assertEq(dog.Hole(), 50 * MILLION * RAD); // WAD pct
     }
 
     function test_setEmergencyShutdownProcessingTime() public {
@@ -586,14 +661,14 @@ contract ActionTest is DSTest {
 
     function test_setIlkLiquidationPenalty() public {
         action.setIlkLiquidationPenalty_test("gold", 1325); // 13.25%
-        (, uint256 chop,) = cat.ilks("gold");
+        (, uint256 chop,,) = dog.ilks("gold");
         assertEq(chop, 113.25 ether / 100);  // WAD pct 113.25%
     }
 
     function test_setIlkMaxLiquidationAmount() public {
         action.setIlkMaxLiquidationAmount_test("gold", 50 * THOUSAND);
-        (,, uint256 dunk) = cat.ilks("gold");
-        assertEq(dunk, 50 * THOUSAND * RAD);
+        (,, uint256 hole,) = dog.ilks("gold");
+        assertEq(hole, 50 * THOUSAND * RAD);
     }
 
     function test_setIlkLiquidationRatio() public {
@@ -602,19 +677,35 @@ contract ActionTest is DSTest {
         assertEq(mat, ray(150 ether / 100)); // RAY pct
     }
 
-    function test_setIlkMinAuctionBidIncrease() public {
-        action.setIlkMinAuctionBidIncrease_test("gold", 500); // 5%
-        assertEq(ilks["gold"].flip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
+    function test_setStartingPriceMultiplicativeFactor() public {
+        action.setStartingPriceMultiplicativeFactor_test("gold", 15000); // 150%
+        assertEq(ilks["gold"].clip.buf(), 150 * RAY / 100); // RAY pct
     }
 
-    function test_setIlkBidDuration() public {
-        action.setIlkBidDuration_test("gold", 6 hours);
-        assertEq(uint256(ilks["gold"].flip.ttl()), 6 hours);
+    function test_setAuctionTimeBeforeReset() public {
+        action.setAuctionTimeBeforeReset_test("gold", 12 hours);
+        assertEq(ilks["gold"].clip.tail(), 12 hours);
     }
 
-    function test_setIlkAuctionDuration() public {
-        action.setIlkAuctionDuration_test("gold", 6 hours);
-        assertEq(uint256(ilks["gold"].flip.tau()), 6 hours);
+    function test_setAuctionPermittedDrop() public {
+        action.setAuctionPermittedDrop_test("gold", 8000);
+        assertEq(ilks["gold"].clip.cusp(), 80 * RAY / 100);
+    }
+
+    function test_setKeeperIncentivePercent() public {
+        action.setKeeperIncentivePercent_test("gold", 10); // 0.1 %
+        assertEq(ilks["gold"].clip.chip(), 10 * WAD / 10000);
+    }
+
+    function test_setKeeperIncentiveFlatRate() public {
+        action.setKeeperIncentiveFlatRate_test("gold", 1000); // 1000 Dai
+        assertEq(ilks["gold"].clip.tip(), 1000 * RAD);
+    }
+
+    function test_setLiquidationBreakerPriceTolerance() public {
+        action.setLiquidationBreakerPriceTolerance_test(address(ilks["gold"].clip), 6000);
+        assertEq(clipperMom.tolerance(address(ilks["gold"].clip)), 600000000000000000000000000);
+
     }
 
     function test_setIlkStabilityFee() public {
@@ -625,10 +716,62 @@ contract ActionTest is DSTest {
         assertEq(rho, START_TIME + 1 days);
     }
 
+    /**************************/
+    /*** Pricing Management ***/
+    /**************************/
+
+    function test_setLinearDecrease() public {
+        LinearDecrease calc = new LinearDecrease();
+        calc.rely(address(action));
+        action.setLinearDecrease_test(address(calc), 14 hours);
+        assertEq(calc.tau(), 14 hours);
+    }
+
+    function test_setStairstepExponentialDecrease() public {
+        StairstepExponentialDecrease calc = new StairstepExponentialDecrease();
+        calc.rely(address(action));
+        action.setStairstepExponentialDecrease_test(address(calc), 90, 9999); // 90 seconds per step, 99.99% multiplicative
+        assertEq(calc.step(), 90);
+        assertEq(calc.cut(), 999900000000000000000000000);
+    }
+
+    function test_setExponentialDecrease() public {
+        ExponentialDecrease calc = new ExponentialDecrease();
+        calc.rely(address(action));
+        action.setExponentialDecrease_test(address(calc), 9999); // 99.99% multiplicative
+        assertEq(calc.cut(), 999900000000000000000000000);
+    }
+
 
     /*************************/
     /*** Oracle Management ***/
     /*************************/
+
+    function test_whitelistOracle_OSM() public {
+        address tokenPip = address(new OSM(address(median)));
+
+        assertEq(median.bud(tokenPip), 0);
+        action.whitelistOracleMedians_test(tokenPip);
+        assertEq(median.bud(tokenPip), 1);
+    }
+
+    function test_whitelistOracle_LP() public {
+        // Mock an LP oracle and whitelist it
+        address token0 = address(new DSToken("nil"));
+        address token1 = address(new DSToken("one"));
+        Median  med0   = new Median();
+        Median  med1   = new Median();
+        address lperc  = address(new UniPairMock(token0, token1));
+        med0.rely(address(action));
+        med1.rely(address(action));
+        UNIV2LPOracle lorc = new UNIV2LPOracle(address(lperc), "NILONE", address(med0), address(med1));
+
+        assertEq(med0.bud(address(lorc)), 0);
+        assertEq(med1.bud(address(lorc)), 0);
+        action.whitelistOracleMedians_test(address(lorc));
+        assertEq(med0.bud(address(lorc)), 1);
+        assertEq(med1.bud(address(lorc)), 1);
+    }
 
     function test_addWritersToMedianWhitelist() public {
         address[] memory feeds = new address[](2);
@@ -742,39 +885,45 @@ contract ActionTest is DSTest {
 
         DSToken token     = new DSToken(ilk);
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
-        Flipper tokenFlip = new Flipper(address(vat), address(cat), ilk);
+        Clipper tokenClip = new Clipper(address(vat), address(spot), address(dog), ilk);
+        LinearDecrease tokenCalc = new LinearDecrease();
+        tokenCalc.file("tau", 1);
         address tokenPip  = address(new DSValue());
 
         tokenPip = address(new OSM(address(tokenPip)));
         OSM(tokenPip).rely(address(action));
-        tokenFlip.rely(address(action));
+        tokenClip.rely(address(action));
         tokenJoin.rely(address(action));
-        tokenFlip.deny(address(this));
+        tokenClip.deny(address(this));
         tokenJoin.deny(address(this));
 
-        action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenFlip), tokenPip);
+        action.addCollateralBase_test(ilk, address(token), address(tokenJoin), address(tokenClip), address(tokenCalc), tokenPip);
 
         assertEq(vat.wards(address(tokenJoin)), 1);
-        assertEq(cat.wards(address(tokenFlip)), 1);
+        assertEq(dog.wards(address(tokenClip)), 1);
 
-        assertEq(tokenFlip.wards(address(end)),        1);
+        assertEq(tokenClip.wards(address(end)), 1);
 
-        (,, uint256 _dec, address _gem, address _pip, address _join, address _flip) = reg.info(ilk);
+        (,,uint256 _class, uint256 _dec, address _gem, address _pip, address _join, address _xlip) = reg.info(ilk);
 
+        assertEq(_class, 1);
         assertEq(_dec, 18);
         assertEq(_gem, address(token));
         assertEq(_pip, address(tokenPip));
         assertEq(_join, address(tokenJoin));
-        assertEq(_flip, address(tokenFlip));
+        assertEq(_xlip, address(tokenClip));
+        assertEq(address(tokenClip.calc()), address(tokenCalc));
     }
 
     function collateralOnboardingTest(bool liquidatable, bool isOsm, bool medianSrc) internal {
 
         bytes32 ilk = "silver";
 
-        DSToken token     = new DSToken(ilk);
-        GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
-        Flipper tokenFlip = new Flipper(address(vat), address(cat), ilk);
+        address token     = address(new DSToken(ilk));
+        GemJoin tokenJoin = new GemJoin(address(vat), ilk, token);
+        Clipper tokenClip = new Clipper(address(vat), address(spot), address(dog), ilk);
+        LinearDecrease tokenCalc = new LinearDecrease();
+        tokenCalc.file("tau", 1);
         address tokenPip  = address(new DSValue());
 
         if (isOsm) {
@@ -782,41 +931,38 @@ contract ActionTest is DSTest {
             OSM(tokenPip).rely(address(action));
         }
 
-        tokenFlip.rely(address(action));
+        tokenClip.rely(address(action));
         tokenJoin.rely(address(action));
-        tokenFlip.deny(address(this));
+        tokenClip.deny(address(this));
         tokenJoin.deny(address(this));
 
         {
-            address[] memory addresses = new address[](4);
-            addresses[0] = address(token);
-            addresses[1] = address(tokenJoin);
-            addresses[2] = address(tokenFlip);
-            addresses[3] = tokenPip;
-
-            bool[] memory oracleSettings = new bool[](3);
-            oracleSettings[0] = liquidatable;
-            oracleSettings[1] = isOsm;
-            oracleSettings[2] = medianSrc;
-
-            uint256[] memory amounts = new uint256[](9);
-            amounts[0] = 100 * MILLION;                // ilkDebtCeiling
-            amounts[1] = 100;                          // minVaultAmount
-            amounts[2] = 50 * THOUSAND;                // maxLiquidationAmount
-            amounts[3] = 1300;                         // liquidationPenalty
-            amounts[4] = 1000000001243680656318820312; // ilkStabilityFee
-            amounts[5] = 500;                          // bidIncrease
-            amounts[6] = 6 hours;                      // bidDuration
-            amounts[7] = 6 hours;                      // auctionDuration
-            amounts[8] = 15000;                        // liquidationRatio
-
             uint256 globalLine = vat.Line();
 
             action.addNewCollateral_test(
-                ilk,
-                addresses,
-                oracleSettings,
-                amounts
+                CollateralOpts({
+                    ilk:                   ilk,
+                    gem:                   token,
+                    join:                  address(tokenJoin),
+                    clip:                  address(tokenClip),
+                    calc:                  address(tokenCalc),
+                    pip:                   tokenPip,
+                    isLiquidatable:        liquidatable,
+                    isOSM:                 isOsm,
+                    whitelistOSM:          medianSrc,
+                    ilkDebtCeiling:        100 * MILLION,
+                    minVaultAmount:        100,
+                    maxLiquidationAmount:  50 * THOUSAND,
+                    liquidationPenalty:    1300,
+                    ilkStabilityFee:       1000000001243680656318820312,
+                    startingPriceFactor:   13000,
+                    breakerTolerance:      6000,
+                    auctionDuration:       6 hours,
+                    permittedDrop:         4000,
+                    liquidationRatio:      15000,
+                    kprFlatReward:         100,
+                    kprPctReward:          10
+                })
             );
 
             assertEq(vat.Line(), globalLine + 100 * MILLION * RAD);
@@ -824,31 +970,37 @@ contract ActionTest is DSTest {
 
         {
         assertEq(vat.wards(address(tokenJoin)), 1);
-        assertEq(cat.wards(address(tokenFlip)), 1);
+        assertEq(dog.wards(address(tokenClip)), 1);
 
-        assertEq(tokenFlip.wards(address(end)),        1);
-        assertEq(tokenFlip.wards(address(flipperMom)), 1);
+        assertEq(tokenClip.wards(address(end)), 1);
+        assertEq(tokenClip.wards(address(dog)), 1); // Use "stopped" instead of ward to disable.
 
-        if (!liquidatable) assertEq(tokenFlip.wards(address(cat)), 0);
-        else               assertEq(tokenFlip.wards(address(cat)), 1);
+        if (liquidatable) {
+            assertEq(tokenClip.stopped(), 0);
+            assertEq(tokenClip.wards(address(clipperMom)), 1);
+        } else {
+            assertEq(tokenClip.stopped(), 3);
+            assertEq(tokenClip.wards(address(clipperMom)), 0);
+        }
         }
 
-
         if (isOsm) {
-          assertEq(OSM(tokenPip).wards(address(osmMom)), 1);
-          assertEq(OSM(tokenPip).bud(address(spot)),     1);
-          assertEq(OSM(tokenPip).bud(address(end)),      1);
+          assertEq(OSM(tokenPip).wards(address(osmMom)),     1);
+          assertEq(OSM(tokenPip).bud(address(spot)),         1);
+          assertEq(OSM(tokenPip).bud(address(clipperMom)),   1);
+          assertEq(OSM(tokenPip).bud(address(end)),          1);
 
-           if (medianSrc) assertEq(median.bud(tokenPip),   1);
+          if (medianSrc) assertEq(median.bud(tokenPip),      1);
           assertEq(osmMom.osms(ilk), tokenPip);
         }
 
         {
             (,,, uint256 line, uint256 dust) = vat.ilks(ilk);
-            (, uint256 chop, uint256 dunk) = cat.ilks(ilk);
+            (, uint256 chop, uint256 hole, uint256 dirt) = dog.ilks(ilk);
             assertEq(line, 100 * MILLION * RAD);
             assertEq(dust, 100 * RAD);
-            assertEq(dunk, 50 * THOUSAND * RAD);
+            assertEq(hole, 50 * THOUSAND * RAD);
+            assertEq(dirt, 0);
             assertEq(chop, 113 ether / 100);  // WAD pct 113%
 
             (uint256 duty, uint256 rho) = jug.ilks(ilk);
@@ -857,9 +1009,14 @@ contract ActionTest is DSTest {
         }
 
         {
-            assertEq(tokenFlip.beg(), WAD + 5 * WAD / 100); // (1 + pct) * WAD
-            assertEq(uint256(tokenFlip.ttl()), 6 hours);
-            assertEq(uint256(tokenFlip.tau()), 6 hours);
+            assertEq(tokenClip.buf(), 130 * RAY / 100);
+            assertEq(tokenClip.tail(), 6 hours);
+            assertEq(tokenClip.cusp(), 40 * RAY / 100);
+
+            assertEq(clipperMom.tolerance(address(tokenClip)), 6000 * RAY / 10000);
+
+            assertEq(uint256(tokenClip.tip()), 100 * RAD);
+            assertEq(uint256(tokenClip.chip()), 10 * WAD / 10000);
 
             (, uint256 mat) = spot.ilks(ilk);
             assertEq(mat, ray(150 ether / 100)); // RAY pct
@@ -891,6 +1048,28 @@ contract ActionTest is DSTest {
         DssTestNoOfficeHoursAction actionNoOfficeHours = new DssTestNoOfficeHoursAction();
         actionNoOfficeHours.execute();
         assertTrue(!actionNoOfficeHours.officeHours());
+    }
+
+    /***************/
+    /*** Payment ***/
+    /***************/
+
+    function sendPaymentFromSurplusBuffer_test() public {
+        address target = address(this);
+
+        action.delegateVat_test(address(daiJoin));
+
+        assertEq(vat.dai(target), 0);
+        assertEq(vat.sin(target), 0);
+        assertEq(daiToken.balanceOf(target), 0);
+        assertEq(vat.dai(address(vow)), 0);
+        assertEq(vat.sin(address(vow)), 0);
+        action.sendPaymentFromSurplusBuffer_test(target, 100);
+        assertEq(vat.dai(target), 0);
+        assertEq(vat.sin(target), 0);
+        assertEq(daiToken.balanceOf(target), 100 * WAD);
+        assertEq(vat.dai(address(vow)), 0);
+        assertEq(vat.sin(address(vow)), 100 * RAD);
     }
 
     /************/
