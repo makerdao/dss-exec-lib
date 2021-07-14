@@ -351,4 +351,14 @@ contract DssTestAction is DssAction {
         DssExecLib.sendPaymentFromSurplusBuffer(target, amount);
     }
 
+    /************/
+    /*** Misc ***/
+    /************/
+    function linearInterpolation_test(bytes32 _name, address _target, bytes32 _what, uint256 _startTime, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        return DssExecLib.linearInterpolation(_name, _target, _what, _startTime, _start, _end, _duration);
+    }
+    function linearInterpolation_test(bytes32 _name, address _target, bytes32 _ilk, bytes32 _what, uint256 _startTime, uint256 _start, uint256 _end, uint256 _duration) public returns (address) {
+        return DssExecLib.linearInterpolation(_name, _target, _ilk, _what, _startTime, _start, _end, _duration);
+    }
+
 }

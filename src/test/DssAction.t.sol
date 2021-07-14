@@ -30,12 +30,14 @@ import {MkrAuthority}     from "mkr-authority/MkrAuthority.sol";
 import {IlkRegistry}      from "ilk-registry/IlkRegistry.sol";
 import {ClipperMom}       from "clipper-mom/ClipperMom.sol";
 import {Median}           from "median/median.sol";
-import {OSM}              from "osm/osm.sol";
+import {OSM}              from 'osm/osm.sol';
+import {OsmAbstract,
+        LerpAbstract}     from "dss-interfaces/Interfaces.sol";
 import {UNIV2LPOracle}    from "univ2-lp-oracle/UNIV2LPOracle.sol";
-import {OsmAbstract}      from "dss-interfaces/Interfaces.sol";
 import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
+import {LerpFactory}      from "dss-lerp/LerpFactory.sol";
 
 import {Vat}              from "dss/vat.sol";
 import {Dog}              from "dss/dog.sol";
@@ -95,6 +97,7 @@ contract ActionTest is DSTest {
     ClipperMom    clipperMom;
     MkrAuthority  govGuard;
     DssAutoLine   autoLine;
+    LerpFactory   lerpFab;
 
     ChainLog clog;
 
@@ -272,6 +275,8 @@ contract ActionTest is DSTest {
         autoLine   = new DssAutoLine(address(vat));
         vat.rely(address(autoLine));
 
+        lerpFab = new LerpFactory();
+
         median = new Median();
 
         hevm.store(
@@ -297,6 +302,7 @@ contract ActionTest is DSTest {
         clog.setAddress("GOV_GUARD",         address(govGuard));
         clog.setAddress("CLIPPER_MOM",       address(clipperMom));
         clog.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
+        clog.setAddress("LERP_FAB",          address(lerpFab));
 
         action = new DssTestAction();
 
@@ -315,6 +321,7 @@ contract ActionTest is DSTest {
         median.rely(address(action));
         clog.rely(address(action));
         autoLine.rely(address(action));
+        lerpFab.rely(address(action));
 
         clipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
@@ -1038,13 +1045,11 @@ contract ActionTest is DSTest {
     function test_addNewCollateral_case6() public {
         collateralOnboardingTest(false, false, false);   // Liquidations: OFF, PIP != OSM, osmSrc != median
     }
-
     function test_officeHoursCanOverrideInAction() public {
         DssTestNoOfficeHoursAction actionNoOfficeHours = new DssTestNoOfficeHoursAction();
         actionNoOfficeHours.execute();
         assertTrue(!actionNoOfficeHours.officeHours());
     }
-
 
     /***************/
     /*** Payment ***/
@@ -1066,5 +1071,36 @@ contract ActionTest is DSTest {
         assertEq(daiToken.balanceOf(target), 100 * WAD);
         assertEq(vat.dai(address(vow)), 0);
         assertEq(vat.sin(address(vow)), 100 * RAD);
+    }
+
+    /************/
+    /*** Misc ***/
+    /************/
+
+    function test_lerp_Line() public {
+        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), "Line", block.timestamp, rad(2400 ether), rad(0 ether), 1 days));
+        assertEq(lerp.what(), "Line");
+        assertEq(lerp.start(), rad(2400 ether));
+        assertEq(lerp.end(), rad(0 ether));
+        assertEq(lerp.duration(), 1 days);
+        assertTrue(!lerp.done());
+        assertEq(lerp.startTime(), block.timestamp);
+        assertEq(vat.Line(), rad(2400 ether));
+        hevm.warp(now + 1 hours);
+        assertEq(vat.Line(), rad(2400 ether));
+        lerp.tick();
+        assertEq(vat.Line(), rad(2300 ether + 1600));   // Small amount at the end is rounding errors
+        hevm.warp(now + 1 hours);
+        lerp.tick();
+        assertEq(vat.Line(), rad(2200 ether + 800));
+        hevm.warp(now + 6 hours);
+        lerp.tick();
+        assertEq(vat.Line(), rad(1600 ether + 800));
+        hevm.warp(now + 1 days);
+        assertEq(vat.Line(), rad(1600 ether + 800));
+        lerp.tick();
+        assertEq(vat.Line(), rad(0 ether));
+        assertTrue(lerp.done());
+        assertEq(vat.wards(address(lerp)), 0);
     }
 }
