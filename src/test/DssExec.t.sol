@@ -51,6 +51,10 @@ interface ClipFabLike {
 
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
 
+    function description() external override returns (string memory) {
+        return "DssLibSpellAction Description";
+    }
+
     uint256 constant MILLION  = 10 ** 6;
 
     function actions() public override {
@@ -239,7 +243,6 @@ contract DssLibExecTest is DSTest, DSMath {
         castPreviousSpell();
 
         spell = new DssExec(
-            "A test dss exec spell",                    // Description
             now + 30 days,                              // Expiration
             address(new DssLibSpellAction())
         );
