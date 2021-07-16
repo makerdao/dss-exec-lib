@@ -31,6 +31,7 @@ interface Changelog {
 
 interface SpellAction {
     function officeHours() external view returns (bool);
+    function description() external view returns (string memory);
     function nextCastTime(uint256) external view returns (uint256);
 }
 
@@ -48,7 +49,9 @@ contract DssExec {
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
     // Hash: seth keccak -- "$(wget https://<executive-vote-canonical-post> -q -O - 2>/dev/null)"
-    string                  public description;
+    function description() external view returns (string memory) {
+        return SpellAction(action).description();
+    }
 
     function officeHours() external view returns (bool) {
         return SpellAction(action).officeHours();
@@ -61,9 +64,8 @@ contract DssExec {
     // @param _description  A string description of the spell
     // @param _expiration   The timestamp this spell will expire. (Ex. now + 30 days)
     // @param _spellAction  The address of the spell action
-    constructor(string memory _description, uint256 _expiration, address _spellAction) public {
+    constructor(uint256 _expiration, address _spellAction) public {
         pause       = PauseAbstract(log.getAddress("MCD_PAUSE"));
-        description = _description;
         expiration  = _expiration;
         action      = _spellAction;
 

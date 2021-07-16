@@ -53,6 +53,11 @@ abstract contract DssAction {
     //   By keeping this function public we allow simulations of `execute()` on the actions outside of the cast time.
     function actions() public virtual;
 
+    // Provides a descriptive tag for bot consumption
+    // This should be modified weekly to provide a summary of the actions
+    // Hash: seth keccak -- "$(wget https://<executive-vote-canonical-post> -q -O - 2>/dev/null)"
+    function description() external virtual view returns (string memory);
+
     // Returns the next available cast time
     function nextCastTime(uint256 eta) external returns (uint256 castTime) {
         require(eta <= uint40(-1));

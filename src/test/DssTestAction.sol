@@ -23,6 +23,10 @@ pragma experimental ABIEncoderV2;
 import "../DssAction.sol";
 
 contract DssTestNoOfficeHoursAction is DssAction {
+    function description() public override view returns (string memory) {
+        return "No Office Hours Action";
+    }
+
     function actions() public override {
         require(!officeHours());
     }
@@ -33,6 +37,10 @@ contract DssTestNoOfficeHoursAction is DssAction {
 }
 
 contract DssTestAction is DssAction {
+
+    function description() external override view returns (string memory) {
+        return "DssTestAction";
+    }
 
     function actions() public override {}
 
