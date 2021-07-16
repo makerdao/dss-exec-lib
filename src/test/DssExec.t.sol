@@ -51,7 +51,7 @@ interface ClipFabLike {
 
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
 
-    function description() external override returns (string memory) {
+    function description() external override view returns (string memory) {
         return "DssLibSpellAction Description";
     }
 
