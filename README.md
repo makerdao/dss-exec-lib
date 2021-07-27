@@ -258,6 +258,12 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 ### Payments
 - `sendPaymentFromSurplusBuffer(address _target, uint256 _amount)`: Send a payment in ERC20 DAI from the surplus buffer.
 
+### Misc
+
+- `function linearInterpolation(bytes32 _name, address _target, bytes32 _what, uint256 _startTime, uint256 _start, uint256 _end, uint256 _duration)`: Deploys a new general lerp contract with the associated parameters and returns the `address` of the contract.
+
+- `function linearInterpolation(bytes32 _name, address _target, bytes32 _ilk, bytes32 _what, uint256 _startTime, uint256 _start, uint256 _end, uint256 _duration)`: Deploys a new lerp module specific to an ilk and returns the `address` of the contract.
+
 ## Testing
 
 ```
