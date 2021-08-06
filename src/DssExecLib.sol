@@ -44,6 +44,7 @@ interface Drippable {
 
 interface Pricing {
     function poke(bytes32) external;
+    function bump(bytes32, uint256) external;
 }
 
 interface ERC20 {
@@ -55,7 +56,7 @@ interface DssVat {
     function nope(address) external;
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
     function Line() external view returns (uint256);
-    function suck(address, address, uint) external;
+    function suck(address, address, uint256) external;
 }
 
 interface ClipLike {
@@ -71,8 +72,8 @@ interface JoinLike {
     function ilk() external returns (bytes32);
     function gem() external returns (address);
     function dec() external returns (uint256);
-    function join(address, uint) external;
-    function exit(address, uint) external;
+    function join(address, uint256) external;
+    function exit(address, uint256) external;
 }
 
 // Includes Median and OSM functions
@@ -820,6 +821,37 @@ library DssExecLib {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT); // DssExecLib/cut-too-high
         setValue(_calc, "cut", rdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
+
+    /**********************/
+    /*** RWA Management ***/
+    /**********************/
+
+    /**
+        @dev Set the debt ceiling for a MIP21-type RWA collateral, requires update of liquidation oracle price.
+             (does not modify global debt ceiling, use setGlobalDebtCeiling(uint256) to adjust)
+        @param _ilk    The ilk to update (ex. bytes32("RWA001-A"))
+        @param _amount The amount to set in DAI (ex. 1000 DAI amount == 1000)
+        @param _price  The liquidation price in whole Dai units
+    */
+    function setRWADebtCeiling(bytes32 _ilk, uint256 _amount, uint256 _price) public {
+        require(_amount < WAD);     // "DssExecLib/incorrect-ilk-line-precision"
+        require(_price >= _amount); // "DssExecLib/unusable-debt-ceiling"
+        setIlkDebtCeiling(_ilk, _amount);
+        setRWALiquidationOraclePrice(_ilk, _price);
+    }
+
+    /**
+        @dev Set the liquidation oracle price for a MIP21-type RWA collateral
+        @param _ilk    The ilk to update (ex. bytes32("RWA001-A"))
+        @param _price  The liquidation price in whole Dai units
+    */
+    function setRWALiquidationOraclePrice(bytes32 _ilk, uint256 _price) public {
+        require(_price < WAD);      // "DssExecLib/incorrect-liq-price-precision"
+        Pricing(getChangelogAddress("MIP21_LIQUIDATION_ORACLE")).bump(_ilk, _price * WAD);
+        updateCollateralPrice(_ilk);
+    }
+
+
 
     /*************************/
     /*** Oracle Management ***/
