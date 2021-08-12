@@ -1103,4 +1103,40 @@ contract ActionTest is DSTest {
         assertTrue(lerp.done());
         assertEq(vat.wards(address(lerp)), 0);
     }
+
+    function test_lerp_ilk_line() public {
+        bytes32 ilk = "gold";
+        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), ilk, "line", block.timestamp, rad(2400 ether), rad(0 ether), 1 days));
+        lerp.tick();
+        assertEq(lerp.what(), "line");
+        assertEq(lerp.start(), rad(2400 ether));
+        assertEq(lerp.end(), rad(0 ether));
+        assertEq(lerp.duration(), 1 days);
+        assertTrue(!lerp.done());
+        (,,, uint line,) = vat.ilks(ilk);
+        assertEq(lerp.startTime(), block.timestamp);
+        assertEq(line, rad(2400 ether));
+        hevm.warp(now + 1 hours);
+        (,,,line,) = vat.ilks(ilk);
+        assertEq(line, rad(2400 ether));
+        lerp.tick();
+        (,,,line,) = vat.ilks(ilk);
+        assertEq(line, rad(2300 ether + 1600));   // Small amount at the end is rounding errors
+        hevm.warp(now + 1 hours);
+        lerp.tick();
+        (,,,line,) = vat.ilks(ilk);
+        assertEq(line, rad(2200 ether + 800));
+        hevm.warp(now + 6 hours);
+        lerp.tick();
+        (,,,line,) = vat.ilks(ilk);
+        assertEq(line, rad(1600 ether + 800));
+        hevm.warp(now + 1 days);
+        (,,,line,) = vat.ilks(ilk);
+        assertEq(line, rad(1600 ether + 800));
+        lerp.tick();
+        (,,,line,) = vat.ilks(ilk);
+        assertEq(line, rad(0 ether));
+        assertTrue(lerp.done());
+        assertEq(vat.wards(address(lerp)), 0);
+    }
 }
