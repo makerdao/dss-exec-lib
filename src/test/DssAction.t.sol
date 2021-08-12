@@ -163,9 +163,14 @@ contract ActionTest is DSTest {
     function balanceOf(bytes32 ilk, address usr) internal view returns (uint) {
         return ilks[ilk].gem.balanceOf(usr);
     }
+    function stringToBytes32(string memory source) public pure returns (bytes32 result) {
+        assembly {
+            result := mload(add(source, 32))
+        }
+    }
 
     function init_collateral(bytes32 name, address _action) internal returns (Ilk memory) {
-        DSToken coin = new DSToken(name);
+        DSToken coin = new DSToken("Token");
         coin.mint(20 ether);
 
         DSValue pip = new DSValue();
@@ -882,9 +887,10 @@ contract ActionTest is DSTest {
     /*****************************/
 
     function test_collateralOnboardingBase() public {
-        bytes32 ilk = "silver";
+        string memory silk = "silver";
+        bytes32 ilk = stringToBytes32(silk);
 
-        DSToken token     = new DSToken(ilk);
+        DSToken token     = new DSToken(silk);
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, address(token));
         Clipper tokenClip = new Clipper(address(vat), address(spot), address(dog), ilk);
         LinearDecrease tokenCalc = new LinearDecrease();
@@ -918,9 +924,10 @@ contract ActionTest is DSTest {
 
     function collateralOnboardingTest(bool liquidatable, bool isOsm, bool medianSrc) internal {
 
-        bytes32 ilk = "silver";
+        string memory silk = "silver";
+        bytes32 ilk = stringToBytes32(silk);
 
-        address token     = address(new DSToken(ilk));
+        address token     = address(new DSToken(silk));
         GemJoin tokenJoin = new GemJoin(address(vat), ilk, token);
         Clipper tokenClip = new Clipper(address(vat), address(spot), address(dog), ilk);
         LinearDecrease tokenCalc = new LinearDecrease();
