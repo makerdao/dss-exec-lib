@@ -294,40 +294,24 @@ contract DssTestAction is DssAction {
         DssExecLib.whitelistOracleMedians(oracle);
     }
 
-    function addWritersToMedianWhitelist_test(address medianizer, address[] memory feeds) public {
-        DssExecLib.addWritersToMedianWhitelist(medianizer, feeds);
+    function addReaderToWhitelistCall_test(address medianizer, address reader) public {
+        DssExecLib.addReaderToWhitelistCall(medianizer, reader);
     }
 
-    function removeWritersFromMedianWhitelist_test(address medianizer, address[] memory feeds) public {
-        DssExecLib.removeWritersFromMedianWhitelist(medianizer, feeds);
-    }
-
-    function addReadersToMedianWhitelist_test(address medianizer, address[] memory readers) public {
-        DssExecLib.addReadersToMedianWhitelist(medianizer, readers);
-    }
-
-    function addReaderToMedianWhitelist_test(address medianizer, address reader) public {
-        DssExecLib.addReaderToMedianWhitelist(medianizer, reader);
-    }
-
-    function removeReadersFromMedianWhitelist_test(address medianizer, address[] memory readers) public {
-        DssExecLib.removeReadersFromMedianWhitelist(medianizer, readers);
-    }
-
-    function removeReaderFromMedianWhitelist_test(address medianizer, address reader) public {
-        DssExecLib.removeReaderFromMedianWhitelist(medianizer, reader);
+    function removeReaderFromWhitelistCall_test(address medianizer, address reader) public {
+        DssExecLib.removeReaderFromWhitelistCall(medianizer, reader);
     }
 
     function setMedianWritersQuorum_test(address medianizer, uint256 minQuorum) public {
         DssExecLib.setMedianWritersQuorum(medianizer, minQuorum);
     }
 
-    function addReaderToOSMWhitelist_test(address osm, address reader) public {
-        DssExecLib.addReaderToOSMWhitelist(osm, reader);
+    function addReaderToWhitelist_test(address osm, address reader) public {
+        DssExecLib.addReaderToWhitelist(osm, reader);
     }
 
-    function removeReaderFromOSMWhitelist_test(address osm, address reader) public {
-        DssExecLib.removeReaderFromOSMWhitelist(osm, reader);
+    function removeReaderFromWhitelist_test(address osm, address reader) public {
+        DssExecLib.removeReaderFromWhitelist(osm, reader);
     }
 
     function allowOSMFreeze_test(address osm, bytes32 ilk) public {
