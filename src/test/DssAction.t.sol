@@ -38,6 +38,11 @@ import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 import {LerpFactory}      from "dss-lerp/LerpFactory.sol";
+import {RwaToken}         from "MIP21-RWA-Example/RwaToken.sol";
+import {RwaInputConduit,
+        RwaOutputConduit} from "MIP21-RWA-Example/RwaConduit.sol";
+import {RwaLiquidationOracle} from "MIP21-RWA-Example/RwaLiquidationOracle.sol";
+import {RwaUrn}           from "MIP21-RWA-Example/RwaUrn.sol";
 
 import {Vat}              from "dss/vat.sol";
 import {Dog}              from "dss/dog.sol";
@@ -49,6 +54,7 @@ import {Clipper}          from "dss/clip.sol";
 import {Flapper}          from "dss/flap.sol";
 import {Flopper}          from "dss/flop.sol";
 import {GemJoin,DaiJoin}  from "dss/join.sol";
+import {AuthGemJoin}      from "dss-gem-joins/join-auth.sol";
 import {End}              from "dss/end.sol";
 import {Spotter}          from "dss/spot.sol";
 import {Dai}              from "dss/dai.sol";
@@ -76,6 +82,83 @@ contract UniPairMock {
     }
 }
 
+contract TryCaller {
+    function do_call(address addr, bytes calldata data) external returns (bool) {
+        bytes memory _data = data;
+        assembly {
+            let ok := call(gas(), addr, 0, add(_data, 0x20), mload(_data), 0, 0)
+            let free := mload(0x40)
+            mstore(free, ok)
+            mstore(0x40, add(free, 32))
+            revert(free, 32)
+        }
+    }
+
+    function try_call(address addr, bytes calldata data) external returns (bool ok) {
+        (, bytes memory returned) = address(this).call(abi.encodeWithSignature("do_call(address,bytes)", addr, data));
+        ok = abi.decode(returned, (bool));
+    }
+}
+
+contract RwaUser is TryCaller {
+    RwaUrn urn;
+    RwaOutputConduit outC;
+    RwaInputConduit inC;
+
+    constructor(RwaUrn urn_, RwaOutputConduit outC_, RwaInputConduit inC_)
+        public {
+        urn = urn_;
+        outC = outC_;
+        inC = inC_;
+    }
+
+    function approve(RwaToken tok, address who, uint256 wad) public {
+        tok.approve(who, wad);
+    }
+    function pick(address who) public {
+        outC.pick(who);
+    }
+    function lock(uint256 wad) public {
+        urn.lock(wad);
+    }
+    function free(uint256 wad) public {
+        urn.free(wad);
+    }
+    function draw(uint256 wad) public {
+        urn.draw(wad);
+    }
+    function wipe(uint256 wad) public {
+        urn.wipe(wad);
+    }
+    function can_pick(address who) public returns (bool ok) {
+        ok = this.try_call(
+            address(outC),
+            abi.encodeWithSignature("pick(address)", who)
+        );
+    }
+    function can_draw(uint256 wad) public returns (bool ok) {
+        ok = this.try_call(
+            address(urn),
+            abi.encodeWithSignature("draw(uint256)", wad)
+        );
+    }
+    function can_free(uint256 wad) public returns (bool ok) {
+        ok = this.try_call(
+            address(urn),
+            abi.encodeWithSignature("free(uint256)", wad)
+        );
+    }
+}
+
+contract TryPusher is TryCaller {
+    function can_push(address wat) public returns (bool ok) {
+        ok = this.try_call(
+            address(wat),
+            abi.encodeWithSignature("push()")
+        );
+    }
+}
+
 contract ActionTest is DSTest {
     Hevm hevm;
 
@@ -89,7 +172,7 @@ contract ActionTest is DSTest {
     Dai         daiToken;
     DaiJoin     daiJoin;
 
-    DSToken gov;
+    DSToken     gov;
 
     IlkRegistry   reg;
     Median        median;
@@ -215,6 +298,68 @@ contract ActionTest is DSTest {
         ilks[name].clip = clip;
 
         return ilks[name];
+    }
+
+    function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
+        bytes memory bytesArray = new bytes(32);
+        for (uint256 i; i < 32; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
+    }
+
+    function init_RWA(bytes32 ilk, address _action) internal returns (Ilk memory) {
+        gov.mint(20 ether);
+
+        // deploy rwa token
+        rwa = new RwaToken(bytes32ToStr(ilk), bytes32ToStr(ilk));
+
+        vat.init(ilk);
+        vat.file(ilk, "line", 1000000 * RAD);
+
+        jug.init(ilk);
+        // $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
+        uint256 EIGHT_PCT = 1000000002440418608258400030;
+        jug.file(ilk, "duty", EIGHT_PCT);
+
+        oracle = new RwaLiquidationOracle(address(vat), vow);
+        oracle.init(
+            ilk,
+            wmul(ceiling, 1.1 ether),
+            doc,
+            2 weeks);
+        vat.rely(address(oracle));
+        (,address pip,,) = oracle.ilks(ilk);
+
+        spotter.file(ilk, "mat", RAY);
+        spotter.file(ilk, "pip", pip);
+        spotter.poke(ilk);
+
+        gemJoin = new AuthGemJoin(address(vat), ilk, address(rwa));
+        vat.rely(address(gemJoin));
+
+        // deploy output dai conduit
+        outConduit = new RwaOutputConduit(address(gov), address(dai));
+        // deploy urn
+        urn = new RwaUrn(address(vat), address(jug), address(gemJoin), address(daiJoin), address(outConduit));
+        gemJoin.rely(address(urn));
+        // deploy input dai conduit, pointed permanently at the urn
+        inConduit = new RwaInputConduit(address(gov), address(dai), address(urn));
+
+        // deploy user and ultimate dai recipient
+        usr = new RwaUser(urn, outConduit, inConduit);
+        rec = new RwaUltimateRecipient(dai);
+
+        // fund user with rwa
+        rwa.transfer(address(usr), 1 ether);
+
+        // auth user to operate
+        urn.hope(address(usr));
+        outConduit.hope(address(usr));
+        outConduit.kiss(address(rec));
+
+        usr.approve(rwa, address(urn), uint(-1));
+
     }
 
     function setUp() public {
