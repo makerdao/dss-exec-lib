@@ -165,15 +165,12 @@ Below is an outline of all functions used in the library.
 - `initExponentialDecrease(address _calc, uint256 _pct_bps)`: Initialize the variables in an ExponentialDecrease calculator.
 
 ### Oracle Management
-- `addWritersToMedianWhitelist(address _median, address[] memory _feeds)`: Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
-- `removeWritersFromMedianWhitelist(address _median, address[] memory _feeds)`: Removes oracle feeds to the Median's writer whitelist, disallowing the feeds to write prices.
-- `addReadersToMedianWhitelist(address _median, address[] memory _readers)`: Adds addresses to the Median's reader whitelist, allowing the addresses to read prices from the median.
-- `addReaderToMedianWhitelist(address _median, address _reader)`: Adds an address to the Median's reader whitelist, allowing the address to read prices from the median.
-- `removeReadersFromMedianWhitelist(address _median, address[] memory _readers)`: Removes addresses from the Median's reader whitelist, disallowing the addresses to read prices from the median.
-- `removeReaderFromMedianWhitelist(address _median, address _reader)`: Removes an address to the Median's reader whitelist, disallowing the address to read prices from the median.
+- `whitelistOracleMedians(address _oracle)`: Pass an OSM or UNIV2LP oracle to enable it to read the underlying medianizer.
+- `addReaderToWhitelist(address _oracle, address _reader)`: Adds an address to the OSM or Median's reader whitelist, allowing the address to read prices.
+- `removeReaderFromWhitelist(address _oracle, address _reader)`: Removes an address to the OSM or Median's reader whitelist, disallowing the address to read prices.
+- `addReaderToWhitelistCall(address _oracle, address _reader)`: Adds an address to the OSM or Median's reader whitelist, allowing the address to read prices.
+- `removeReaderFromWhitelistCall(address _oracle, address _reader)`: Removes an address to the OSM or Median's reader whitelist, disallowing the address to read prices.
 - `setMedianWritersQuorum(address _median, uint256 _minQuorum)`: Sets the minimum number of valid messages from whitelisted oracle feeds needed to update median price.
-- `addReaderToOSMWhitelist(address _osm, address _reader)`: Adds an address to the Median's reader whitelist, allowing the address to read prices from the OSM.
-- `removeReaderFromOSMWhitelist(address _osm, address _reader)`: Removes an address to the Median's reader whitelist, disallowing the address to read prices from the OSM.
 - `allowOSMFreeze(address _osm, bytes32 _ilk)`: Add OSM address to OSM mom, allowing it to be frozen by governance.
 
 ### Collateral Onboarding

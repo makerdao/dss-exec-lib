@@ -833,61 +833,44 @@ library DssExecLib {
         if (ok) {
             // Token is an LP oracle
             address median0 = abi.decode(data, (address));
-            addReaderToMedianWhitelist(median0, _oracle);
-            addReaderToMedianWhitelist(OracleLike(_oracle).orb1(), _oracle);
+            addReaderToWhitelistCall(median0, _oracle);
+            addReaderToWhitelistCall(OracleLike(_oracle).orb1(), _oracle);
         } else {
             // Standard OSM
-            addReaderToMedianWhitelist(OracleLike(_oracle).src(), _oracle);
+            addReaderToWhitelistCall(OracleLike(_oracle).src(), _oracle);
         }
     }
-
     /**
-        @dev Adds oracle feeds to the Median's writer whitelist, allowing the feeds to write prices.
-        @param _median  Median core contract address
-        @param _feeds   Array of oracle feed addresses to add to whitelist
+        @dev Adds an address to the OSM or Median's reader whitelist, allowing the address to read prices.
+        @param _oracle        Oracle Security Module (OSM) or Median core contract address
+        @param _reader     Address to add to whitelist
     */
-    function addWritersToMedianWhitelist(address _median, address[] memory _feeds) public {
-        OracleLike(_median).lift(_feeds);
+    function addReaderToWhitelist(address _oracle, address _reader) public {
+        OracleLike(_oracle).kiss(_reader);
     }
     /**
-        @dev Removes oracle feeds to the Median's writer whitelist, disallowing the feeds to write prices.
-        @param _median  Median core contract address
-        @param _feeds   Array of oracle feed addresses to remove from whitelist
+        @dev Removes an address to the OSM or Median's reader whitelist, disallowing the address to read prices.
+        @param _oracle     Oracle Security Module (OSM) or Median core contract address
+        @param _reader     Address to remove from whitelist
     */
-    function removeWritersFromMedianWhitelist(address _median, address[] memory _feeds) public {
-        OracleLike(_median).drop(_feeds);
+    function removeReaderFromWhitelist(address _oracle, address _reader) public {
+        OracleLike(_oracle).diss(_reader);
     }
     /**
-        @dev Adds addresses to the Median's reader whitelist, allowing the addresses to read prices from the median.
-        @param _median  Median core contract address
-        @param _readers Array of addresses to add to whitelist
-    */
-    function addReadersToMedianWhitelist(address _median, address[] memory _readers) public {
-        OracleLike(_median).kiss(_readers);
-    }
-    /**
-        @dev Adds an address to the Median's reader whitelist, allowing the address to read prices from the median.
-        @param _median  Median core contract address
+        @dev Adds an address to the OSM or Median's reader whitelist, allowing the address to read prices.
+        @param _oracle  OSM or Median core contract address
         @param _reader  Address to add to whitelist
     */
-    function addReaderToMedianWhitelist(address _median, address _reader) public {
-        OracleLike(_median).kiss(_reader);
+    function addReaderToWhitelistCall(address _oracle, address _reader) public {
+        (bool ok,) = _oracle.call(abi.encodeWithSignature("kiss(address)", _reader)); ok;
     }
     /**
-        @dev Removes addresses from the Median's reader whitelist, disallowing the addresses to read prices from the median.
-        @param _median  Median core contract address
-        @param _readers Array of addresses to remove from whitelist
-    */
-    function removeReadersFromMedianWhitelist(address _median, address[] memory _readers) public {
-        OracleLike(_median).diss(_readers);
-    }
-    /**
-        @dev Removes an address to the Median's reader whitelist, disallowing the address to read prices from the median.
-        @param _median  Median core contract address
+        @dev Removes an address to the OSM or Median's reader whitelist, disallowing the address to read prices.
+        @param _oracle  Oracle Security Module (OSM) or Median core contract address
         @param _reader  Address to remove from whitelist
     */
-    function removeReaderFromMedianWhitelist(address _median, address _reader) public {
-        OracleLike(_median).diss(_reader);
+    function removeReaderFromWhitelistCall(address _oracle, address _reader) public {
+        (bool ok,) = _oracle.call(abi.encodeWithSignature("diss(address)", _reader)); ok;
     }
     /**
         @dev Sets the minimum number of valid messages from whitelisted oracle feeds needed to update median price.
@@ -896,22 +879,6 @@ library DssExecLib {
     */
     function setMedianWritersQuorum(address _median, uint256 _minQuorum) public {
         OracleLike(_median).setBar(_minQuorum);
-    }
-    /**
-        @dev Adds an address to the Median's reader whitelist, allowing the address to read prices from the OSM.
-        @param _osm        Oracle Security Module (OSM) core contract address
-        @param _reader     Address to add to whitelist
-    */
-    function addReaderToOSMWhitelist(address _osm, address _reader) public {
-        OracleLike(_osm).kiss(_reader);
-    }
-    /**
-        @dev Removes an address to the Median's reader whitelist, disallowing the address to read prices from the OSM.
-        @param _osm        Oracle Security Module (OSM) core contract address
-        @param _reader     Address to remove from whitelist
-    */
-    function removeReaderFromOSMWhitelist(address _osm, address _reader) public {
-        OracleLike(_osm).diss(_reader);
     }
     /**
         @dev Add OSM address to OSM mom, allowing it to be frozen by governance.
@@ -1011,13 +978,13 @@ library DssExecLib {
                 whitelistOracleMedians(co.pip);
             }
             // Whitelist Spotter to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(co.pip, spotter());
+            addReaderToWhitelist(co.pip, spotter());
             // Whitelist Clipper on pip
-            addReaderToOSMWhitelist(co.pip, co.clip);
+            addReaderToWhitelist(co.pip, co.clip);
             // Allow the clippermom to access the feed
-            addReaderToOSMWhitelist(co.pip, clipperMom_);
+            addReaderToWhitelist(co.pip, clipperMom_);
             // Whitelist End to read the OSM data (only necessary if it is the first time the token is being added to an ilk)
-            addReaderToOSMWhitelist(co.pip, end());
+            addReaderToWhitelist(co.pip, end());
             // Set TOKEN OSM in the OsmMom for new ilk
             allowOSMFreeze(co.pip, co.ilk);
         }

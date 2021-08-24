@@ -779,75 +779,35 @@ contract ActionTest is DSTest {
         assertEq(med1.bud(address(lorc)), 1);
     }
 
-    function test_addWritersToMedianWhitelist() public {
-        address[] memory feeds = new address[](2);
-        feeds[0] = address(this);   // Random addresses since 0x1 and 0x2 didnt work with bitshift
-        feeds[1] = address(action); // Random addresses since 0x1 and 0x2 didnt work with bitshift
+    function test_whitelistOracleWithDSValue_LP() public {
+        // Should not fail for LP tokens if one or more oracles are DSValue
+        address token0 = address(new DSToken("nil"));
+        address token1 = address(new DSToken("one"));
+        DSValue med0   = new DSValue();
+        DSValue med1   = new DSValue();
+        address lperc  = address(new UniPairMock(token0, token1));
+        med0.poke(bytes32(uint256(100)));
+        med1.poke(bytes32(uint256(100)));
+        UNIV2LPOracle lorc = new UNIV2LPOracle(address(lperc), "NILONE", address(med0), address(med1));
 
-        assertEq(median.orcl(feeds[0]), 0);
-        assertEq(median.orcl(feeds[1]), 0);
-        action.addWritersToMedianWhitelist_test(address(median), feeds);
-        assertEq(median.orcl(feeds[0]), 1);
-        assertEq(median.orcl(feeds[1]), 1);
+        action.whitelistOracleMedians_test(address(lorc));
     }
 
-    function test_removeWritersFromMedianWhitelist() public {
-        address[] memory feeds = new address[](2);
-        feeds[0] = address(this);   // Random addresses since 0x1 and 0x2 didnt work with bitshift
-        feeds[1] = address(action); // Random addresses since 0x1 and 0x2 didnt work with bitshift
-
-        assertEq(median.orcl(feeds[0]), 0);
-        assertEq(median.orcl(feeds[1]), 0);
-        action.addWritersToMedianWhitelist_test(address(median), feeds);
-        assertEq(median.orcl(feeds[0]), 1);
-        assertEq(median.orcl(feeds[1]), 1);
-        action.removeWritersFromMedianWhitelist_test(address(median), feeds);
-        assertEq(median.orcl(feeds[0]), 0);
-        assertEq(median.orcl(feeds[1]), 0);
-    }
-
-    function test_addReadersToMedianWhitelist() public {
-        address[] memory readers = new address[](2);
-        readers[0] = address(1);
-        readers[1] = address(2);
-
-        assertEq(median.bud(address(1)), 0);
-        assertEq(median.bud(address(2)), 0);
-        action.addReadersToMedianWhitelist_test(address(median), readers);
-        assertEq(median.bud(address(1)), 1);
-        assertEq(median.bud(address(2)), 1);
-    }
-
-    function test_removeReadersFromMedianWhitelist() public {
-        address[] memory readers = new address[](2);
-        readers[0] = address(1);
-        readers[1] = address(2);
-
-        assertEq(median.bud(address(1)), 0);
-        assertEq(median.bud(address(2)), 0);
-        action.addReadersToMedianWhitelist_test(address(median), readers);
-        assertEq(median.bud(address(1)), 1);
-        assertEq(median.bud(address(2)), 1);
-        action.removeReadersFromMedianWhitelist_test(address(median), readers);
-        assertEq(median.bud(address(1)), 0);
-        assertEq(median.bud(address(2)), 0);
-    }
-
-    function test_addReaderToMedianWhitelist() public {
+    function test_addReaderToWhitelistCall() public {
         address reader = address(1);
 
         assertEq(median.bud(address(1)), 0);
-        action.addReaderToMedianWhitelist_test(address(median), reader);
+        action.addReaderToWhitelistCall_test(address(median), reader);
         assertEq(median.bud(address(1)), 1);
     }
 
-    function test_removeReaderFromMedianWhitelist() public {
+    function test_removeReaderFromWhitelistCall() public {
         address reader = address(1);
 
         assertEq(median.bud(address(1)), 0);
-        action.addReaderToMedianWhitelist_test(address(median), reader);
+        action.addReaderToWhitelistCall_test(address(median), reader);
         assertEq(median.bud(address(1)), 1);
-        action.removeReaderFromMedianWhitelist_test(address(median), reader);
+        action.removeReaderFromWhitelistCall_test(address(median), reader);
         assertEq(median.bud(address(1)), 0);
     }
 
@@ -856,12 +816,12 @@ contract ActionTest is DSTest {
         assertEq(median.bar(), 11);
     }
 
-    function test_addReaderToOSMWhitelist() public {
+    function test_addReaderToWhitelist() public {
         OSM osm = ilks["gold"].osm;
         address reader = address(1);
 
         assertEq(osm.bud(address(1)), 0);
-        action.addReaderToOSMWhitelist_test(address(osm), reader);
+        action.addReaderToWhitelist_test(address(osm), reader);
         assertEq(osm.bud(address(1)), 1);
     }
 
@@ -870,9 +830,9 @@ contract ActionTest is DSTest {
         address reader = address(1);
 
         assertEq(osm.bud(address(1)), 0);
-        action.addReaderToOSMWhitelist_test(address(osm), reader);
+        action.addReaderToWhitelist_test(address(osm), reader);
         assertEq(osm.bud(address(1)), 1);
-        action.removeReaderFromOSMWhitelist_test(address(osm), reader);
+        action.removeReaderFromWhitelist_test(address(osm), reader);
         assertEq(osm.bud(address(1)), 0);
     }
 
