@@ -4,9 +4,9 @@ A library for crafting spells in DSS more efficiently, predictably, and easily.
 
 ## Public Library Addresses
 
-(v0.0.7) Mainnet: [0x3117D2CbA81fC118fc471D383Ab20F11939A3CfF](https://etherscan.io/address/0x3117d2cba81fc118fc471d383ab20f11939a3cff#code)
-(v0.0.7) Goerli: [0xa81598667ac561986b70ae11bbe2dd5348ed4327](https://goerli.etherscan.io/address/0xa81598667ac561986b70ae11bbe2dd5348ed4327#code)
-(v0.0.7) Kovan: [0x3644A28AA8204d09A1A0E423F7aC2ACaFf5b8bb3](https://kovan.etherscan.io/address/0x3644a28aa8204d09a1a0e423f7ac2acaff5b8bb3#code)
+- (v0.0.7) Mainnet: [0x3117D2CbA81fC118fc471D383Ab20F11939A3CfF](https://etherscan.io/address/0x3117d2cba81fc118fc471d383ab20f11939a3cff#code)
+- (v0.0.7) Goerli: [0xa81598667ac561986b70ae11bbe2dd5348ed4327](https://goerli.etherscan.io/address/0xa81598667ac561986b70ae11bbe2dd5348ed4327#code)
+- (v0.0.7) Kovan: [0x3644A28AA8204d09A1A0E423F7aC2ACaFf5b8bb3](https://kovan.etherscan.io/address/0x3644a28aa8204d09a1a0e423f7ac2acaff5b8bb3#code)
 
 ## Requirements
 
