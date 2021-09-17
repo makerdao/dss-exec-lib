@@ -1,4 +1,5 @@
 # DSS Exec Library
+![Build Status](https://github.com/makerdao/dss-exec-lib/actions/workflows/.github/workflows/tests.yaml/badge.svg?branch=master)
 
 A library for crafting spells in DSS more efficiently, predictably, and easily.
 
