@@ -240,8 +240,6 @@ contract DssLibExecTest is DSTest, DSMath {
         hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
-        castPreviousSpell();
-
         spell = new DssExec(
             now + 30 days,                              // Expiration
             address(new DssLibSpellAction())
@@ -304,18 +302,6 @@ contract DssLibExecTest is DSTest, DSMath {
             tau:           6 hours,              // In seconds
             liquidations:  1                     // 1 if enabled
         });
-    }
-
-    // TODO remove after April 25, 2021
-    function castPreviousSpell() internal {
-        SpellLike prevSpell = SpellLike(0xDb0D1af4531F59E4E7EfA4ec0AcADec7518D42B6);
-        // warp and cast previous spell so values are up-to-date to test against
-        if (prevSpell != SpellLike(0) && !prevSpell.done()) {
-            hevm.warp(1619372356);
-            // jump to nextCastTime to be a little more forgiving on the spell execution time
-            hevm.warp(prevSpell.nextCastTime());
-            prevSpell.cast();
-        }
     }
 
     function vote() private {

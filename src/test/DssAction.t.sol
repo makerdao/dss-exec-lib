@@ -659,10 +659,28 @@ contract ActionTest is DSTest {
         assertEq(autoLine.exec("gold"), 1000 * RAD);
     }
 
-    function test_setIlkMinVaultAmount() public {
+    function test_setIlkMinVaultAmountLt() public {
+        action.setIlkMaxLiquidationAmount_test("gold", 100);
+        action.setIlkMinVaultAmount_test("gold", 1);
+        (,,,, uint256 dust) = vat.ilks("gold");
+        assertEq(dust, 1 * RAD);
+    }
+
+    function test_setIlkMinVaultAmountEq() public {
+        action.setIlkMaxLiquidationAmount_test("gold", 100);
         action.setIlkMinVaultAmount_test("gold", 100);
         (,,,, uint256 dust) = vat.ilks("gold");
         assertEq(dust, 100 * RAD);
+
+        action.setIlkMaxLiquidationAmount_test("gold", 0);
+        action.setIlkMinVaultAmount_test("gold", 0);
+        (,,,, dust) = vat.ilks("gold");
+        assertEq(dust, 0);
+    }
+
+    function testFail_setIlkMinVaultAmountGt() public {
+        action.setIlkMaxLiquidationAmount_test("gold", 100);
+        action.setIlkMinVaultAmount_test("gold", 101); // Fail here
     }
 
     function test_setIlkLiquidationPenalty() public {
