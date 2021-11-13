@@ -955,6 +955,7 @@ contract ActionTest is DSTest {
         if (isOsm) {
           assertEq(OSM(tokenPip).wards(address(osmMom)),     1);
           assertEq(OSM(tokenPip).bud(address(spot)),         1);
+          assertEq(OSM(tokenPip).bud(address(tokenClip)),    1);
           assertEq(OSM(tokenPip).bud(address(clipperMom)),   1);
           assertEq(OSM(tokenPip).bud(address(end)),          1);
 
