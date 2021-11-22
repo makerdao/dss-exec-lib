@@ -66,6 +66,10 @@ interface ClipLike {
     function ilk() external returns (bytes32);
 }
 
+interface DogLike {
+    function ilks(bytes32) external returns (address clip, uint256 chop, uint256 hole, uint256 dirt);
+}
+
 interface JoinLike {
     function vat() external returns (address);
     function ilk() external returns (bytes32);
@@ -662,6 +666,8 @@ library DssExecLib {
     */
     function setIlkMinVaultAmount(bytes32 _ilk, uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-dust-precision"
+        (,, uint256 _hole,) = DogLike(dog()).ilks(_ilk);
+        require(_amount <= _hole / RAD);  // Ensure ilk.hole >= dust
         setValue(vat(), _ilk, "dust", _amount * RAD);
         (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
@@ -990,12 +996,16 @@ library DssExecLib {
         }
         // Increase the global debt ceiling by the ilk ceiling
         increaseGlobalDebtCeiling(co.ilkDebtCeiling);
+
         // Set the ilk debt ceiling
         setIlkDebtCeiling(co.ilk, co.ilkDebtCeiling);
-        // Set the ilk dust
-        setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
+
         // Set the hole size
         setIlkMaxLiquidationAmount(co.ilk, co.maxLiquidationAmount);
+
+        // Set the ilk dust
+        setIlkMinVaultAmount(co.ilk, co.minVaultAmount);
+
         // Set the ilk liquidation penalty
         setIlkLiquidationPenalty(co.ilk, co.liquidationPenalty);
 
