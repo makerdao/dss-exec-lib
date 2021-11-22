@@ -126,7 +126,7 @@ interface LerpFactoryLike {
 }
 
 interface LerpLike {
-    function tick() external;
+    function tick() external returns (uint256);
 }
 
 
