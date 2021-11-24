@@ -1081,7 +1081,7 @@ library DssExecLib {
         uint256 _duration
     ) public returns (uint256 line) {
         // Sanity checks
-        require(_matCur > _matEnd, "COL-OFFBOARDING/end-less-than-current");
+        require(_matCur < _matEnd, "COL-OFFBOARDING/end-less-than-current");
 
         (,,,line,) = DssVat(vat()).ilks(_ilk);
         require(line > 0, "COL-OFFBOARDING/ilk-not-onboarded");
