@@ -104,7 +104,39 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         DssExecLib.setAuctionTimeBeforeReset("LINK-A", 2 hours);
         DssExecLib.setKeeperIncentivePercent("LINK-A", 2); // 0.02% keeper incentive
         DssExecLib.setGlobalDebtCeiling(10000 * MILLION);
+    }
+}
 
+contract DssOffboardSpellAction is DssAction {
+
+    function description() external override view returns (string memory) {
+        return "Offboard Collateral Spell";
+    }
+
+    function _add(uint x, uint y) internal pure returns (uint z) {
+        require((z = x + y) >= x, "ds-math-add-overflow");
+    }
+    function _sub(uint x, uint y) internal pure returns (uint z) {
+        require((z = x - y) <= x, "ds-math-sub-underflow");
+    }
+
+    function actions() public override {
+
+        VatAbstract vat = VatAbstract(DssExecLib.vat());
+
+        //
+        // Collateral offboarding
+        //
+
+        uint256 totalLineReduction;
+
+        // Offboard XMPL-A
+
+        uint256 line = DssExecLib.startOffboardingCollateral("XMPL-A", "XMPL-A Offboarding", 15000 * 10**23, 30000 * 10**23, 30 days);
+        totalLineReduction = _add(totalLineReduction, line);
+
+        // Decrease global debt ceiling in accordance with offboarded ilks
+        vat.file("Line", _sub(vat.Line(), totalLineReduction));
     }
 }
 
@@ -561,6 +593,44 @@ contract DssLibExecTest is DSTest, DSMath {
 
         assertTrue(spell.officeHours());
         assertTrue(spell.action() != address(0));
+    }
+
+    function testOffboardSpellIsCast_mainnet() public {
+        // Cast our initial spell
+        vote();
+        scheduleWaitAndCast();
+        assertTrue(spell.done());
+
+        // Ensure no Lerp is setup for our collateral to be offboarded
+        assertEq(LerpFactoryAbstract(DssExecLib.lerpFab()).lerps("XMPL-A Offboarding"), address(0));
+
+        // update our expected system values
+        afterSpell.vat_Line = 10000 * MILLION - 3 * MILLION;
+        // update our expected collateral values
+        afterSpell.collaterals["XMPL-A"].line = 0;
+        afterSpell.collaterals["XMPL-A"].chop = 0;
+
+        spell = new DssExec(
+            now + 30 days,                              // Expiration
+            address(new DssOffboardSpellAction())
+        );
+
+        vote();
+        scheduleWaitAndCast();
+        assertTrue(spell.done());
+
+        checkSystemValues(afterSpell);
+        checkCollateralValues("XMPL-A", afterSpell);
+
+        // Ensure our collateral to be offboarded does not have an autoline after the spell
+        (uint256 postLine,,,,) = DssAutoLineAbstract(DssExecLib.autoLine()).ilks("XMPL-A");
+        assertEq(postLine, 0);
+        // Ensure Lerp is setup for our collateral to be offboarded
+        address lerp = LerpFactoryAbstract(DssExecLib.lerpFab()).lerps("XMPL-A Offboarding");
+        assertTrue(lerp != address(0));
+        assertEq(LerpAbstract(lerp).start(), 15000 * 10**23);
+        assertEq(LerpAbstract(lerp).end(), 30000 * 10**23);
+        assertEq(LerpAbstract(lerp).duration(), 30 days);
     }
 
     function testSpellIsCast_XMPL_INTEGRATION() public {
