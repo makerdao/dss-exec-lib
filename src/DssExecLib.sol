@@ -902,7 +902,7 @@ library DssExecLib {
     /**
         @dev Sets the target rate threshold for a dai direct deposit module (d3m)
         @dev Aave: Targets the variable borrow rate
-        @param _d3m     The address of the ExponentialDecrease pricing contract
+        @param _d3m     The address of the D3M contract
         @param _pct_bps Target rate in basis points. (ex. 4% == 400)
     */
     function setD3MTargetInterestRate(address _d3m, uint256 _pct_bps) public {
