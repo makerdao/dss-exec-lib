@@ -202,7 +202,7 @@ import "src/CollateralOpts.sol";
 
 // Initialize the pricing function with the appropriate initializer
 address xmpl_calc = 0x1f206d7916Fd3B1b5B0Ce53d5Cab11FCebc124DA;
-DssExecLib.initStairstepExponentialDecrease(xmpl_calc, 60, 9900);
+DssExecLib.setStairstepExponentialDecrease(xmpl_calc, 60, 9900);
 
 CollateralOpts memory XMPL_A = CollateralOpts({
     ilk:                   "XMPL-A",
@@ -220,12 +220,17 @@ CollateralOpts memory XMPL_A = CollateralOpts({
     liquidationPenalty:    1300,        // 13% penalty
     ilkStabilityFee:       1000000000705562181084137268,
     startingPriceFactor:   13000,       // 1.3x multiplier
+    breakerTolerance:      5000,        // 50% drop before liquidations are paused
     auctionDuration:       6 hours,
-    permittedDrop:         4000,        // 40% drop before reset
-    liquidationRatio:      15000        // 150% collateralization ratio
+    permittedDrop:         4000,         // 40% drop before reset
+    liquidationRatio:      15000,        // 150% collateralization ratio
+    kprFlatReward:         300,          // keepers receive 300 DAI
+    kprPctReward:          10,           // keepers receive 0.1%        
 });
 
 DssExecLib.addNewCollateral(XMPL_A);
+// set the parameters for an ilk in the "MCD_IAM_AUTO_LINE" auto-line
+DssExecLib.setIlkAutoLineParameter("XMPL-A", 3 * MILLION, 100 * MILLION, 8 hours);
 
 DssExecLib.setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
 DssExecLib.setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
@@ -238,20 +243,23 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 - `gem`:                  Address of collateral token
 - `join`:                 Address of GemJoin contract
 - `clip`:                 Address of Clip contract
-- `calc`:                 Address of Abacus pricing contract
+- `calc`:                 Address of Abacus pricing contract, "Auction Price Function (calc)" gov proposal parameter
 - `pip`:                  Address of Pip contract
 - `isLiquidatable`:       Boolean indicating whether liquidations are enabled for collateral
 - `isOsm`:                Boolean indicating whether pip address used is an OSM contract
 - `whitelistOsm`:         Boolean indicating whether median is src in OSM.
-- `ilkDebtCeiling`:       Debt ceiling for new collateral
-- `minVaultAmount`:       Minimum DAI vault amount required for new collateral
-- `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
-- `liquidationPenalty`:   Percent liquidation penalty for new collateral [ex. 13.5% == 1350]
-- `ilkStabilityFee`:      Percent stability fee for new collateral       [ex. 4% == 1000000001243680656318820312]
-- `startingPriceFactor`:  Percentage to multiply for initial auction price. [ex. 1.3x == 130% == 13000 bps]
-- `auctionDuration`:      Total auction duration before reset for new collateral
-- `permittedDrop`:        Percent an auction can drop before it can be reset.
-- `liquidationRatio`:     Percent liquidation ratio for new collateral   [ex. 150% == 15000]
+- `ilkDebtCeiling`:       Debt ceiling for new collateral, "Debt Ceiling (line)" gov proposal parameter
+- `minVaultAmount`:       Minimum DAI vault amount required for new collateral, "Debt Floor (dust)" gov proposal parameter
+- `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral, "Local Liquidation Limit (ilk.hole)" gov proposal parameter
+- `liquidationPenalty`:   Percent liquidation penalty for new collateral, "Liquidation Penalty (chop)" gov proposal parameter [ex. 13.5% == 1350]
+- `ilkStabilityFee`:      Percent stability fee for new collateral, per-second-rate obtained from the "Stability Fee" gov proposal parameter [ex. 4% == 1000000001243680656318820312]
+- `startingPriceFactor`:  Percentage to multiply for initial auction price, "Auction Price Multiplier (buf)" gov proposal parameter [ex. 1.3x == 130% == 13000 bps]
+- `breakerTolerance`:     Percentage of how large of a price drop is tolerated before liquidations are paused, "Breaker Price Tolerance (tolerance)" gov proposal parameter [ex. 0.5x == 50% == 5000 bps]
+- `auctionDuration`:      Total auction duration before reset for new collateral, "Maximum Auction Duration (tail)" gov proposal parameter
+- `permittedDrop`:        Percent an auction can drop before it can be reset, "Maximum Auction Drawdown (cusp)" gov proposal parameter
+- `liquidationRatio`:     Percent liquidation ratio for new collateral, "Liquidation Ratio" gov proposal parameter [ex. 150% == 15000]
+- `kprFlatReward`:        Flat DAI reward a keeper receives for triggering liquidations (to compensate for gas costs), "Flat Kick Incentive (tip)" gov proposal parameter
+- `kprPctReward`:         Basis point percentual reward keeper receive from liquidations, "Proportional Kick Incentive (chip)" gov proposal parameter
 
 ### Payments
 - `sendPaymentFromSurplusBuffer(address _target, uint256 _amount)`: Send a payment in ERC20 DAI from the surplus buffer.
