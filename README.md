@@ -222,10 +222,10 @@ CollateralOpts memory XMPL_A = CollateralOpts({
     startingPriceFactor:   13000,       // 1.3x multiplier
     breakerTolerance:      5000,        // 50% drop before liquidations are paused
     auctionDuration:       6 hours,
-    permittedDrop:         4000,         // 40% drop before reset
-    liquidationRatio:      15000,        // 150% collateralization ratio
-    kprFlatReward:         300,          // keepers receive 300 DAI
-    kprPctReward:          10,           // keepers receive 0.1%        
+    permittedDrop:         4000,        // 40% drop before reset
+    liquidationRatio:      15000,       // 150% collateralization ratio
+    kprFlatReward:         300,         // keepers receive 300 DAI
+    kprPctReward:          10,          // keepers receive 0.1%        
 });
 
 DssExecLib.addNewCollateral(XMPL_A);
