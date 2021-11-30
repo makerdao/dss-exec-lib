@@ -143,10 +143,10 @@ contract ActionTest is DSTest {
 
     uint256 constant START_TIME = 604411200;
 
-    function _ray(uint wad) internal pure returns (uint) {
+    function ray(uint wad) internal pure returns (uint) {
         return wad * 10 ** 9;
     }
-    function _rad(uint wad) internal pure returns (uint) {
+    function rad(uint wad) internal pure returns (uint) {
         return wad * RAY;
     }
     function rmul(uint x, uint y) internal pure returns (uint z) {
@@ -191,7 +191,7 @@ contract ActionTest is DSTest {
 
         DSValue pip = new DSValue();
         spot.file(name, "pip", address(pip));
-        spot.file(name, "mat", _ray(2 ether));
+        spot.file(name, "mat", ray(2 ether));
         // initial collateral price of 6
         pip.poke(bytes32(6 * WAD));
         spot.poke(name);
@@ -202,7 +202,7 @@ contract ActionTest is DSTest {
         vat.init(name);
         GemJoin gemA = new GemJoin(address(vat), name, address(coin));
 
-        vat.file(name, "line", _rad(1000 ether));
+        vat.file(name, "line", rad(1000 ether));
 
         coin.approve(address(gemA));
         coin.approve(address(vat));
@@ -216,7 +216,7 @@ contract ActionTest is DSTest {
         dog.rely(address(clip));
         dog.file(name, "clip", address(clip));
         dog.file(name, "chop", 1 ether);
-        dog.file("Hole", _rad((10 ether) * MILLION));
+        dog.file("Hole", rad((10 ether) * MILLION));
 
         reg.add(address(gemA));
 
@@ -261,7 +261,7 @@ contract ActionTest is DSTest {
         vow.rely(address(cat));
 
         spot = new Spotter(address(vat));
-        vat.file("Line",         _rad(1000 ether));
+        vat.file("Line",         rad(1000 ether));
         vat.rely(address(spot));
 
         jug = new Jug(address(vat));
@@ -475,13 +475,13 @@ contract ActionTest is DSTest {
         uint256 _spot;
 
         (,, _spot,,) = vat.ilks("gold");
-        assertEq(_spot, _ray(3 ether));
+        assertEq(_spot, ray(3 ether));
         ilks["gold"].pip.poke(bytes32(10 * WAD));
 
         action.updateCollateralPrice_test("gold");
 
         (,, _spot,,) = vat.ilks("gold");
-        assertEq(_spot, _ray(5 ether)); // $5 at 200%
+        assertEq(_spot, ray(5 ether)); // $5 at 200%
     }
 
     /****************************/
@@ -606,7 +606,7 @@ contract ActionTest is DSTest {
 
     function test_setDAIReferenceValue() public {
         action.setDAIReferenceValue_test(1005); // $1.005
-        assertEq(spot.par(), _ray(1.005 ether));
+        assertEq(spot.par(), ray(1.005 ether));
     }
 
     /*****************************/
@@ -714,7 +714,7 @@ contract ActionTest is DSTest {
     function test_setIlkLiquidationRatio() public {
         action.setIlkLiquidationRatio_test("gold", 15000); // 150% in bp
         (, uint256 mat) = spot.ilks("gold");
-        assertEq(mat, _ray(150 ether / 100)); // RAY pct
+        assertEq(mat, ray(150 ether / 100)); // RAY pct
     }
 
     function test_setStartingPriceMultiplicativeFactor() public {
@@ -1041,7 +1041,7 @@ contract ActionTest is DSTest {
             assertEq(uint256(tokenClip.chip()), 10 * WAD / 10000);
 
             (, uint256 mat) = spot.ilks(ilk);
-            assertEq(mat, _ray(150 ether / 100)); // RAY pct
+            assertEq(mat, ray(150 ether / 100)); // RAY pct
 
             bytes32[] memory ilkList = reg.list();
             assertEq(ilkList[ilkList.length - 1], ilk);
@@ -1099,64 +1099,64 @@ contract ActionTest is DSTest {
     /************/
 
     function test_lerp_Line() public {
-        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), "Line", block.timestamp, _rad(2400 ether), _rad(0 ether), 1 days));
+        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), "Line", block.timestamp, rad(2400 ether), rad(0 ether), 1 days));
         assertEq(lerp.what(), "Line");
-        assertEq(lerp.start(), _rad(2400 ether));
-        assertEq(lerp.end(), _rad(0 ether));
+        assertEq(lerp.start(), rad(2400 ether));
+        assertEq(lerp.end(), rad(0 ether));
         assertEq(lerp.duration(), 1 days);
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
-        assertEq(vat.Line(), _rad(2400 ether));
+        assertEq(vat.Line(), rad(2400 ether));
         hevm.warp(now + 1 hours);
-        assertEq(vat.Line(), _rad(2400 ether));
+        assertEq(vat.Line(), rad(2400 ether));
         lerp.tick();
-        assertEq(vat.Line(), _rad(2300 ether + 1600));   // Small amount at the end is rounding errors
+        assertEq(vat.Line(), rad(2300 ether + 1600));   // Small amount at the end is rounding errors
         hevm.warp(now + 1 hours);
         lerp.tick();
-        assertEq(vat.Line(), _rad(2200 ether + 800));
+        assertEq(vat.Line(), rad(2200 ether + 800));
         hevm.warp(now + 6 hours);
         lerp.tick();
-        assertEq(vat.Line(), _rad(1600 ether + 800));
+        assertEq(vat.Line(), rad(1600 ether + 800));
         hevm.warp(now + 1 days);
-        assertEq(vat.Line(), _rad(1600 ether + 800));
+        assertEq(vat.Line(), rad(1600 ether + 800));
         lerp.tick();
-        assertEq(vat.Line(), _rad(0 ether));
+        assertEq(vat.Line(), rad(0 ether));
         assertTrue(lerp.done());
         assertEq(vat.wards(address(lerp)), 0);
     }
 
     function test_lerp_ilk_line() public {
         bytes32 ilk = "gold";
-        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), ilk, "line", block.timestamp, _rad(2400 ether), _rad(0 ether), 1 days));
+        LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), ilk, "line", block.timestamp, rad(2400 ether), rad(0 ether), 1 days));
         lerp.tick();
         assertEq(lerp.what(), "line");
-        assertEq(lerp.start(), _rad(2400 ether));
-        assertEq(lerp.end(), _rad(0 ether));
+        assertEq(lerp.start(), rad(2400 ether));
+        assertEq(lerp.end(), rad(0 ether));
         assertEq(lerp.duration(), 1 days);
         assertTrue(!lerp.done());
         (,,, uint line,) = vat.ilks(ilk);
         assertEq(lerp.startTime(), block.timestamp);
-        assertEq(line, _rad(2400 ether));
+        assertEq(line, rad(2400 ether));
         hevm.warp(now + 1 hours);
         (,,,line,) = vat.ilks(ilk);
-        assertEq(line, _rad(2400 ether));
+        assertEq(line, rad(2400 ether));
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
-        assertEq(line, _rad(2300 ether + 1600));   // Small amount at the end is rounding errors
+        assertEq(line, rad(2300 ether + 1600));   // Small amount at the end is rounding errors
         hevm.warp(now + 1 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
-        assertEq(line, _rad(2200 ether + 800));
+        assertEq(line, rad(2200 ether + 800));
         hevm.warp(now + 6 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
-        assertEq(line, _rad(1600 ether + 800));
+        assertEq(line, rad(1600 ether + 800));
         hevm.warp(now + 1 days);
         (,,,line,) = vat.ilks(ilk);
-        assertEq(line, _rad(1600 ether + 800));
+        assertEq(line, rad(1600 ether + 800));
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
-        assertEq(line, _rad(0 ether));
+        assertEq(line, rad(0 ether));
         assertTrue(lerp.done());
         assertEq(vat.wards(address(lerp)), 0);
     }
