@@ -861,6 +861,16 @@ contract ActionTest is DSTest {
     }
 
     /*****************************/
+    /*** Direct Deposit Module ***/
+    /*****************************/
+
+    function test_setD3MTargetInterestRate() public {
+
+        // TODO
+        //DssExecLib.setD3MTargetInterestRate(d3m, pct_bps);
+    }
+
+    /*****************************/
     /*** Collateral Onboarding ***/
     /*****************************/
 
