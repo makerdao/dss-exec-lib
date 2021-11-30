@@ -886,6 +886,13 @@ contract ActionTest is DSTest {
         d3m.rely(address(action));
 
         action.setD3MTargetInterestRate_test(address(d3m), 500); // set to 5%
+        assertEq(d3m.bar(), 5 * RAY / 100);
+
+        action.setD3MTargetInterestRate_test(address(d3m), 0);   // set to 0%
+        assertEq(d3m.bar(), 0);
+
+        action.setD3MTargetInterestRate_test(address(d3m), 9900); // set to 99%
+        assertEq(d3m.bar(), 99 * RAY / 100);
     }
 
     /*****************************/
