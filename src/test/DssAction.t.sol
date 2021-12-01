@@ -38,6 +38,8 @@ import {DSProxyFactory,
         DSProxy}          from "ds-proxy/proxy.sol";
 import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 import {LerpFactory}      from "dss-lerp/LerpFactory.sol";
+import {DssDirectDepositAaveDai}
+                          from "dss-direct-deposit/DssDirectDepositAaveDai.sol";
 
 import {Vat}              from "dss/vat.sol";
 import {Dog}              from "dss/dog.sol";
@@ -73,6 +75,20 @@ contract UniPairMock {
     address public token0; address public token1;
     constructor(address _token0, address _token1) public {
         token0 = _token0;  token1 = _token1;
+    }
+}
+
+contract AaveMock {
+    // https://docs.aave.com/developers/the-core-protocol/lendingpool
+    function getReserveData(address dai) public view returns (
+        uint256, uint128, uint128, uint128, uint128, uint128, uint40, address, address, address, address, uint8
+    ) {
+        address _dai = dai; // avoid stack too deep
+        return (0,0,0,0,0,0,0, _dai, _dai, _dai, address(this), 0);
+    }
+
+    function getMaxVariableBorrowRate() public pure returns (uint256) {
+        return type(uint256).max;
     }
 }
 
@@ -858,6 +874,25 @@ contract ActionTest is DSTest {
         OSM osm = ilks["gold"].osm;
         action.allowOSMFreeze_test(address(osm), "gold");
         assertEq(osmMom.osms("gold"), address(osm));
+    }
+
+    /*****************************/
+    /*** Direct Deposit Module ***/
+    /*****************************/
+
+    function test_setD3MTargetInterestRate() public {
+        AaveMock aave = new AaveMock();
+        DssDirectDepositAaveDai d3m = new DssDirectDepositAaveDai(address(clog), "tungsten", address(aave), address(0));
+        d3m.rely(address(action));
+
+        action.setD3MTargetInterestRate_test(address(d3m), 500); // set to 5%
+        assertEq(d3m.bar(), 5 * RAY / 100);
+
+        action.setD3MTargetInterestRate_test(address(d3m), 0);   // set to 0%
+        assertEq(d3m.bar(), 0);
+
+        action.setD3MTargetInterestRate_test(address(d3m), 9900); // set to 99%
+        assertEq(d3m.bar(), 99 * RAY / 100);
     }
 
     /*****************************/

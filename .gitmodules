@@ -44,3 +44,6 @@
 [submodule "lib/dss-lerp"]
 	path = lib/dss-lerp
 	url = https://github.com/makerdao/dss-lerp
+[submodule "lib/dss-direct-deposit"]
+	path = lib/dss-direct-deposit
+	url = https://github.com/makerdao/dss-direct-deposit
