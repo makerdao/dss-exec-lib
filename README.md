@@ -175,7 +175,7 @@ Below is an outline of all functions used in the library.
 - `allowOSMFreeze(address _osm, bytes32 _ilk)`: Add OSM address to OSM mom, allowing it to be frozen by governance.
 
 ### Direct Deposit Module
-- `setD3MTargetInterestRate(address _d3m, uint256 _pct_bps)`: Set the target rate (`bar`) for the Aave D3M module.
+- `setD3MTargetInterestRate(address _d3m, uint256 _pct_bps)`: Set the target rate (`bar`) for a D3M module.
 
 ### Collateral Onboarding
 In order to onboard new collateral to the Maker protocol, the following must be done before the spell is prepared:
