@@ -28,6 +28,7 @@ interface Initializable {
 interface Authorizable {
     function rely(address) external;
     function deny(address) external;
+    function setAuthority(address) external;
 }
 
 interface Fileable {
@@ -267,6 +268,14 @@ library DssExecLib {
     */
     function deauthorize(address _base, address _ward) public {
         Authorizable(_base).deny(_ward);
+    }
+    /**
+        @dev Give an address authorization to perform auth actions on the contract.
+        @param _base   The address of the contract with a `setAuthority` pattern
+        @param _authority   Address to be authorized
+    */
+    function setAuthority(address _base, address _authority) public {
+        Authorizable(_base).setAuthority(_authority);
     }
     /**
         @dev Delegate vat authority to the specified address.
