@@ -101,6 +101,7 @@ Below is an outline of all functions used in the library.
 ### Authorizations
 - `authorize(address _base, address _ward)`: Give an address authorization to perform auth actions on the contract.
 - `deauthorize(address _base, address _ward)`: Revoke contract authorization from an address.
+- `setAuthority(address _base, address _authority)`: Give an address authority to a base contract using authority pattern.
 - `delegateVat(address _usr)`: Delegate vat authority to the specified address.
 - `undelegateVat(address _usr)`: Revoke vat authority to the specified address.
 

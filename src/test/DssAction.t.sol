@@ -400,6 +400,12 @@ contract ActionTest is DSTest {
         assertEq(vat.wards(address(1)), 0);
     }
 
+    function test_setAuthority() public {
+        assertEq(clipperMom.authority(), address(0));
+        action.setAuthority_test(address(clipperMom), address(1));
+        assertEq(clipperMom.authority(), address(1));
+    }
+
     function test_delegateVat() public {
         assertEq(vat.can(address(action), address(1)), 0);
         action.delegateVat_test(address(1));
