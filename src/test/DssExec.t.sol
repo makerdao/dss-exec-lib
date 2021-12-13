@@ -122,21 +122,17 @@ contract DssOffboardSpellAction is DssAction {
 
     function actions() public override {
 
-        VatAbstract vat = VatAbstract(DssExecLib.vat());
-
         //
         // Collateral offboarding
         //
 
-        uint256 totalLineReduction;
-
         // Offboard XMPL-A
+        // Note if offboarding multiple collateral, it may be beneficial to pass `false` 
+        // as the last parameter so you can accumulate ilk line reductions and use 
+        // the return `line` value to accumulate the total `Line` change then use
+        // `decreaseGlobalDebtCeiling` once instead of for every ilk.
 
-        uint256 line = DssExecLib.startOffboardingCollateral("XMPL-A", "XMPL-A Offboarding", 15000 * 10**23, 30000 * 10**23, 30 days);
-        totalLineReduction = _add(totalLineReduction, line);
-
-        // Decrease global debt ceiling in accordance with offboarded ilks
-        vat.file("Line", _sub(vat.Line(), totalLineReduction));
+        DssExecLib.startOffboardingCollateral("XMPL-A", "XMPL-A Offboarding", 15000 * 10**23, 30000 * 10**23, 30 days, true);
     }
 }
 

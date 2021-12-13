@@ -1066,19 +1066,21 @@ library DssExecLib {
 
     /**
         @dev Performs basic functions and sanity checks to start removing a collateral type from the MCD system
-        @param _ilk      Collateral type key code [Ex. "ETH-A"]
-        @param _lerp     Name to be used for the LERP [Ex. "ETH-A Offboarding"]
-        @param _matCur   Start value for the mat LERP
-        @param _matEnd   End value for the mat LERP
-        @param _duration Duration of the mat LERP interpolation
-        @return line     current line value for the ilk to be used to reduce the total Line
+        @param _ilk         Collateral type key code [Ex. "ETH-A"]
+        @param _lerp        Name to be used for the LERP [Ex. "ETH-A Offboarding"]
+        @param _matCur      Start value for the mat LERP
+        @param _matEnd      End value for the mat LERP
+        @param _duration    Duration of the mat LERP interpolation
+        @param _reduceLine  if true will also reduce the global Line
+        @return line        ilk line value for the ilk
     */
     function startOffboardingCollateral(
         bytes32 _ilk,
         bytes32 _lerp,
         uint256 _matCur,
         uint256 _matEnd,
-        uint256 _duration
+        uint256 _duration,
+        bool    _reduceLine
     ) public returns (uint256 line) {
         // Sanity checks
         require(_matCur < _matEnd, "COL-OFFBOARDING/end-less-than-current");
@@ -1088,7 +1090,7 @@ library DssExecLib {
 
         setIlkLiquidationPenalty(_ilk, 0);
         removeIlkFromAutoLine(_ilk);
-        setIlkDebtCeiling(_ilk, 0);
+        decreaseIlkDebtCeiling(_ilk, line / RAD, _reduceLine);
         linearInterpolation({
             _name:      _lerp,
             _target:    spotter(),
