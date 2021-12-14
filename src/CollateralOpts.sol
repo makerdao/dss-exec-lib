@@ -19,10 +19,11 @@
 
 pragma solidity ^0.6.12;
 
-
-/// @title Collateral Onboarding Options
-/// @notice This contract defines the CollateralOpts struct, used as parameter for addNewCollateral function
-/// @dev For a more in depth description of the struct components visit https://github.com/makerdao/dss-exec-lib#collateral-onboarding
+/**
+    @title Collateral Onboarding Options
+    @notice This contract defines the CollateralOpts struct, used as parameter for addNewCollateral function
+    @dev For a more in depth description of the struct components visit https://github.com/makerdao/dss-exec-lib#collateral-onboarding
+*/
 struct CollateralOpts {
     bytes32 ilk;                 
     address gem;                 
