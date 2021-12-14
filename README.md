@@ -239,28 +239,27 @@ DssExecLib.setChangelogAddress("MCD_CLIP_XMPL-A", 0x9daCc11dcD0aa13386D295eAeeBB
 DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 ```
 
-- `ilk`:                  Collateral type
-- `gem`:                  Address of collateral token
-- `join`:                 Address of GemJoin contract
-- `clip`:                 Address of Clip contract
-- `calc`:                 Address of Abacus pricing contract, "Auction Price Function (calc)" gov proposal parameter
-- `pip`:                  Address of Pip contract
+- `ilk`:                  Bytes32 result of the hyphenated, all caps collateral type name (e.g. "WBTC-C")
+- `gem`:                  Address of the particular underlying token (e.g. WBTC), usually found already in the latest changelog.makerdao.com releases
+- `join`:                 Address of deployed GemJoin contract
+- `clip`:                 Address of auction Clip contract
+- `calc`:                 Address of Abacus pricing contract
+- `pip`:                  Address of Pip price feed contract
 - `isLiquidatable`:       Boolean indicating whether liquidations are enabled for collateral
 - `isOsm`:                Boolean indicating whether pip address used is an OSM contract
-- `whitelistOsm`:         Boolean indicating whether median is src in OSM.
-- `ilkDebtCeiling`:       Debt ceiling for new collateral, "Debt Ceiling (line)" gov proposal parameter
-- `minVaultAmount`:       Minimum DAI vault amount required for new collateral, "Debt Floor (dust)" gov proposal parameter
-- `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral, "Local Liquidation Limit (ilk.hole)" gov proposal parameter
-- `liquidationPenalty`:   Percent liquidation penalty for new collateral, "Liquidation Penalty (chop)" gov proposal parameter [ex. 13.5% == 1350]
+- `whitelistOsm`:         Boolean indicating whether median is src in OSM
+- `ilkDebtCeiling`:       Debt ceiling (maximum amount of DAI able to be minted from a given vault collectively) for new collateral
+- `minVaultAmount`:       Minimum DAI vault amount a particular user can generate at a time
+- `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
+- `liquidationPenalty`:   Basis point percent liquidation penalty for new collateral [ex. 13.5% == 1350]
 - `ilkStabilityFee`:      Percent stability fee for new collateral, per-second-rate obtained from the "Stability Fee" gov proposal parameter [ex. 4% == 1000000001243680656318820312]
-- `startingPriceFactor`:  Percentage to multiply for initial auction price, "Auction Price Multiplier (buf)" gov proposal parameter [ex. 1.3x == 130% == 13000 bps]
-- `breakerTolerance`:     Percentage of how large of a price drop is tolerated before liquidations are paused, "Breaker Price Tolerance (tolerance)" gov proposal parameter [ex. 0.5x == 50% == 5000 bps]
-- `auctionDuration`:      Total auction duration before reset for new collateral, "Maximum Auction Duration (tail)" gov proposal parameter
-- `permittedDrop`:        Percent an auction can drop before it can be reset, "Maximum Auction Drawdown (cusp)" gov proposal parameter
-- `liquidationRatio`:     Percent liquidation ratio for new collateral, "Liquidation Ratio" gov proposal parameter [ex. 150% == 15000]
-- `kprFlatReward`:        Flat DAI reward a keeper receives for triggering liquidations (to compensate for gas costs), "Flat Kick Incentive (tip)" gov proposal parameter
-- `kprPctReward`:         Basis point percentual reward keeper receive from liquidations, "Proportional Kick Incentive (chip)" gov proposal parameter
-
+- `startingPriceFactor`:  Basis point percentage to multiply for initial auction price [ex. 1.3x == 130% == 13000 bps]
+- `breakerTolerance`:     Percentage of how large of a price drop is tolerated before liquidations are paused [ex. 0.5x == 50% == 5000 bps]
+- `auctionDuration`:      Total auction duration before reset for new collateral in Solidity time unit
+- `permittedDrop`:        Basis point percent an auction can drop before it can be reset
+- `liquidationRatio`:     Basis point percent liquidation ratio for new collateral, sets the maximum amount of DAI debt that a vault user can draw from their vault given the value of their collateral locked in that vault [ex. 150% == 15000]
+- `kprFlatReward`:        Flat DAI reward a keeper receives for triggering liquidations (to compensate for gas costs)
+- `kprPctReward`:         Basis point percent reward keeper receive from liquidations
 ### Payments
 - `sendPaymentFromSurplusBuffer(address _target, uint256 _amount)`: Send a payment in ERC20 DAI from the surplus buffer.
 
