@@ -1090,7 +1090,9 @@ library DssExecLib {
 
         setIlkLiquidationPenalty(_ilk, 0);
         removeIlkFromAutoLine(_ilk);
-        decreaseIlkDebtCeiling(_ilk, line / RAD, _reduceLine);
+        setIlkDebtCeiling(_ilk, 0);
+        address _vat = vat();
+        if (_reduceLine) { setValue(_vat, "Line", sub(DssVat(_vat).Line(), line)); }
         linearInterpolation({
             _name:      _lerp,
             _target:    spotter(),
