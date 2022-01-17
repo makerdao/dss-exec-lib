@@ -240,7 +240,7 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 ```
 
 - `ilk`:                  Bytes32 result of the hyphenated, all caps collateral type name (e.g. "WBTC-C")
-- `gem`:                  Address of the particular underlying token (e.g. WBTC), usually found already in the latest changelog.makerdao.com releases
+- `gem`:                  Address of the particular underlying token (e.g. WBTC), found in the latest MCD deployment
 - `join`:                 Address of deployed GemJoin contract
 - `clip`:                 Address of auction Clip contract
 - `calc`:                 Address of Abacus pricing contract
@@ -248,8 +248,8 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 - `isLiquidatable`:       Boolean indicating whether liquidations are enabled for collateral
 - `isOsm`:                Boolean indicating whether pip address used is an OSM contract
 - `whitelistOsm`:         Boolean indicating whether median is src in OSM
-- `ilkDebtCeiling`:       Debt ceiling (maximum amount of DAI able to be minted from a given vault collectively) for new collateral
-- `minVaultAmount`:       Minimum DAI vault amount a particular user can generate at a time
+- `ilkDebtCeiling`:       Debt ceiling (maximum amount of DAI able to be minted from a given ilk collectively) for new collateral
+- `minVaultAmount`:       Minimum DAI vault amount a particular user can generate
 - `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
 - `liquidationPenalty`:   Basis point percent liquidation penalty for new collateral [ex. 13.5% == 1350]
 - `ilkStabilityFee`:      Percent stability fee for new collateral, per-second-rate obtained from the "Stability Fee" gov proposal parameter [ex. 4% == 1000000001243680656318820312]
