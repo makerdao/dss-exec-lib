@@ -252,9 +252,9 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 - `minVaultAmount`:       Minimum debt denominated in DAI a single vault can have (dust)
 - `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
 - `liquidationPenalty`:   Basis point percent liquidation penalty for new collateral [ex. 13.5% == 1350]
-- `ilkStabilityFee`:      Percent stability fee for new collateral, per-second-rate obtained from the "Stability Fee" gov proposal parameter [ex. 4% == 1000000001243680656318820312]
+- `ilkStabilityFee`:      Percent stability fee for new collateral adjusted to a per-second-rate [ex. 4% == 1000000001243680656318820312]
 - `startingPriceFactor`:  Basis point percentage to multiply for initial auction price [ex. 1.3x == 130% == 13000 bps]
-- `breakerTolerance`:     Percentage of how large of a price drop is tolerated before liquidations are paused [ex. 0.5x == 50% == 5000 bps]
+- `breakerTolerance`:     Basis point percentage of how large of a price drop from one hour to the next is tolerated before liquidations are paused through the clipperMom's price breaker [ex. a tolerance of 0.6 == 60% == 6000 bps means that a new price can't be lower than 60% of the previous price, so the acceptable drop from previous price is up to 40%]
 - `auctionDuration`:      Total auction duration before reset for new collateral in Solidity time unit
 - `permittedDrop`:        Basis point percent an auction can drop before it can be reset
 - `liquidationRatio`:     Basis point percent liquidation ratio for new collateral, sets the maximum amount of DAI debt that a vault can have given the value of their collateral locked in that vault [ex. 150% == 15000] without facing liquidation
