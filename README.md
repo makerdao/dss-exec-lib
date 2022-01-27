@@ -240,7 +240,7 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 ```
 
 - `ilk`:                  Bytes32 result of the hyphenated, all caps collateral type name (e.g. "WBTC-C")
-- `gem`:                  Address of the particular underlying token (e.g. WBTC), found in the latest MCD deployment
+- `gem`:                  Address of the particular underlying token (e.g. WBTC)
 - `join`:                 Address of deployed GemJoin contract
 - `clip`:                 Address of auction Clip contract
 - `calc`:                 Address of Abacus pricing contract
