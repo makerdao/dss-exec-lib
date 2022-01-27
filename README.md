@@ -257,7 +257,7 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 - `breakerTolerance`:     Percentage of how large of a price drop is tolerated before liquidations are paused [ex. 0.5x == 50% == 5000 bps]
 - `auctionDuration`:      Total auction duration before reset for new collateral in Solidity time unit
 - `permittedDrop`:        Basis point percent an auction can drop before it can be reset
-- `liquidationRatio`:     Basis point percent liquidation ratio for new collateral, sets the maximum amount of DAI debt that a vault user can draw from their vault given the value of their collateral locked in that vault [ex. 150% == 15000]
+- `liquidationRatio`:     Basis point percent liquidation ratio for new collateral, sets the maximum amount of DAI debt that a vault can have given the value of their collateral locked in that vault [ex. 150% == 15000] without facing liquidation
 - `kprFlatReward`:        Flat DAI reward a keeper receives for triggering liquidations (to compensate for gas costs)
 - `kprPctReward`:         Basis point percent reward keeper receive from liquidations
 ### Payments
