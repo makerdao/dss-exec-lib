@@ -373,11 +373,11 @@ contract ActionTest is DSTest {
         assertEq(action.nextCastTime_test(1616256000, 1616256000, false), 1616256000);
     }
 
-    function testFail_nextCastTime_eta_zero() public {
+    function testFail_nextCastTime_eta_zero() public view {
         action.nextCastTime_test(0, 1616256000, false);
     }
 
-    function testFail_nextCastTime_ts_zero() public {
+    function testFail_nextCastTime_ts_zero() public view {
         action.nextCastTime_test(1616256000, 0, false);
     }
 

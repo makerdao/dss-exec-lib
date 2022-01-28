@@ -39,7 +39,7 @@ abstract contract DssAction {
     // Office Hours defaults to true by default.
     //   To disable office hours, override this function and
     //    return false in the inherited action.
-    function officeHours() public virtual returns (bool) {
+    function officeHours() public virtual pure returns (bool) {
         return true;
     }
 
@@ -59,7 +59,7 @@ abstract contract DssAction {
     function description() external virtual view returns (string memory);
 
     // Returns the next available cast time
-    function nextCastTime(uint256 eta) external returns (uint256 castTime) {
+    function nextCastTime(uint256 eta) external view returns (uint256 castTime) {
         require(eta <= uint40(-1));
         castTime = DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
