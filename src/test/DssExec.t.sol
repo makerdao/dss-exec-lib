@@ -2,7 +2,7 @@
 //
 // DssExec.t.sol -- MakerDAO Executive Spellcrafting Library Tests
 //
-// Copyright (C) 2020 Maker Ecosystem Growth Holdings, Inc.
+// Copyright (C) 2018-2022 Dai Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
