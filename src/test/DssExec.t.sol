@@ -448,8 +448,9 @@ contract DssLibExecTest is DSTest, DSMath {
         // hump values in RAD
         assertEq(vow.hump()/RAD, values.vow_hump);
         assertTrue(
-            (vow.hump() >= RAD && vow.hump() < BILLION * RAD) ||
-            vow.hump() == 0
+            (vow.hump() >= RAD && vow.hump() < THOUSAND * MILLION * RAD) ||
+            vow.hump() == 0,
+            "DssExec.t.sol/hump-sanity-check-fail"
         );
         }
 
