@@ -50,3 +50,6 @@
 [submodule "lib/MIP21-RWA-Example"]
 	path = lib/MIP21-RWA-Example
 	url = https://github.com/makerdao/MIP21-RWA-Example
+[submodule "lib/dss-gem-joins"]
+	path = lib/dss-gem-joins
+	url = https://github.com/makerdao/dss-gem-joins
