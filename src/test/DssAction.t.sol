@@ -40,6 +40,11 @@ import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 import {LerpFactory}      from "dss-lerp/LerpFactory.sol";
 import {DssDirectDepositAaveDai}
                           from "dss-direct-deposit/DssDirectDepositAaveDai.sol";
+import {RwaLiquidationOracle}
+                          from "MIP21-RWA-Example/RwaLiquidationOracle.sol";
+import {AuthGemJoin}      from "dss-gem-joins/join-auth.sol";
+import {RwaOutputConduit} from "MIP21-RWA-Example/RwaConduit.sol";
+import {RwaUrn}           from "MIP21-RWA-Example/RwaUrn.sol";
 
 import {Vat}              from "dss/vat.sol";
 import {Dog}              from "dss/dog.sol";
@@ -114,6 +119,7 @@ contract ActionTest is DSTest {
     MkrAuthority  govGuard;
     DssAutoLine   autoLine;
     LerpFactory   lerpFab;
+    RwaLiquidationOracle rwaOracle;
 
     ChainLog clog;
 
@@ -142,6 +148,7 @@ contract ActionTest is DSTest {
     uint256 constant public RAD      = 10 ** 45;
 
     uint256 constant START_TIME = 604411200;
+    string constant doc = "QmdmAUTU3sd9VkdfTZNQM6krc9jsKgF2pz7W1qvvfJo1xk";
 
     function ray(uint wad) internal pure returns (uint) {
         return wad * 10 ** 9;
@@ -233,6 +240,36 @@ contract ActionTest is DSTest {
         return ilks[name];
     }
 
+    function init_rwa(
+        bytes32 ilk,
+        uint256 line,
+        uint48 tau,
+        uint256 duty,
+        uint256 mat,
+        address operator
+    ) internal {
+        uint256 val = line; // TODO calculation
+        rwaOracle.init(ilk, val, doc, tau);
+        (,address pip,,) = rwaOracle.ilks(ilk);
+        spot.file(ilk, "pip", pip);
+        vat.init(ilk);
+        jug.init(ilk);
+        DSToken token = new DSToken(string(abi.encodePacked(ilk)));
+        AuthGemJoin join = new AuthGemJoin(address(vat), ilk, address(token));
+        vat.rely(address(join));
+        vat.rely(address(rwaOracle));
+        vat.file(ilk, "line", line);
+        vat.file("Line", vat.Line() + line);
+        jug.file(ilk, "duty", duty);
+        spot.file(ilk, "mat", mat);
+        spot.poke(ilk);
+        RwaOutputConduit out = new RwaOutputConduit(address(gov), address(daiToken));
+        RwaUrn urn = new RwaUrn(address(vat), address(jug), address(join), address(daiJoin), address(out));
+        join.rely(address(urn));
+        urn.hope(operator);
+        out.hope(operator);
+    }
+
     function setUp() public {
         hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
         hevm.warp(START_TIME);
@@ -299,6 +336,8 @@ contract ActionTest is DSTest {
         lerpFab = new LerpFactory();
 
         median = new Median();
+
+        rwaOracle = new RwaLiquidationOracle(address(vat), address(vow));
 
         hevm.store(
             LOG,
