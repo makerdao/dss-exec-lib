@@ -248,7 +248,7 @@ contract ActionTest is DSTest {
         uint256 mat,
         address operator
     ) internal {
-        uint256 val = line; // TODO calculation
+        uint256 val = line / RAY; // TODO calculation
         rwaOracle.init(ilk, val, doc, tau);
         (,address pip,,) = rwaOracle.ilks(ilk);
         spot.file(ilk, "pip", pip);
@@ -367,6 +367,14 @@ contract ActionTest is DSTest {
         action = new DssTestAction();
 
         init_collateral("gold", address(action));
+        init_rwa({
+            ilk:      "6s",
+            line:     20_000_000 * RAD,
+            tau:      60 * 60 * 24 * 365,
+            duty:     103 * RAY / 100,
+            mat:      105 * RAY / 100,
+            operator: address(123)
+        });
 
         vat.rely(address(action));
         spot.rely(address(action));
