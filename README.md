@@ -248,7 +248,7 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 - `isLiquidatable`:       Boolean indicating whether liquidations are enabled for collateral
 - `isOsm`:                Boolean indicating whether pip address used is an OSM contract
 - `whitelistOsm`:         Boolean indicating whether median is src in OSM
-- `ilkDebtCeiling`:       Debt ceiling (maximum amount of DAI able to be minted from a given ilk collectively) for new collateral
+- `ilkDebtCeiling`:       Debt ceiling (maximum amount of DAI able to be minted from a given ilk) for new collateral
 - `minVaultAmount`:       Minimum debt denominated in DAI a single vault can have (dust)
 - `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
 - `liquidationPenalty`:   Basis point percent liquidation penalty for new collateral [ex. 13.5% == 1350]
