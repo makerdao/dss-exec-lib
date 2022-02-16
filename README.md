@@ -206,7 +206,7 @@ import "src/CollateralOpts.sol";
 
 // Initialize the pricing function with the appropriate initializer
 address xmpl_calc = 0x1f206d7916Fd3B1b5B0Ce53d5Cab11FCebc124DA;
-DssExecLib.initStairstepExponentialDecrease(xmpl_calc, 60, 9900);
+DssExecLib.setStairstepExponentialDecrease(xmpl_calc, 60, 9900);
 
 CollateralOpts memory XMPL_A = CollateralOpts({
     ilk:                   "XMPL-A",
@@ -224,12 +224,17 @@ CollateralOpts memory XMPL_A = CollateralOpts({
     liquidationPenalty:    1300,        // 13% penalty
     ilkStabilityFee:       1000000000705562181084137268,
     startingPriceFactor:   13000,       // 1.3x multiplier
+    breakerTolerance:      5000,        // 50% drop before liquidations are paused
     auctionDuration:       6 hours,
     permittedDrop:         4000,        // 40% drop before reset
-    liquidationRatio:      15000        // 150% collateralization ratio
+    liquidationRatio:      15000,       // 150% collateralization ratio
+    kprFlatReward:         300,         // keepers receive 300 DAI
+    kprPctReward:          10,          // keepers receive 0.1%        
 });
 
 DssExecLib.addNewCollateral(XMPL_A);
+// set the parameters for an ilk in the "MCD_IAM_AUTO_LINE" auto-line
+DssExecLib.setIlkAutoLineParameter("XMPL-A", 3 * MILLION, 100 * MILLION, 8 hours);
 
 DssExecLib.setChangelogAddress("XMPL",          0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
 DssExecLib.setChangelogAddress("PIP_XMPL",      0x9eb923339c24c40Bef2f4AF4961742AA7C23EF3a);
@@ -238,25 +243,27 @@ DssExecLib.setChangelogAddress("MCD_CLIP_XMPL-A", 0x9daCc11dcD0aa13386D295eAeeBB
 DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 ```
 
-- `ilk`:                  Collateral type
-- `gem`:                  Address of collateral token
-- `join`:                 Address of GemJoin contract
-- `clip`:                 Address of Clip contract
+- `ilk`:                  Collateral type (e.g. "WBTC-C")
+- `gem`:                  Address of underlying token (e.g. WBTC)
+- `join`:                 Address of deployed GemJoin contract
+- `clip`:                 Address of auction Clip contract
 - `calc`:                 Address of Abacus pricing contract
-- `pip`:                  Address of Pip contract
+- `pip`:                  Address of Pip price feed contract
 - `isLiquidatable`:       Boolean indicating whether liquidations are enabled for collateral
 - `isOsm`:                Boolean indicating whether pip address used is an OSM contract
-- `whitelistOsm`:         Boolean indicating whether median is src in OSM.
-- `ilkDebtCeiling`:       Debt ceiling for new collateral
-- `minVaultAmount`:       Minimum DAI vault amount required for new collateral
+- `whitelistOsm`:         Boolean indicating whether median is src in OSM
+- `ilkDebtCeiling`:       Debt ceiling (maximum amount of DAI able to be minted from a given ilk) for new collateral
+- `minVaultAmount`:       Minimum debt denominated in DAI a single vault can have (dust)
 - `maxLiquidationAmount`: Max DAI amount per vault for liquidation for new collateral
-- `liquidationPenalty`:   Percent liquidation penalty for new collateral [ex. 13.5% == 1350]
-- `ilkStabilityFee`:      Percent stability fee for new collateral       [ex. 4% == 1000000001243680656318820312]
-- `startingPriceFactor`:  Percentage to multiply for initial auction price. [ex. 1.3x == 130% == 13000 bps]
-- `auctionDuration`:      Total auction duration before reset for new collateral
-- `permittedDrop`:        Percent an auction can drop before it can be reset.
-- `liquidationRatio`:     Percent liquidation ratio for new collateral   [ex. 150% == 15000]
-
+- `liquidationPenalty`:   Basis point percent liquidation penalty for new collateral [ex. 13.5% == 1350]
+- `ilkStabilityFee`:      Percent stability fee for new collateral adjusted to a per-second-rate [ex. 4% == 1000000001243680656318820312]
+- `startingPriceFactor`:  Basis point percentage to multiply for initial auction price [ex. 1.3x == 130% == 13000 bps]
+- `breakerTolerance`:     Basis point percentage of how large of a price drop from one hour to the next is tolerated before liquidations are paused through the clipperMom's price breaker [ex. a tolerance of 0.6 == 60% == 6000 bps means that a new price can't be lower than 60% of the previous price, so the acceptable drop from previous price is up to 40%]
+- `auctionDuration`:      Total auction duration before reset for new collateral in Solidity time unit
+- `permittedDrop`:        Basis point percent an auction can drop before it can be reset
+- `liquidationRatio`:     Basis point percent liquidation ratio for new collateral, sets the maximum amount of DAI debt that a vault can have given the value of their collateral locked in that vault [ex. 150% == 15000] without facing liquidation
+- `kprFlatReward`:        Flat DAI reward a keeper receives for triggering liquidations (to compensate for gas costs)
+- `kprPctReward`:         Basis point percent reward keeper receive from liquidations
 ### Payments
 - `sendPaymentFromSurplusBuffer(address _target, uint256 _amount)`: Send a payment in ERC20 DAI from the surplus buffer.
 
