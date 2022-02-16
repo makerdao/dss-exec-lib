@@ -240,7 +240,7 @@ DssExecLib.setChangelogAddress("MCD_CLIP_CALC_XMPL-A", xmpl_calc);
 ```
 
 - `ilk`:                  Collateral type (e.g. "WBTC-C")
-- `gem`:                  Address of the particular underlying token (e.g. WBTC)
+- `gem`:                  Address of underlying token (e.g. WBTC)
 - `join`:                 Address of deployed GemJoin contract
 - `clip`:                 Address of auction Clip contract
 - `calc`:                 Address of Abacus pricing contract
