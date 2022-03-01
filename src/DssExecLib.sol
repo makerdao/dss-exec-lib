@@ -130,6 +130,10 @@ interface LerpLike {
     function tick() external returns (uint256);
 }
 
+interface RwaOracleLike {
+    function bump(bytes32 ilk, uint256 val) external;
+}
+
 
 library DssExecLib {
 
@@ -637,6 +641,18 @@ library DssExecLib {
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
         setValue(_vat, _ilk, "line", sub(line_, _amount * RAD));
         if (_global) { decreaseGlobalDebtCeiling(_amount); }
+    }
+    /**
+        @dev Set a RWA collateral debt ceiling by specifying its new oracle price.
+        @param _ilk      The ilk to update (ex. bytes32("ETH-A"))
+        @param _ceiling  The new debt ceiling in natural units (e.g. set 10m DAI as 10_000_000)
+        @param _price    The new oracle price in natural units
+    */
+    function setRWADebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price) public {
+        require(_ceiling < WAD);
+        require(_price < WAD);
+        setValue(vat(), _ilk, "line", _ceiling * RAD);
+        RwaOracleLike(getChangelogAddress("MIP21_LIQUIDATION_ORACLE")).bump(_ilk, _price * WAD);
     }
     /**
         @dev Set the parameters for an ilk in the "MCD_IAM_AUTO_LINE" auto-line

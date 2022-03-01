@@ -74,6 +74,7 @@ interface Hevm {
 
 interface PipLike {
     function peek() external returns (bytes32, bool);
+    function read() external returns (bytes32);
 }
 
 contract UniPairMock {
@@ -346,23 +347,24 @@ contract ActionTest is DSTest {
         );
         clog = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
 
-        clog.setAddress("MCD_VAT",           address(vat));
-        clog.setAddress("MCD_DOG",           address(dog));
-        clog.setAddress("MCD_JUG",           address(jug));
-        clog.setAddress("MCD_POT",           address(pot));
-        clog.setAddress("MCD_VOW",           address(vow));
-        clog.setAddress("MCD_SPOT",          address(spot));
-        clog.setAddress("MCD_FLAP",          address(flap));
-        clog.setAddress("MCD_FLOP",          address(flop));
-        clog.setAddress("MCD_END",           address(end));
-        clog.setAddress("MCD_DAI",           address(daiToken));
-        clog.setAddress("MCD_JOIN_DAI",      address(daiJoin));
-        clog.setAddress("ILK_REGISTRY",      address(reg));
-        clog.setAddress("OSM_MOM",           address(osmMom));
-        clog.setAddress("GOV_GUARD",         address(govGuard));
-        clog.setAddress("CLIPPER_MOM",       address(clipperMom));
-        clog.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
-        clog.setAddress("LERP_FAB",          address(lerpFab));
+        clog.setAddress("MCD_VAT",                  address(vat));
+        clog.setAddress("MCD_DOG",                  address(dog));
+        clog.setAddress("MCD_JUG",                  address(jug));
+        clog.setAddress("MCD_POT",                  address(pot));
+        clog.setAddress("MCD_VOW",                  address(vow));
+        clog.setAddress("MCD_SPOT",                 address(spot));
+        clog.setAddress("MCD_FLAP",                 address(flap));
+        clog.setAddress("MCD_FLOP",                 address(flop));
+        clog.setAddress("MCD_END",                  address(end));
+        clog.setAddress("MCD_DAI",                  address(daiToken));
+        clog.setAddress("MCD_JOIN_DAI",             address(daiJoin));
+        clog.setAddress("ILK_REGISTRY",             address(reg));
+        clog.setAddress("OSM_MOM",                  address(osmMom));
+        clog.setAddress("GOV_GUARD",                address(govGuard));
+        clog.setAddress("CLIPPER_MOM",              address(clipperMom));
+        clog.setAddress("MCD_IAM_AUTO_LINE",        address(autoLine));
+        clog.setAddress("LERP_FAB",                 address(lerpFab));
+        clog.setAddress("MIP21_LIQUIDATION_ORACLE", address(rwaOracle));
 
         action = new DssTestAction();
 
@@ -370,7 +372,7 @@ contract ActionTest is DSTest {
         init_rwa({
             ilk:      "6s",
             line:     20_000_000 * RAD,
-            tau:      60 * 60 * 24 * 365,
+            tau:      365 days,
             duty:     103 * RAY / 100,
             mat:      105 * RAY / 100,
             operator: address(123)
@@ -390,6 +392,7 @@ contract ActionTest is DSTest {
         clog.rely(address(action));
         autoLine.rely(address(action));
         lerpFab.rely(address(action));
+        rwaOracle.rely(address(action));
 
         clipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
@@ -696,6 +699,15 @@ contract ActionTest is DSTest {
         action.setIlkDebtCeiling_test("gold", 100 * MILLION); // Setup
 
         action.decreaseIlkDebtCeiling_test("gold", 101 * MILLION); // Fail
+    }
+
+    function test_setRWADebtCeiling() public {
+        action.setRWADebtCeiling_test("6s", 50 * MILLION, 55 * MILLION);
+        (,,, uint256 line,) = vat.ilks("6s");
+        assertEq(line, 50 * MILLION * RAD);
+        (,address pip,,) = rwaOracle.ilks("6s");
+        uint256 price = uint256(PipLike(pip).read());
+        assertEq(price, 55 * MILLION * WAD);
     }
 
     function test_setIlkAutoLineParameters() public {
