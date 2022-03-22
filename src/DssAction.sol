@@ -40,7 +40,7 @@ abstract contract DssAction {
     // Office Hours defaults to true by default.
     //   To disable office hours, override this function and
     //    return false in the inherited action.
-    function officeHours() public virtual pure returns (bool) {
+    function officeHours() public virtual view returns (bool) {
         return true;
     }
 
