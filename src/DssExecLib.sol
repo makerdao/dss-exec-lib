@@ -648,6 +648,8 @@ library DssExecLib {
         @param _ilk      The ilk to update (ex. bytes32("ETH-A"))
         @param _ceiling  The new debt ceiling in natural units (e.g. set 10m DAI as 10_000_000)
         @param _price    The new oracle price in natural units
+        @dev note: _price should enable DAI to be drawn over the loan period while taking into
+                   account the configured ink amount, interest rate and liquidation ratio
     */
     function setRWADebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price) public {
         require(_ceiling < WAD);
