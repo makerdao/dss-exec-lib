@@ -656,6 +656,7 @@ library DssExecLib {
         require(_price < WAD);
         setValue(vat(), _ilk, "line", _ceiling * RAD);
         RwaOracleLike(getChangelogAddress("MIP21_LIQUIDATION_ORACLE")).bump(_ilk, _price * WAD);
+        updateCollateralPrice(_ilk);
     }
     /**
         @dev Set the parameters for an ilk in the "MCD_IAM_AUTO_LINE" auto-line
