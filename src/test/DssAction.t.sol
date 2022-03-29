@@ -702,8 +702,8 @@ contract ActionTest is DSTest {
         action.decreaseIlkDebtCeiling_test("gold", 101 * MILLION); // Fail
     }
 
-    function test_setRWADebtCeiling() public {
-        action.setRWADebtCeiling_test("6s", 50 * MILLION, 55 * MILLION);
+    function test_setRWAIlkDebtCeiling() public {
+        action.setRWAIlkDebtCeiling_test("6s", 50 * MILLION, 55 * MILLION);
         (,,, uint256 line,) = vat.ilks("6s");
         assertEq(line, 50 * MILLION * RAD);
         (,address pip,,) = rwaOracle.ilks("6s");

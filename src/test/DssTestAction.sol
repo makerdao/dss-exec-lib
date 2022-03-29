@@ -223,8 +223,8 @@ contract DssTestAction is DssAction {
         DssExecLib.decreaseIlkDebtCeiling(ilk, amount, true);
     }
 
-    function setRWADebtCeiling_test(bytes32 ilk, uint256 ceiling, uint256 price) public {
-        DssExecLib.setRWADebtCeiling(ilk, ceiling, price);
+    function setRWAIlkDebtCeiling_test(bytes32 ilk, uint256 ceiling, uint256 price) public {
+        DssExecLib.setRWAIlkDebtCeiling(ilk, ceiling, price);
     }
 
     function setIlkAutoLineParameters_test(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) public {

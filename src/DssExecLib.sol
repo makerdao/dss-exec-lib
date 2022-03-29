@@ -651,7 +651,7 @@ library DssExecLib {
         @dev note: _price should enable DAI to be drawn over the loan period while taking into
                    account the configured ink amount, interest rate and liquidation ratio
     */
-    function setRWADebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price) public {
+    function setRWAIlkDebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price) public {
         require(_ceiling < WAD);
         require(_price < WAD);
         setValue(vat(), _ilk, "line", _ceiling * RAD);
