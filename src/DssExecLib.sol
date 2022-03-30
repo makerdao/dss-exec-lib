@@ -653,7 +653,6 @@ library DssExecLib {
         @dev note: _price should be higher than the current oracle price
     */
     function setRWAIlkDebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price) public {
-        require(_ceiling < WAD);
         require(_price < WAD);
         setIlkDebtCeiling(_ilk, _ceiling);
         RwaOracleLike(getChangelogAddress("MIP21_LIQUIDATION_ORACLE")).bump(_ilk, _price * WAD);
