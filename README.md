@@ -146,6 +146,7 @@ Below is an outline of all functions used in the library.
 - `setIlkDebtCeiling(bytes32 _ilk, uint256 _amount)`: Set a collateral debt ceiling.
 - `increaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount, bool _global)`: Raise the debt ceiling of a particular ilk.
 - `decreaseIlkDebtCeiling(bytes32 _ilk, uint256 _amount, bool _global)`: Lower the debt ceiling of a particular ilk.
+- `setRWAIlkDebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price)`: Set the debt ceiling for a RWA collateral. This requires also a new oracle price.
 - `setIlkAutoLineParameters(bytes32 _ilk, uint256 _amount, uint256 _gap, uint256 _ttl)`: Configure the parameters for the Debt Ceiling auto line module for a particluar ilk.
 - `setIlkAutoLineDebtCeiling(bytes32 _ilk, uint256 _amount)`: Adjust the debt ceiling in the auto line module.
 - `removeIlkFromAutoLine(bytes32 _ilk)`: Remove the management of an ilk by the debt ceiling auto line module.

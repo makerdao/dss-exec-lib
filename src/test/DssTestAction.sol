@@ -2,8 +2,7 @@
 //
 // DssTestAction.sol -- Testable Actions
 //
-// Copyright (C) 2020-2021 Maker Ecosystem Growth Holdings, Inc.
-// Copyright (C) 2021-2022 Dai Foundation
+// Copyright (C) 2020-2022 Dai Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -32,7 +31,7 @@ contract DssTestNoOfficeHoursAction is DssAction {
         require(!officeHours());
     }
 
-    function officeHours() public override view returns (bool) {
+    function officeHours() public view override returns (bool) {
         return false;
     }
 }
