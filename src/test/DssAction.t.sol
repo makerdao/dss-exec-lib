@@ -276,7 +276,7 @@ contract ActionTest is DSTest {
         uint256 mat,
         address operator
     ) internal {
-        uint256 val = line / RAY; // TODO calculation
+        uint256 val = rmul(rmul(line / RAY, mat), rpow(duty, 2 * 365 days, RAY));
         rwaOracle.init(ilk, val, doc, tau);
         (,address pip,,) = rwaOracle.ilks(ilk);
         spot.file(ilk, "pip", pip);
@@ -401,7 +401,7 @@ contract ActionTest is DSTest {
             ilk:      "6s",
             line:     20_000_000 * RAD,
             tau:      365 days,
-            duty:     103 * RAY / 100,
+            duty:     1000000000937303470807876289, // 3% APY
             mat:      105 * RAY / 100,
             operator: address(123)
         });
