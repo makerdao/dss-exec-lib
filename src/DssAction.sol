@@ -30,17 +30,19 @@ abstract contract DssAction {
 
     using DssExecLib for *;
 
+    // Office Hours defaults to true by default.
+    bool OFFICE_HOURS = true;
+
     // Modifier used to limit execution time when office hours is enabled
     modifier limited {
         require(DssExecLib.canCast(uint40(block.timestamp), officeHours()), "Outside office hours");
         _;
     }
 
-    // Office Hours defaults to true by default.
     //   To disable office hours, override this function and
     //    return false in the inherited action.
     function officeHours() public view virtual returns (bool) {
-        return true;
+        return OFFICE_HOURS;
     }
 
     // DssExec calls execute. We limit this function subject to officeHours modifier.
