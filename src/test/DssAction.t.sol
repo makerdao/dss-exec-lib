@@ -45,6 +45,7 @@ import {RwaLiquidationOracle}
 import {AuthGemJoin}      from "dss-gem-joins/join-auth.sol";
 import {RwaOutputConduit} from "MIP21-RWA-Example/RwaConduit.sol";
 import {RwaUrn}           from "MIP21-RWA-Example/RwaUrn.sol";
+import {RwaToken}         from "MIP21-RWA-Example/RwaToken.sol";
 
 import {Vat}              from "dss/vat.sol";
 import {Dog}              from "dss/dog.sol";
@@ -255,7 +256,8 @@ contract ActionTest is DSTest {
         spot.file(ilk, "pip", pip);
         vat.init(ilk);
         jug.init(ilk);
-        DSToken token = new DSToken(string(abi.encodePacked(ilk)));
+        string memory name = string(abi.encodePacked(ilk));
+        RwaToken token = new RwaToken(name, name);
         AuthGemJoin join = new AuthGemJoin(address(vat), ilk, address(token));
         vat.rely(address(join));
         vat.rely(address(rwaOracle));
