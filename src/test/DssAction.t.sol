@@ -757,6 +757,10 @@ contract ActionTest is DSTest {
         assertEq(price, 55 * MILLION * WAD);
     }
 
+    function testFail_setRWAIlkDebtCeiling() public {
+        action.setRWAIlkDebtCeiling_test("6s", 50 * MILLION, 20 * MILLION); // Fail
+    }
+
     function test_setIlkAutoLineParameters() public {
         action.setIlkAutoLineParameters_test("gold", 150 * MILLION, 5 * MILLION, 10000); // Setup
 
