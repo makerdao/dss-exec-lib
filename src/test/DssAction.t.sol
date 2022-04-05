@@ -220,6 +220,23 @@ contract ActionTest is DSTest {
         }
     }
 
+    // not provided in DSTest
+    function assertEqApprox(uint256 _a, uint256 _b, uint256 _tolerance) internal {
+        uint256 a = _a;
+        uint256 b = _b;
+        if (a < b) {
+            uint256 tmp = a;
+            a = b;
+            b = tmp;
+        }
+        if (a - b > _tolerance) {
+            emit log_bytes32("Error: Wrong `uint' value");
+            emit log_named_uint("  Expected", _b);
+            emit log_named_uint("    Actual", _a);
+            fail();
+        }
+    }
+
     function init_collateral(bytes32 name, address _action) internal returns (Ilk memory) {
         DSToken coin = new DSToken("Token");
         coin.mint(20 ether);
