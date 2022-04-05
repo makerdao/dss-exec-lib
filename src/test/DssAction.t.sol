@@ -730,11 +730,13 @@ contract ActionTest is DSTest {
     }
 
     function test_setRWAIlkDebtCeiling() public {
+        (,address pip,,) = rwaOracle.ilks("6s");
+        uint256 price = uint256(PipLike(pip).read());
+        assertEqApprox(price, 22_278_900 * WAD, WAD); // 20MM * 1.03^2 * 1.05
         action.setRWAIlkDebtCeiling_test("6s", 50 * MILLION, 55 * MILLION);
         (,,, uint256 line,) = vat.ilks("6s");
         assertEq(line, 50 * MILLION * RAD);
-        (,address pip,,) = rwaOracle.ilks("6s");
-        uint256 price = uint256(PipLike(pip).read());
+        price = uint256(PipLike(pip).read());
         assertEq(price, 55 * MILLION * WAD);
     }
 
