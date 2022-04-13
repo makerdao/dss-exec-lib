@@ -31,7 +31,7 @@ contract DssTestNoOfficeHoursAction is DssAction {
         require(!officeHours());
     }
 
-    function officeHours() public pure override returns (bool) {
+    function officeHours() public view override returns (bool) {
         return false;
     }
 }
