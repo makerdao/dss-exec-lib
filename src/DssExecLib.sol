@@ -650,7 +650,7 @@ library DssExecLib {
         @param _price    The new oracle price in natural units
         @dev note: _price should enable DAI to be drawn over the loan period while taking into
                    account the configured ink amount, interest rate and liquidation ratio
-        @dev note: _price * WAD should be greater than or equal to the current oracle price
+        @dev note: _price * WAD should be greater than or equal to the current oracle price
     */
     function setRWAIlkDebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price) public {
         require(_price < WAD);
