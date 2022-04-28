@@ -525,21 +525,23 @@ library DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setMinDebtAuctionBidIncrease(uint256 _pct_bps) public {
-        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flop-beg-precision"
         setValue(flop(), "beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
         @dev Set bid duration for debt auctions.
-        @param _duration Amount of time for bids.
+        @param _duration Amount of time for bids. (seconds)
     */
     function setDebtAuctionBidDuration(uint256 _duration) public {
+        require(_duration < type(uint48).max);  // "LibDssExec/incorrect-flop-ttl-precision"
         setValue(flop(), "ttl", _duration);
     }
     /**
         @dev Set total auction duration for debt auctions.
-        @param _duration Amount of time for auctions.
+        @param _duration Amount of time for auctions. (seconds)
     */
     function setDebtAuctionDuration(uint256 _duration) public {
+        require(_duration < type(uint48).max);  // "LibDssExec/incorrect-flop-tau-precision"
         setValue(flop(), "tau", _duration);
     }
     /**
@@ -549,6 +551,7 @@ library DssExecLib {
         @param _pct_bps    The pct, in basis points, to set in integer form (x100). (ex. 5% = 5 * 100 = 500)
     */
     function setDebtAuctionMKRIncreaseRate(uint256 _pct_bps) public {
+        require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flop-pad-precision"
         setValue(flop(), "pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
     }
     /**
