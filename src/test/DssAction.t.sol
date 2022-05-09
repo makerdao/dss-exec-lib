@@ -220,11 +220,16 @@ contract ActionTest is DSTest {
         }
     }
 
-    // not provided in DSTest
+    /**
+    * @notice Test that two values are approximately equal within a certain tolerance range
+    * @param _a First value
+    * @param _b Second value
+    * @param _tolerance Maximum tolerated difference, in absolute terms
+    */
     function assertEqApprox(uint256 _a, uint256 _b, uint256 _tolerance) internal {
         uint256 a = _a;
         uint256 b = _b;
-        if (a < b) {
+        if (a < b) { // if a < b, switch values so that a is always the biggest amount
             uint256 tmp = a;
             a = b;
             b = tmp;
