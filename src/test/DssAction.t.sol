@@ -150,7 +150,7 @@ contract ActionTest is DSTest {
     uint256 constant public RAD      = 10 ** 45;
 
     uint256 constant START_TIME = 604411200;
-    string constant doc = "QmdmAUTU3sd9VkdfTZNQM6krc9jsKgF2pz7W1qvvfJo1xk";
+    string constant doc = "QmcniBv7UQ4gGPQQW2BwbD4ZZHzN3o3tPuNLZCbBchd1zh";
 
     function ray(uint wad) internal pure returns (uint) {
         return wad * 10 ** 9;
