@@ -579,9 +579,17 @@ contract ActionTest is DSTest {
         assertEq(flop.beg(), 1 ether + 5.25 ether / 100); // (1 + pct) * WAD
     }
 
+    function testFail_setMinDebtAuctionBidIncreaseTooHigh() public {
+        action.setMinDebtAuctionBidIncrease_test(10000); // Fail on 100%
+    }
+
     function test_setDebtAuctionBidDuration() public {
         action.setDebtAuctionBidDuration_test(12 hours);
         assertEq(uint256(flop.ttl()), 12 hours);
+    }
+
+    function testFail_setDebtAuctionBidDurationMax() public {
+        action.setDebtAuctionBidDuration_test(type(uint48).max);  // Fail on max
     }
 
     function test_setDebtAuctionDuration() public {
@@ -589,9 +597,17 @@ contract ActionTest is DSTest {
         assertEq(uint256(flop.tau()), 12 hours);
     }
 
+    function testFail_setDebtAuctionDurationMax() public {
+        action.setDebtAuctionDuration_test(type(uint48).max);  // Fail on max
+    }
+
     function test_setDebtAuctionMKRIncreaseRate() public {
         action.setDebtAuctionMKRIncreaseRate_test(525);
         assertEq(flop.pad(), 105.25 ether / 100); // WAD pct
+    }
+
+    function testFail_setDebtAuctionMKRIncreaseRateTooHigh() public {
+        action.setDebtAuctionMKRIncreaseRate_test(10000);  // Fail on 100%
     }
 
     function test_setMaxTotalDAILiquidationAmount() public {
