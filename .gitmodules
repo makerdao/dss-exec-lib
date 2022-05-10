@@ -47,3 +47,6 @@
 [submodule "lib/dss-direct-deposit"]
 	path = lib/dss-direct-deposit
 	url = https://github.com/makerdao/dss-direct-deposit
+[submodule "lib/MIP21-RWA-Example"]
+	path = lib/MIP21-RWA-Example
+	url = https://github.com/makerdao/MIP21-RWA-Example

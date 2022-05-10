@@ -2,7 +2,7 @@
 //
 // DssExecLib.sol -- MakerDAO Executive Spellcrafting Library
 //
-// Copyright (C) 2020 Maker Ecosystem Growth Holdings, Inc.
+// Copyright (C) 2020-2022 Dai Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -16,6 +16,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
@@ -128,6 +129,10 @@ interface LerpFactoryLike {
 
 interface LerpLike {
     function tick() external returns (uint256);
+}
+
+interface RwaOracleLike {
+    function bump(bytes32 ilk, uint256 val) external;
 }
 
 
@@ -637,6 +642,21 @@ library DssExecLib {
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
         setValue(_vat, _ilk, "line", sub(line_, _amount * RAD));
         if (_global) { decreaseGlobalDebtCeiling(_amount); }
+    }
+    /**
+        @dev Set a RWA collateral debt ceiling by specifying its new oracle price.
+        @param _ilk      The ilk to update (ex. bytes32("ETH-A"))
+        @param _ceiling  The new debt ceiling in natural units (e.g. set 10m DAI as 10_000_000)
+        @param _price    The new oracle price in natural units
+        @dev note: _price should enable DAI to be drawn over the loan period while taking into
+                   account the configured ink amount, interest rate and liquidation ratio
+        @dev note: _price * WAD should be greater than or equal to the current oracle price
+    */
+    function setRWAIlkDebtCeiling(bytes32 _ilk, uint256 _ceiling, uint256 _price) public {
+        require(_price < WAD);
+        setIlkDebtCeiling(_ilk, _ceiling);
+        RwaOracleLike(getChangelogAddress("MIP21_LIQUIDATION_ORACLE")).bump(_ilk, _price * WAD);
+        updateCollateralPrice(_ilk);
     }
     /**
         @dev Set the parameters for an ilk in the "MCD_IAM_AUTO_LINE" auto-line

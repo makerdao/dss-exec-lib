@@ -2,7 +2,7 @@
 //
 // DssAction.sol -- DSS Executive Spell Action Tests
 //
-// Copyright (C) 2020 Maker Ecosystem Growth Holdings, Inc.
+// Copyright (C) 2020-2022 Dai Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -40,6 +40,12 @@ import {DssAutoLine}      from "dss-auto-line/DssAutoLine.sol";
 import {LerpFactory}      from "dss-lerp/LerpFactory.sol";
 import {DssDirectDepositAaveDai}
                           from "dss-direct-deposit/DssDirectDepositAaveDai.sol";
+import {RwaLiquidationOracle}
+                          from "MIP21-RWA-Example/RwaLiquidationOracle.sol";
+import {AuthGemJoin}      from "dss-gem-joins/join-auth.sol";
+import {RwaOutputConduit} from "MIP21-RWA-Example/RwaConduit.sol";
+import {RwaUrn}           from "MIP21-RWA-Example/RwaUrn.sol";
+import {RwaToken}         from "MIP21-RWA-Example/RwaToken.sol";
 
 import {Vat}              from "dss/vat.sol";
 import {Dog}              from "dss/dog.sol";
@@ -69,6 +75,7 @@ interface Hevm {
 
 interface PipLike {
     function peek() external returns (bytes32, bool);
+    function read() external returns (bytes32);
 }
 
 contract UniPairMock {
@@ -114,6 +121,7 @@ contract ActionTest is DSTest {
     MkrAuthority  govGuard;
     DssAutoLine   autoLine;
     LerpFactory   lerpFab;
+    RwaLiquidationOracle rwaOracle;
 
     ChainLog clog;
 
@@ -142,6 +150,7 @@ contract ActionTest is DSTest {
     uint256 constant public RAD      = 10 ** 45;
 
     uint256 constant START_TIME = 604411200;
+    string constant doc = "QmcniBv7UQ4gGPQQW2BwbD4ZZHzN3o3tPuNLZCbBchd1zh";
 
     function ray(uint wad) internal pure returns (uint) {
         return wad * 10 ** 9;
@@ -153,6 +162,32 @@ contract ActionTest is DSTest {
         z = x * y;
         require(y == 0 || z / y == x);
         z = z / RAY;
+    }
+    function rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
+        assembly {
+            switch n case 0 { z := b }
+            default {
+                switch x case 0 { z := 0 }
+                default {
+                    switch mod(n, 2) case 0 { z := b } default { z := x }
+                    let half := div(b, 2)  // for rounding.
+                    for { n := div(n, 2) } n { n := div(n,2) } {
+                        let xx := mul(x, x)
+                        if shr(128, x) { revert(0,0) }
+                        let xxRound := add(xx, half)
+                        if lt(xxRound, xx) { revert(0,0) }
+                        x := div(xxRound, b)
+                        if mod(n,2) {
+                            let zx := mul(z, x)
+                            if and(iszero(iszero(x)), iszero(eq(div(zx, x), z))) { revert(0,0) }
+                            let zxRound := add(zx, half)
+                            if lt(zxRound, zx) { revert(0,0) }
+                            z := div(zxRound, b)
+                        }
+                    }
+                }
+            }
+        }
     }
     function min(uint x, uint y) internal pure returns (uint z) {
         (x >= y) ? z = y : z = x;
@@ -182,6 +217,28 @@ contract ActionTest is DSTest {
     function stringToBytes32(string memory source) public pure returns (bytes32 result) {
         assembly {
             result := mload(add(source, 32))
+        }
+    }
+
+    /**
+    * @notice Test that two values are approximately equal within a certain tolerance range
+    * @param _a First value
+    * @param _b Second value
+    * @param _tolerance Maximum tolerated difference, in absolute terms
+    */
+    function assertEqApprox(uint256 _a, uint256 _b, uint256 _tolerance) internal {
+        uint256 a = _a;
+        uint256 b = _b;
+        if (a < b) { // if a < b, switch values so that a is always the biggest amount
+            uint256 tmp = a;
+            a = b;
+            b = tmp;
+        }
+        if (a - b > _tolerance) {
+            emit log_bytes32("Error: Wrong `uint' value");
+            emit log_named_uint("  Expected", _b);
+            emit log_named_uint("    Actual", _a);
+            fail();
         }
     }
 
@@ -231,6 +288,37 @@ contract ActionTest is DSTest {
         ilks[name].clip = clip;
 
         return ilks[name];
+    }
+
+    function init_rwa(
+        bytes32 ilk,
+        uint256 line,
+        uint48 tau,
+        uint256 duty,
+        uint256 mat,
+        address operator
+    ) internal {
+        uint256 val = rmul(rmul(line / RAY, mat), rpow(duty, 2 * 365 days, RAY));
+        rwaOracle.init(ilk, val, doc, tau);
+        (,address pip,,) = rwaOracle.ilks(ilk);
+        spot.file(ilk, "pip", pip);
+        vat.init(ilk);
+        jug.init(ilk);
+        string memory name = string(abi.encodePacked(ilk));
+        RwaToken token = new RwaToken(name, name);
+        AuthGemJoin join = new AuthGemJoin(address(vat), ilk, address(token));
+        vat.rely(address(join));
+        vat.rely(address(rwaOracle));
+        vat.file(ilk, "line", line);
+        vat.file("Line", vat.Line() + line);
+        jug.file(ilk, "duty", duty);
+        spot.file(ilk, "mat", mat);
+        spot.poke(ilk);
+        RwaOutputConduit out = new RwaOutputConduit(address(gov), address(daiToken));
+        RwaUrn urn = new RwaUrn(address(vat), address(jug), address(join), address(daiJoin), address(out));
+        join.rely(address(urn));
+        urn.hope(operator);
+        out.hope(operator);
     }
 
     function setUp() public {
@@ -300,6 +388,8 @@ contract ActionTest is DSTest {
 
         median = new Median();
 
+        rwaOracle = new RwaLiquidationOracle(address(vat), address(vow));
+
         hevm.store(
             LOG,
             keccak256(abi.encode(address(this), uint256(0))), // Grant auth to test contract
@@ -307,27 +397,36 @@ contract ActionTest is DSTest {
         );
         clog = ChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F); // Deployed chain
 
-        clog.setAddress("MCD_VAT",           address(vat));
-        clog.setAddress("MCD_DOG",           address(dog));
-        clog.setAddress("MCD_JUG",           address(jug));
-        clog.setAddress("MCD_POT",           address(pot));
-        clog.setAddress("MCD_VOW",           address(vow));
-        clog.setAddress("MCD_SPOT",          address(spot));
-        clog.setAddress("MCD_FLAP",          address(flap));
-        clog.setAddress("MCD_FLOP",          address(flop));
-        clog.setAddress("MCD_END",           address(end));
-        clog.setAddress("MCD_DAI",           address(daiToken));
-        clog.setAddress("MCD_JOIN_DAI",      address(daiJoin));
-        clog.setAddress("ILK_REGISTRY",      address(reg));
-        clog.setAddress("OSM_MOM",           address(osmMom));
-        clog.setAddress("GOV_GUARD",         address(govGuard));
-        clog.setAddress("CLIPPER_MOM",       address(clipperMom));
-        clog.setAddress("MCD_IAM_AUTO_LINE", address(autoLine));
-        clog.setAddress("LERP_FAB",          address(lerpFab));
+        clog.setAddress("MCD_VAT",                  address(vat));
+        clog.setAddress("MCD_DOG",                  address(dog));
+        clog.setAddress("MCD_JUG",                  address(jug));
+        clog.setAddress("MCD_POT",                  address(pot));
+        clog.setAddress("MCD_VOW",                  address(vow));
+        clog.setAddress("MCD_SPOT",                 address(spot));
+        clog.setAddress("MCD_FLAP",                 address(flap));
+        clog.setAddress("MCD_FLOP",                 address(flop));
+        clog.setAddress("MCD_END",                  address(end));
+        clog.setAddress("MCD_DAI",                  address(daiToken));
+        clog.setAddress("MCD_JOIN_DAI",             address(daiJoin));
+        clog.setAddress("ILK_REGISTRY",             address(reg));
+        clog.setAddress("OSM_MOM",                  address(osmMom));
+        clog.setAddress("GOV_GUARD",                address(govGuard));
+        clog.setAddress("CLIPPER_MOM",              address(clipperMom));
+        clog.setAddress("MCD_IAM_AUTO_LINE",        address(autoLine));
+        clog.setAddress("LERP_FAB",                 address(lerpFab));
+        clog.setAddress("MIP21_LIQUIDATION_ORACLE", address(rwaOracle));
 
         action = new DssTestAction();
 
         init_collateral("gold", address(action));
+        init_rwa({
+            ilk:      "6s",
+            line:     20_000_000 * RAD,
+            tau:      365 days,
+            duty:     1000000000937303470807876289, // 3% APY
+            mat:      105 * RAY / 100,
+            operator: address(123)
+        });
 
         vat.rely(address(action));
         spot.rely(address(action));
@@ -343,6 +442,7 @@ contract ActionTest is DSTest {
         clog.rely(address(action));
         autoLine.rely(address(action));
         lerpFab.rely(address(action));
+        rwaOracle.rely(address(action));
 
         clipperMom.setOwner(address(action));
         osmMom.setOwner(address(action));
@@ -373,11 +473,11 @@ contract ActionTest is DSTest {
         assertEq(action.nextCastTime_test(1616256000, 1616256000, false), 1616256000);
     }
 
-    function testFail_nextCastTime_eta_zero() public {
+    function testFail_nextCastTime_eta_zero() public view {
         action.nextCastTime_test(0, 1616256000, false);
     }
 
-    function testFail_nextCastTime_ts_zero() public {
+    function testFail_nextCastTime_ts_zero() public view {
         action.nextCastTime_test(1616256000, 0, false);
     }
 
@@ -649,6 +749,26 @@ contract ActionTest is DSTest {
         action.setIlkDebtCeiling_test("gold", 100 * MILLION); // Setup
 
         action.decreaseIlkDebtCeiling_test("gold", 101 * MILLION); // Fail
+    }
+
+    function test_setRWAIlkDebtCeiling() public {
+        (,address pip,,) = rwaOracle.ilks("6s");
+        uint256 price = uint256(PipLike(pip).read());
+        assertEqApprox(price, 22_278_900 * WAD, WAD); // 20MM * 1.03^2 * 1.05
+        action.setRWAIlkDebtCeiling_test("6s", 50 * MILLION, 55 * MILLION); // Increase
+        (,,, uint256 line,) = vat.ilks("6s");
+        assertEq(line, 50 * MILLION * RAD);
+        price = uint256(PipLike(pip).read());
+        assertEq(price, 55 * MILLION * WAD);
+        action.setRWAIlkDebtCeiling_test("6s", 40 * MILLION, 55 * MILLION); // Decrease
+        (,,, line,) = vat.ilks("6s");
+        assertEq(line, 40 * MILLION * RAD);
+        price = uint256(PipLike(pip).read());
+        assertEq(price, 55 * MILLION * WAD);
+    }
+
+    function testFail_setRWAIlkDebtCeiling() public {
+        action.setRWAIlkDebtCeiling_test("6s", 50 * MILLION, 20 * MILLION); // Fail
     }
 
     function test_setIlkAutoLineParameters() public {

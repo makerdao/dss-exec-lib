@@ -2,7 +2,7 @@
 //
 // DssTestAction.sol -- Testable Actions
 //
-// Copyright (C) 2020 Maker Ecosystem Growth Holdings, Inc.
+// Copyright (C) 2020-2022 Dai Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -31,7 +31,7 @@ contract DssTestNoOfficeHoursAction is DssAction {
         require(!officeHours());
     }
 
-    function officeHours() public override returns (bool) {
+    function officeHours() public view override returns (bool) {
         return false;
     }
 }
@@ -220,6 +220,10 @@ contract DssTestAction is DssAction {
 
     function decreaseIlkDebtCeiling_test(bytes32 ilk, uint256 amount) public {
         DssExecLib.decreaseIlkDebtCeiling(ilk, amount, true);
+    }
+
+    function setRWAIlkDebtCeiling_test(bytes32 ilk, uint256 ceiling, uint256 price) public {
+        DssExecLib.setRWAIlkDebtCeiling(ilk, ceiling, price);
     }
 
     function setIlkAutoLineParameters_test(bytes32 ilk, uint256 amount, uint256 gap, uint256 ttl) public {

@@ -2,7 +2,7 @@
 //
 // DssAction.sol -- DSS Executive Spell Actions
 //
-// Copyright (C) 2020 Maker Ecosystem Growth Holdings, Inc.
+// Copyright (C) 2020-2022 Dai Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -39,7 +39,7 @@ abstract contract DssAction {
     // Office Hours defaults to true by default.
     //   To disable office hours, override this function and
     //    return false in the inherited action.
-    function officeHours() public virtual returns (bool) {
+    function officeHours() public view virtual returns (bool) {
         return true;
     }
 
@@ -56,10 +56,10 @@ abstract contract DssAction {
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
     // Hash: seth keccak -- "$(wget https://<executive-vote-canonical-post> -q -O - 2>/dev/null)"
-    function description() external virtual view returns (string memory);
+    function description() external view virtual returns (string memory);
 
     // Returns the next available cast time
-    function nextCastTime(uint256 eta) external returns (uint256 castTime) {
+    function nextCastTime(uint256 eta) external view returns (uint256 castTime) {
         require(eta <= uint40(-1));
         castTime = DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
