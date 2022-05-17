@@ -55,6 +55,10 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
         return "DssLibSpellAction Description";
     }
 
+    function officeHours() public view override returns (bool) {
+        return true;
+    }
+
     uint256 constant MILLION  = 10 ** 6;
 
     function actions() public override {

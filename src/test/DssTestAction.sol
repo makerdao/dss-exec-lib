@@ -42,6 +42,10 @@ contract DssTestAction is DssAction {
         return "DssTestAction";
     }
 
+    function officeHours() public view override returns (bool) {
+        return true;
+    }
+
     function actions() public override {}
 
     function canCast_test(uint40 ts, bool officeHours) public pure returns (bool) {
