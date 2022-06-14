@@ -157,7 +157,7 @@ contract DssLibExecTest is DSTest, DSMath {
     SpotAbstract          spot = SpotAbstract(       0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
 
     DSTokenAbstract        gov = DSTokenAbstract(    0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
-    EndAbstract            end = EndAbstract(        0xBB856d1742fD182a90239D7AE85706C2FE4e5922);
+    EndAbstract            end = EndAbstract(        0x0e2e8F1D1326A4B9633D96222Ce399c708B19c28);
     IlkRegistryAbstract    reg = IlkRegistryAbstract(0x5a464C28D19848f44199D003BeF5ecc87d090F87);
 
     OsmMomAbstract      osmMom = OsmMomAbstract(     0x76416A4d5190d071bfed309861527431304aA14f);
