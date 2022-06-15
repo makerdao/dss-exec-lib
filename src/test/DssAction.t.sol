@@ -494,6 +494,22 @@ contract ActionTest is DSTest {
         assertEq(clipperMom.authority(), address(1));
     }
 
+    function test_disable() public {
+        AaveMock aave = new AaveMock();
+        DssDirectDepositAaveDai d3m = new DssDirectDepositAaveDai(address(clog), "tungsten", address(aave), address(0));
+        d3m.rely(address(action));
+        action.setD3MTargetInterestRate_test(address(d3m), 500); // set to 5%
+        assertEq(d3m.bar(), 5 * RAY / 100);
+        DirectDepositMom directDepositMom = new DirectDepositMom();
+        directDepositMom.setAuthority(address(govGuard));
+        assertEq(directDepositMom.authority(), address(govGuard));
+        d3m.rely(address(directDepositMom));
+        assertEq(d3m.wards(address(directDepositMom)), 1);
+
+        action.disable_test(address(directDepositMom), address(d3m));
+        assertEq(d3m.bar(), 0);
+    }
+
     function test_delegateVat() public {
         assertEq(vat.can(address(action), address(1)), 0);
         action.delegateVat_test(address(1));
@@ -1024,6 +1040,7 @@ contract ActionTest is DSTest {
         action.setD3MTargetInterestRate_test(address(d3m), 9900); // set to 99%
         assertEq(d3m.bar(), 99 * RAY / 100);
     }
+
 
     /*****************************/
     /*** Collateral Onboarding ***/

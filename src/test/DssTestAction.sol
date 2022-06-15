@@ -67,6 +67,10 @@ contract DssTestAction is DssAction {
         DssExecLib.setAuthority(base, authority);
     }
 
+    function disable_test(address base, address target) public {
+        DssExecLib.disable(base, target);
+    }
+
     function delegateVat_test(address usr) public {
         DssExecLib.delegateVat(usr);
     }
