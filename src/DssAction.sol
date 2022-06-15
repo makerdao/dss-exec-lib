@@ -48,10 +48,17 @@ abstract contract DssAction {
         actions();
     }
 
-    // DssAction developer must override `actions()` and place all actions to be called inside.
+    // DssAction developer must override `actions()` and place all actions
+    //   subject to the pause delay to be called inside.
     //   The DssExec function will call this subject to the officeHours limiter
     //   By keeping this function public we allow simulations of `execute()` on the actions outside of the cast time.
     function actions() public virtual;
+
+    // DssAction developer may override `instantActions()` and place all actions
+    //   to be performed via an instant access module. This function is called
+    //   during the `schedule()` call, once the spell has achieved the hat.
+    //   These functions will not be limited by the officeHours modifier.
+    function instantActions() public virtual {}
 
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
