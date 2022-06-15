@@ -62,12 +62,12 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     function actions() public override {
 
         // Basic cob setup
-        DSToken xmpl_gem  = DSToken(0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
-        ClipAbstract xmpl_clip = ClipAbstract(ClipFabLike(0x0716F25fBaAae9b63803917b6125c10c313dF663).newClip(DssExecLib.pauseProxy(), DssExecLib.vat(), DssExecLib.spotter(), DssExecLib.dog(), "XMPL-A"));
+        DSToken xmpl_gem  = DSToken(0xCE4F3774620764Ea881a8F8840Cbe0F701372283); // Dummy token deployed to mainnet
+        ClipAbstract xmpl_clip = ClipAbstract(ClipFabLike(DssExecLib.getChangelogAddress("CLIP_FAB")).newClip(DssExecLib.pauseProxy(), DssExecLib.vat(), DssExecLib.spotter(), DssExecLib.dog(), "XMPL-A"));
         GemJoin xmpl_join = new GemJoin(DssExecLib.vat(), "XMPL-A", address(xmpl_gem));
         xmpl_clip.rely(DssExecLib.pauseProxy());
         xmpl_join.rely(DssExecLib.pauseProxy());
-        address xmpl_pip = 0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C; // Using USDT pip as a dummy
+        address xmpl_pip = DssExecLib.getChangelogAddress("PIP_USDT"); // Using USDT pip as a dummy
 
         LinearDecrease xmpl_calc = new LinearDecrease();
         DssExecLib.setLinearDecrease(address(xmpl_calc), 1);
@@ -110,8 +110,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
 
     // Test the instant action capability
     function instantActions() public override {
-        //                 DIRECT_MOM                                  MCD_JOIN_DIRECT_AAVEV2_DAI
-        DssExecLib.disable(0x99A219f3dD2DeEC02c6324df5009aaa60bA36d38, 0xa13C0c8eB109F5A13c6c90FC26AFb23bEB3Fb04a);
+        DssExecLib.disable(DssExecLib.getChangelogAddress("DIRECT_MOM"), DssExecLib.getChangelogAddress("MCD_JOIN_DIRECT_AAVEV2_DAI"));
     }
 }
 
@@ -153,34 +152,34 @@ contract DssLibExecTest is DSTest, DSMath {
 
     // MAINNET ADDRESSES
     ChainlogAbstract   chainlog = ChainlogAbstract(   0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
-    PauseAbstract         pause = PauseAbstract(      0xbE286431454714F511008713973d3B053A2d38f3);
-    address          pauseProxy =                     0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB;
-    DSChiefAbstract       chief = DSChiefAbstract(    0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
-    VatAbstract             vat = VatAbstract(        0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
-    VowAbstract             vow = VowAbstract(        0xA950524441892A31ebddF91d3cEEFa04Bf454466);
-    CatAbstract             cat = CatAbstract(        0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
-    DogAbstract             dog = DogAbstract(        0x135954d155898D42C90D2a57824C690e0c7BEf1B);
-    PotAbstract             pot = PotAbstract(        0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
-    JugAbstract             jug = JugAbstract(        0x19c0976f590D67707E62397C87829d896Dc0f1F1);
-    SpotAbstract           spot = SpotAbstract(       0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
+    PauseAbstract         pause = PauseAbstract(      chainlog.getAddress("MCD_PAUSE"));
+    address          pauseProxy =                     chainlog.getAddress("MCD_PAUSE_PROXY");
+    DSChiefAbstract       chief = DSChiefAbstract(    chainlog.getAddress("MCD_ADM"));
+    VatAbstract             vat = VatAbstract(        chainlog.getAddress("MCD_VAT"));
+    VowAbstract             vow = VowAbstract(        chainlog.getAddress("MCD_VOW"));
+    CatAbstract             cat = CatAbstract(        chainlog.getAddress("MCD_CAT"));
+    DogAbstract             dog = DogAbstract(        chainlog.getAddress("MCD_DOG"));
+    PotAbstract             pot = PotAbstract(        chainlog.getAddress("MCD_POT"));
+    JugAbstract             jug = JugAbstract(        chainlog.getAddress("MCD_JUG"));
+    SpotAbstract           spot = SpotAbstract(       chainlog.getAddress("MCD_SPOT"));
 
-    DSTokenAbstract         gov = DSTokenAbstract(    0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
-    EndAbstract             end = EndAbstract(        0x0e2e8F1D1326A4B9633D96222Ce399c708B19c28);
-    IlkRegistryAbstract     reg = IlkRegistryAbstract(0x5a464C28D19848f44199D003BeF5ecc87d090F87);
+    DSTokenAbstract         gov = DSTokenAbstract(    chainlog.getAddress("MCD_GOV"));
+    EndAbstract             end = EndAbstract(        chainlog.getAddress("MCD_END"));
+    IlkRegistryAbstract     reg = IlkRegistryAbstract(chainlog.getAddress("ILK_REGISTRY"));
 
-    OsmMomAbstract       osmMom = OsmMomAbstract(     0x76416A4d5190d071bfed309861527431304aA14f);
-    ClipperMomAbstract  clipMom = ClipperMomAbstract( 0x79FBDF16b366DFb14F66cE4Ac2815Ca7296405A0);
+    OsmMomAbstract       osmMom = OsmMomAbstract(     chainlog.getAddress("OSM_MOM"));
+    ClipperMomAbstract  clipMom = ClipperMomAbstract( chainlog.getAddress("CLIPPER_MOM"));
 
     // XMPL-A specific
     GemAbstract            xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
     GemJoinAbstract   joinXMPLA;
-    OsmAbstract         pipXMPL = OsmAbstract(        0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C);
+    OsmAbstract         pipXMPL = OsmAbstract(        chainlog.getAddress("PIP_USDT"));
     ClipAbstract      clipXMPLA;
-    MedianAbstract     medXMPLA = MedianAbstract(     0x56D4bBF358D7790579b55eA6Af3f605BcA2c0C3A); // USDT median
+    MedianAbstract     medXMPLA = MedianAbstract(     pipXMPL.src()); // USDT median
 
     // D3M
-    DssDirectDepositAaveDai d3m = DssDirectDepositAaveDai(0xa13C0c8eB109F5A13c6c90FC26AFb23bEB3Fb04a);
-    DirectDepositMom  directMom = DirectDepositMom(0x99A219f3dD2DeEC02c6324df5009aaa60bA36d38);
+    DssDirectDepositAaveDai d3m = DssDirectDepositAaveDai(chainlog.getAddress("MCD_JOIN_DIRECT_AAVEV2_DAI"));
+    DirectDepositMom  directMom = DirectDepositMom(chainlog.getAddress("DIRECT_MOM"));
 
     SystemValues afterSpell;
 
