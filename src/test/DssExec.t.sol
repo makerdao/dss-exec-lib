@@ -648,7 +648,12 @@ contract DssLibExecTest is DSTest, DSMath {
     }
 
     function testSpellInstantActions() public {
-        assertTrue(d3m.bar() > 0);
+        hevm.store(
+                address(d3m),
+                bytes32(uint256(2)),
+                bytes32(uint256(WAD))
+            );
+        assertEq(d3m.bar(), WAD);
         vote();
         spell.schedule();
 
