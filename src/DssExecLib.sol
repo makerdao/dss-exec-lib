@@ -32,6 +32,10 @@ interface Authorizable {
     function setAuthority(address) external;
 }
 
+interface Disableable {
+    function disable(address) external;
+}
+
 interface Fileable {
     function file(bytes32, address) external;
     function file(bytes32, uint256) external;
@@ -281,6 +285,14 @@ library DssExecLib {
     */
     function setAuthority(address _base, address _authority) public {
         Authorizable(_base).setAuthority(_authority);
+    }
+    /**
+        @dev Deactivates a module with a disable function
+        @param _base   The address of the contract with the `disable(address)` pattern
+        @param _target   The contract that will be disabled
+    */
+    function disable(address _base, address _target) public {
+        Disableable(_base).disable(_target);
     }
     /**
         @dev Delegate vat authority to the specified address.
