@@ -33,6 +33,7 @@ interface SpellAction {
     function officeHours() external view returns (bool);
     function description() external view returns (string memory);
     function nextCastTime(uint256) external view returns (uint256);
+    function instantActions() external;
 }
 
 contract DssExec {
@@ -81,6 +82,8 @@ contract DssExec {
         require(eta == 0, "This spell has already been scheduled");
         eta = now + PauseAbstract(pause).delay();
         pause.plot(action, tag, sig, eta);
+        (bool ok,) = address(action).delegatecall(abi.encodeWithSignature("instantActions()"));
+        require(ok);
     }
 
     function cast() public {

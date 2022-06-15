@@ -24,13 +24,16 @@ import {DssAction} from "lib/dss-exec-lib/src/DssAction.sol";
 
 contract SpellAction is DssAction {
 
-    constructor(address lib, bool officeHours) DssAction(lib, officeHours) public {}
-
     uint256 constant MILLION  = 10 ** 6;
 
     function actions() public override {
-        setGlobalDebtCeiling(1500 * MILLION);
-        setIlkDebtCeiling("ETH-A", 10 * MILLION);
+        DssExecLib.setGlobalDebtCeiling(1500 * MILLION);
+        DssExecLib.setIlkDebtCeiling("ETH-A", 10 * MILLION);
+    }
+
+    // (Optional) Use instantActions() for IAM functions
+    function instantActions() public override {
+        DssExecLib.disable(directMom, directJoin);
     }
 }
 ```
@@ -39,7 +42,9 @@ The `SpellAction.sol` file must always inherit `DssAction` from `lib/dss-exec-li
 
 The developer must override the `actions()` function and place all spell actions within. This is called by the `execute()` function in the pause, which is subject to an optional limiter for office hours.
 
-*Note:* All variables within the SpellAction MUST be defined as constants, or assigned at runtime inside of the `actions()` function. Variable memory storage is not available within a Spell Action due to the underlying delegatecall mechanisms.
+The developer may optionally override the `instantActions()` function and place any contract calls to instant action modules in the function. The instant actions function will be a no-op by default if it is not implemented.
+
+*Note:* All variables within the SpellAction MUST be defined as constants, or assigned at runtime inside of the `actions()` or `instantActions()` function. Variable memory storage is not available within a Spell Action due to the underlying delegatecall mechanisms.
 
 The spell itself is deployed as follows:
 
@@ -102,6 +107,7 @@ Below is an outline of all functions used in the library.
 - `authorize(address _base, address _ward)`: Give an address authorization to perform auth actions on the contract.
 - `deauthorize(address _base, address _ward)`: Revoke contract authorization from an address.
 - `setAuthority(address _base, address _authority)`: Give an address authority to a base contract using authority pattern.
+- `disable(address _base, address _target)`: Calls the disable(target) function on a base contract.
 - `delegateVat(address _usr)`: Delegate vat authority to the specified address.
 - `undelegateVat(address _usr)`: Revoke vat authority to the specified address.
 
