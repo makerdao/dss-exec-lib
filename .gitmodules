@@ -10,9 +10,6 @@
 [submodule "lib/osm-mom"]
 	path = lib/osm-mom
 	url = https://github.com/makerdao/osm-mom
-[submodule "lib/median"]
-	path = lib/median
-	url = https://github.com/makerdao/median
 [submodule "lib/univ2-lp-oracle"]
 	path = lib/univ2-lp-oracle
 	url = https://github.com/makerdao/univ2-lp-oracle
