@@ -4,9 +4,6 @@
 [submodule "lib/dss-interfaces"]
 	path = lib/dss-interfaces
 	url = https://github.com/makerdao/dss-interfaces
-[submodule "lib/osm-mom"]
-	path = lib/osm-mom
-	url = https://github.com/makerdao/osm-mom
 [submodule "lib/univ2-lp-oracle"]
 	path = lib/univ2-lp-oracle
 	url = https://github.com/makerdao/univ2-lp-oracle
