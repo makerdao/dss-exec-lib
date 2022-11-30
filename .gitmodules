@@ -4,9 +4,6 @@
 [submodule "lib/dss-interfaces"]
 	path = lib/dss-interfaces
 	url = https://github.com/makerdao/dss-interfaces
-[submodule "lib/mkr-authority"]
-	path = lib/mkr-authority
-	url = https://github.com/makerdao/mkr-authority
 [submodule "lib/osm-mom"]
 	path = lib/osm-mom
 	url = https://github.com/makerdao/osm-mom
