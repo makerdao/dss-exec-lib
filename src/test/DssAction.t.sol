@@ -20,17 +20,11 @@
 pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "ds-test/test.sol";
+import "forge-std/Test.sol";
 import "dss-interfaces/Interfaces.sol";
 
 import "../CollateralOpts.sol";
 import {DssTestAction, DssTestNoOfficeHoursAction}    from './DssTestAction.sol';
-
-interface Hevm {
-    function warp(uint256) external;
-    function store(address,bytes32,bytes32) external;
-    function load(address,bytes32) external view returns (bytes32);
-}
 
 interface ChainlogLike is ChainlogAbstract {
     function sha256sum() external view returns (string calldata);
@@ -419,9 +413,7 @@ contract MockOsm {
     }
 }
 
-contract ActionTest is DSTest {
-    Hevm hevm;
-
+contract ActionTest is Test {
     ChainlogLike LOG = ChainlogLike(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     VatAbstract                  immutable vat = VatAbstract(LOG.getAddress("MCD_VAT"));
@@ -568,11 +560,11 @@ contract ActionTest is DSTest {
 
         for (int i = 0; i < 100; i++) {
             // Scan the storage for the ward storage slot
-            bytes32 prevValue = hevm.load(
+            bytes32 prevValue = vm.load(
                 address(base),
                 keccak256(abi.encode(target, uint256(i)))
             );
-            hevm.store(
+            vm.store(
                 address(base),
                 keccak256(abi.encode(target, uint256(i))),
                 bytes32(uint256(1))
@@ -582,7 +574,7 @@ contract ActionTest is DSTest {
                 return;
             } else {
                 // Keep going after restoring the original value
-                hevm.store(
+                vm.store(
                     address(base),
                     keccak256(abi.encode(target, uint256(i))),
                     prevValue
@@ -667,8 +659,7 @@ contract ActionTest is DSTest {
     }
 
     function setUp() public {
-        hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
-        hevm.warp(START_TIME);
+        vm.warp(START_TIME);
 
         action = new DssTestAction();
 
@@ -704,10 +695,10 @@ contract ActionTest is DSTest {
             mat:      105 * RAY / 100
         });
 
-        hevm.store(address(clipperMom), 0, bytes32(uint256(address(action))));
-        hevm.store(address(osmMom), 0, bytes32(uint256(address(action))));
+        vm.store(address(clipperMom), 0, bytes32(uint256(address(action))));
+        vm.store(address(osmMom), 0, bytes32(uint256(address(action))));
 
-        hevm.store(address(govGuard), 0, bytes32(uint256(address(action))));
+        vm.store(address(govGuard), 0, bytes32(uint256(address(action))));
     }
 
     // /******************************/
@@ -816,7 +807,7 @@ contract ActionTest is DSTest {
     function test_accumulateDSR() public {
         uint256 beforeChi = pot.chi();
         action.setDSR_test(1000000001243680656318820312); // 4%
-        hevm.warp(START_TIME + 1 days);
+        vm.warp(START_TIME + 1 days);
         action.accumulateDSR_test();
         uint256 afterChi = pot.chi();
 
@@ -826,7 +817,7 @@ contract ActionTest is DSTest {
     function test_accumulateCollateralStabilityFees() public {
         (, uint256 beforeRate,,,) = vat.ilks("gold");
         action.setDSR_test(1000000001243680656318820312); // 4%
-        hevm.warp(START_TIME + 1 days);
+        vm.warp(START_TIME + 1 days);
         action.accumulateCollateralStabilityFees_test("gold");
         (, uint256 afterRate,,,) = vat.ilks("gold");
 
@@ -1151,7 +1142,7 @@ contract ActionTest is DSTest {
     }
 
     function test_setIlkStabilityFee() public {
-        hevm.warp(START_TIME + 1 days);
+        vm.warp(START_TIME + 1 days);
         action.setIlkStabilityFee_test("gold", 1000000001243680656318820312);
         (uint256 duty, uint256 rho) = jug.ilks("gold");
         assertEq(duty, 1000000001243680656318820312);
@@ -1508,17 +1499,17 @@ contract ActionTest is DSTest {
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(vat.Line(), rad(2400 ether));
-        hevm.warp(now + 1 hours);
+        vm.warp(now + 1 hours);
         assertEq(vat.Line(), rad(2400 ether));
         lerp.tick();
         assertEq(vat.Line(), rad(2300 ether + 1600));   // Small amount at the end is rounding errors
-        hevm.warp(now + 1 hours);
+        vm.warp(now + 1 hours);
         lerp.tick();
         assertEq(vat.Line(), rad(2200 ether + 800));
-        hevm.warp(now + 6 hours);
+        vm.warp(now + 6 hours);
         lerp.tick();
         assertEq(vat.Line(), rad(1600 ether + 800));
-        hevm.warp(now + 1 days);
+        vm.warp(now + 1 days);
         assertEq(vat.Line(), rad(1600 ether + 800));
         lerp.tick();
         assertEq(vat.Line(), rad(0 ether));
@@ -1538,21 +1529,21 @@ contract ActionTest is DSTest {
         (,,, uint line,) = vat.ilks(ilk);
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(line, rad(2400 ether));
-        hevm.warp(now + 1 hours);
+        vm.warp(now + 1 hours);
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2400 ether));
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2300 ether + 1600));   // Small amount at the end is rounding errors
-        hevm.warp(now + 1 hours);
+        vm.warp(now + 1 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2200 ether + 800));
-        hevm.warp(now + 6 hours);
+        vm.warp(now + 6 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(1600 ether + 800));
-        hevm.warp(now + 1 days);
+        vm.warp(now + 1 days);
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(1600 ether + 800));
         lerp.tick();

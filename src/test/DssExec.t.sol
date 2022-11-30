@@ -20,18 +20,13 @@
 pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "ds-test/test.sol";
+import "forge-std/Test.sol";
 import "dss-interfaces/Interfaces.sol";
 
 import "../DssExec.sol";
 import "../DssAction.sol";
 import "../CollateralOpts.sol";
 import "./rates.sol";
-
-interface Hevm {
-    function warp(uint256) external;
-    function store(address,bytes32,bytes32) external;
-}
 
 interface SpellLike {
     function done() external view returns (bool);
@@ -112,7 +107,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     }
 }
 
-contract DssLibExecTest is DSTest {
+contract DssLibExecTest is Test {
 
     struct CollateralValues {
         uint256 line;
@@ -177,15 +172,9 @@ contract DssLibExecTest is DSTest {
 
     SystemValues afterSpell;
 
-    Hevm hevm;
-
     Rates rates;
 
     DssExec spell;
-
-    // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
-    bytes20 constant CHEAT_CODE =
-        bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
     uint256 constant HUNDRED  = 10 ** 2;
     uint256 constant THOUSAND = 10 ** 3;
@@ -249,7 +238,6 @@ contract DssLibExecTest is DSTest {
     }
 
     function setUp() public {
-        hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
         spell = new DssExec(
@@ -318,7 +306,7 @@ contract DssLibExecTest is DSTest {
 
     function vote() private {
         if (chief.hat() != address(spell)) {
-            hevm.store(
+            vm.store(
                 address(gov),
                 keccak256(abi.encode(address(this), uint256(1))),
                 bytes32(uint256(999999999999 ether))
@@ -346,7 +334,7 @@ contract DssLibExecTest is DSTest {
             castTime += 5 days - day * 86400;
         }
 
-        hevm.warp(castTime);
+        vm.warp(castTime);
         spell.cast();
     }
 
@@ -359,7 +347,7 @@ contract DssLibExecTest is DSTest {
             castTime -= hour * 3600 - 13 hours;
         }
 
-        hevm.warp(castTime);
+        vm.warp(castTime);
         spell.cast();
     }
 
@@ -372,7 +360,7 @@ contract DssLibExecTest is DSTest {
             castTime += 21 hours - hour * 3600;
         }
 
-        hevm.warp(castTime);
+        vm.warp(castTime);
         spell.cast();
     }
 
@@ -392,7 +380,7 @@ contract DssLibExecTest is DSTest {
             castTime += 14 hours - hour * 3600;
         }
 
-        hevm.warp(spell.nextCastTime());
+        vm.warp(spell.nextCastTime());
         spell.cast();
     }
 
@@ -582,11 +570,11 @@ contract DssLibExecTest is DSTest {
         assertTrue(spell.done());
 
         pipXMPL.poke();
-        hevm.warp(now + 3601);
+        vm.warp(now + 3601);
         pipXMPL.poke();
         spot.poke("XMPL-A");
 
-        hevm.store(
+        vm.store(
             address(xmpl),
             keccak256(abi.encode(address(this), uint256(3))),
             bytes32(uint256(10 * THOUSAND * WAD))
@@ -639,7 +627,7 @@ contract DssLibExecTest is DSTest {
         (,,uint256 spotV,,) = vat.ilks("XMPL-A");
         // dart max amount of DAI
         vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(_mul(10 * THOUSAND * WAD, spotV) / RAY));
-        hevm.warp(now + 1);
+        vm.warp(now + 1);
         jug.drip("XMPL-A");
         assertEq(clipXMPLA.kicks(), 0);
         dog.bark("XMPL-A", address(this), address(this));
