@@ -505,9 +505,6 @@ contract ActionTest is Test {
     function dai(address urn) internal view returns (uint) {
         return vat.dai(urn) / RAY;
     }
-    // function gem(bytes32 ilk, address urn) internal view returns (uint) {
-    //     return vat.gem(ilk, urn);
-    // }
     function ink(bytes32 ilk, address urn) internal view returns (uint) {
         (uint ink_, uint art_) = vat.urns(ilk, urn); art_;
         return ink_;
