@@ -364,10 +364,8 @@ contract ActionTest is Test {
 
         assertTrue(action.canCast_test(1616169600, false)); // Friday   2021/03/19, 4:00:00 PM GMT
         assertTrue(action.canCast_test(1616256000, false)); // Saturday 2021/03/20, 4:00:00 PM GMT
-    }
 
-    function testFail_canCast() public {
-        assertTrue(action.canCast_test(1616256000, true)); // Saturday 2021/03/20, 4:00:00 PM GMT
+        assertTrue(!action.canCast_test(1616256000, true)); // Saturday 2021/03/20, 4:00:00 PM GMT
     }
 
     function test_nextCastTime() public {
@@ -378,11 +376,13 @@ contract ActionTest is Test {
         assertEq(action.nextCastTime_test(1616256000, 1616256000, false), 1616256000);
     }
 
-    function testFail_nextCastTime_eta_zero() public view {
+    function test_nextCastTime_eta_zeroReverts() public {
+        vm.expectRevert();
         action.nextCastTime_test(0, 1616256000, false);
     }
 
-    function testFail_nextCastTime_ts_zero() public view {
+    function test_nextCastTime_ts_zeroReverts() public {
+        vm.expectRevert();
         action.nextCastTime_test(1616256000, 0, false);
     }
 
@@ -527,9 +527,10 @@ contract ActionTest is Test {
         assertEq(vat.Line(), 200 * MILLION * RAD);  // Fixes precision
     }
 
-    function testFail_decreaseGlobalDebtCeiling() public {
+    function test_decreaseGlobalDebtCeilingReverts() public {
         action.setGlobalDebtCeiling_test(100 * MILLION); // setup
 
+        vm.expectRevert();
         action.decreaseGlobalDebtCeiling_test(101 * MILLION); // fail
     }
 
@@ -584,7 +585,8 @@ contract ActionTest is Test {
         assertEq(flop.beg(), 1 ether + 5.25 ether / 100); // (1 + pct) * WAD
     }
 
-    function testFail_setMinDebtAuctionBidIncreaseTooHigh() public {
+    function test_setMinDebtAuctionBidIncreaseTooHighReverts() public {
+        vm.expectRevert();
         action.setMinDebtAuctionBidIncrease_test(10000); // Fail on 100%
     }
 
@@ -593,7 +595,8 @@ contract ActionTest is Test {
         assertEq(uint256(flop.ttl()), 12 hours);
     }
 
-    function testFail_setDebtAuctionBidDurationMax() public {
+    function test_setDebtAuctionBidDurationMaxReverts() public {
+        vm.expectRevert();
         action.setDebtAuctionBidDuration_test(type(uint48).max);  // Fail on max
     }
 
@@ -602,7 +605,8 @@ contract ActionTest is Test {
         assertEq(uint256(flop.tau()), 12 hours);
     }
 
-    function testFail_setDebtAuctionDurationMax() public {
+    function test_setDebtAuctionDurationMaxReverts() public {
+        vm.expectRevert();
         action.setDebtAuctionDuration_test(type(uint48).max);  // Fail on max
     }
 
@@ -611,7 +615,8 @@ contract ActionTest is Test {
         assertEq(flop.pad(), 105.25 ether / 100); // WAD pct
     }
 
-    function testFail_setDebtAuctionMKRIncreaseRateTooHigh() public {
+    function test_setDebtAuctionMKRIncreaseRateTooHighReverts() public {
+        vm.expectRevert();
         action.setDebtAuctionMKRIncreaseRate_test(10000);  // Fail on 100%
     }
 
@@ -666,9 +671,10 @@ contract ActionTest is Test {
         assertEq(vat.Line(), 200 * MILLION * RAD); // also decreased
     }
 
-    function testFail_decreaseIlkDebtCeiling() public {
+    function test_decreaseIlkDebtCeilingReverts() public {
         action.setIlkDebtCeiling_test("gold", 100 * MILLION); // Setup
 
+        vm.expectRevert();
         action.decreaseIlkDebtCeiling_test("gold", 101 * MILLION); // Fail
     }
 
@@ -688,7 +694,8 @@ contract ActionTest is Test {
         assertEq(price, 55 * MILLION * WAD);
     }
 
-    function testFail_setRWAIlkDebtCeiling() public {
+    function test_setRWAIlkDebtCeilingReverts() public {
+        vm.expectRevert();
         action.setRWAIlkDebtCeiling_test("6s", 50 * MILLION, 20 * MILLION); // Fail
     }
 
@@ -741,8 +748,9 @@ contract ActionTest is Test {
         assertEq(dust, 0);
     }
 
-    function testFail_setIlkMinVaultAmountGt() public {
+    function test_setIlkMinVaultAmountGtReverts() public {
         action.setIlkMaxLiquidationAmount_test("gold", 100);
+        vm.expectRevert();
         action.setIlkMinVaultAmount_test("gold", 101); // Fail here
     }
 
