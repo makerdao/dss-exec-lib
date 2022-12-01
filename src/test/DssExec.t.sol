@@ -551,7 +551,7 @@ contract DssLibExecTest is Test {
         }
     }
 
-    function testSpellIsCast_mainnet() public {
+    function test_spellIsCastMainnet() public {
         vote();
         scheduleWaitAndCast();
         assertTrue(spell.done());
@@ -564,7 +564,7 @@ contract DssLibExecTest is Test {
         assertTrue(spell.action() != address(0));
     }
 
-    function testSpellIsCast_XMPL_INTEGRATION() public {
+    function test_spellIsCastXMPLIntegration() public {
         vote();
         scheduleWaitAndCast();
         assertTrue(spell.done());

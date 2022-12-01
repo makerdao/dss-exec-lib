@@ -376,12 +376,12 @@ contract ActionTest is Test {
         assertEq(action.nextCastTime_test(1616256000, 1616256000, false), 1616256000);
     }
 
-    function test_nextCastTime_eta_zeroReverts() public {
+    function test_nextCastTimeEtaZeroReverts() public {
         vm.expectRevert();
         action.nextCastTime_test(0, 1616256000, false);
     }
 
-    function test_nextCastTime_ts_zeroReverts() public {
+    function test_nextCastTimeTsZeroReverts() public {
         vm.expectRevert();
         action.nextCastTime_test(1616256000, 0, false);
     }
@@ -842,7 +842,7 @@ contract ActionTest is Test {
     /*** Oracle Management ***/
     /*************************/
 
-    function test_whitelistOracle_OSM() public {
+    function test_whitelistOracleOSM() public {
         address tokenPip = address(new MockOsm(address(median)));
 
         assertEq(median.bud(tokenPip), 0);
@@ -850,7 +850,7 @@ contract ActionTest is Test {
         assertEq(median.bud(tokenPip), 1);
     }
 
-    function test_whitelistOracle_LP() public {
+    function test_whitelistOracleLP() public {
         // Mock an LP oracle and whitelist it
         address token0 = address(new MockToken("nil"));
         address token1 = address(new MockToken("one"));
@@ -868,7 +868,7 @@ contract ActionTest is Test {
         assertEq(med1.bud(address(lorc)), 1);
     }
 
-    function test_whitelistOracleWithDSValue_LP() public {
+    function test_whitelistOracleWithDSValueLP() public {
         // Should not fail for LP tokens if one or more oracles are DSValue
         address token0 = address(new MockToken("nil"));
         address token1 = address(new MockToken("one"));
@@ -1102,22 +1102,22 @@ contract ActionTest is Test {
         }
     }
 
-    function test_addNewCollateral_case1() public {
+    function test_addNewCollateralCase1() public {
         collateralOnboardingTest(true, true, true);      // Liquidations: ON,  PIP == OSM, osmSrc == median
     }
-    function test_addNewCollateral_case2() public {
+    function test_addNewCollateralCase2() public {
         collateralOnboardingTest(true, true, false);     // Liquidations: ON,  PIP == OSM, osmSrc != median
     }
-    function test_addNewCollateral_case3() public {
+    function test_addNewCollateralCase3() public {
         collateralOnboardingTest(true, false, false);    // Liquidations: ON,  PIP != OSM, osmSrc != median
     }
-    function test_addNewCollateral_case4() public {
+    function test_addNewCollateralCase4() public {
         collateralOnboardingTest(false, true, true);     // Liquidations: OFF, PIP == OSM, osmSrc == median
     }
-    function test_addNewCollateral_case5() public {
+    function test_addNewCollateralCase5() public {
         collateralOnboardingTest(false, true, false);    // Liquidations: OFF, PIP == OSM, osmSrc != median
     }
-    function test_addNewCollateral_case6() public {
+    function test_addNewCollateralCase6() public {
         collateralOnboardingTest(false, false, false);   // Liquidations: OFF, PIP != OSM, osmSrc != median
     }
     function test_officeHoursCanOverrideInAction() public {
@@ -1130,7 +1130,7 @@ contract ActionTest is Test {
     /*** Payment ***/
     /***************/
 
-    function sendPaymentFromSurplusBuffer_test() public {
+    function test_sendPaymentFromSurplusBuffer() public {
         address target = address(this);
 
         action.delegateVat_test(address(daiJoin));
@@ -1138,21 +1138,21 @@ contract ActionTest is Test {
         assertEq(vat.dai(target), 0);
         assertEq(vat.sin(target), 0);
         assertEq(daiToken.balanceOf(target), 0);
-        assertEq(vat.dai(address(vow)), 0);
-        assertEq(vat.sin(address(vow)), 0);
+        uint256 vowDaiPrev = vat.dai(address(vow));
+        uint256 vowSinPrev = vat.sin(address(vow));
         action.sendPaymentFromSurplusBuffer_test(target, 100);
         assertEq(vat.dai(target), 0);
         assertEq(vat.sin(target), 0);
         assertEq(daiToken.balanceOf(target), 100 * WAD);
-        assertEq(vat.dai(address(vow)), 0);
-        assertEq(vat.sin(address(vow)), 100 * RAD);
+        assertEq(vat.dai(address(vow)), vowDaiPrev);
+        assertEq(vat.sin(address(vow)), vowSinPrev + 100 * RAD);
     }
 
     /************/
     /*** Misc ***/
     /************/
 
-    function test_lerp_Line() public {
+    function test_lerpLine() public {
         LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), "Line", block.timestamp, rad(2400 ether), rad(0 ether), 1 days));
         assertEq(lerp.what(), "Line");
         assertEq(lerp.start(), rad(2400 ether));
@@ -1179,7 +1179,7 @@ contract ActionTest is Test {
         assertEq(vat.wards(address(lerp)), 0);
     }
 
-    function test_lerp_ilk_line() public {
+    function test_lerpIlkLine() public {
         bytes32 ilk = "gold";
         LerpAbstract lerp = LerpAbstract(action.linearInterpolation_test("myLerp001", address(vat), ilk, "line", block.timestamp, rad(2400 ether), rad(0 ether), 1 days));
         lerp.tick();
