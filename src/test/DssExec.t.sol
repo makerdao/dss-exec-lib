@@ -17,8 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.16;
 
 import "forge-std/Test.sol";
 import "dss-interfaces/Interfaces.sol";
@@ -50,7 +49,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
 
     ChainlogAbstract constant public LOG = ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
-    function description() external override view returns (string memory) {
+    function description() external override pure returns (string memory) {
         return "DssLibSpellAction Description";
     }
 
@@ -184,13 +183,6 @@ contract DssLibExecTest is Test {
     uint256 constant RAY      = 10 ** 27;
     uint256 constant RAD      = 10 ** 45;
 
-    function _sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, "ds-math-sub-underflow");
-    }
-    function _mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
-    }
-
     // not provided in DSMath
     function _rpow(uint x, uint n, uint b) internal pure returns (uint z) {
       assembly {
@@ -241,25 +233,23 @@ contract DssLibExecTest is Test {
         rates = new Rates();
 
         spell = new DssExec(
-            now + 30 days,                              // Expiration
+            block.timestamp + 30 days,                  // Expiration
             address(new DssLibSpellAction())
         );
 
         //
         // Test for all system configuration changes
         //
-        afterSpell = SystemValues({
-            dsr_rate:     0,               // In basis points
-            vat_Line:     10000 * MILLION, // In whole Dai units
-            pause_delay:  pause.delay(),   // In seconds
-            vow_wait:     vow.wait(),      // In seconds
-            vow_dump:     vow.dump()/WAD,  // In whole Dai units
-            vow_sump:     vow.sump()/RAD,  // In whole Dai units
-            vow_bump:     vow.bump()/RAD,  // In whole Dai units
-            vow_hump:     vow.hump()/RAD,  // In whole Dai units
-            dog_Hole:     dog.Hole()/RAD,  // In whole Dai units
-            ilk_count:    reg.count() + 1  // Num expected in system
-        });
+        afterSpell.dsr_rate     =  0;               // In basis points
+        afterSpell.vat_Line     =  10000 * MILLION; // In whole Dai units
+        afterSpell.pause_delay  =  pause.delay();   // In seconds
+        afterSpell.vow_wait     =  vow.wait();      // In seconds
+        afterSpell.vow_dump     =  vow.dump()/WAD;  // In whole Dai units
+        afterSpell.vow_sump     =  vow.sump()/RAD;  // In whole Dai units
+        afterSpell.vow_bump     =  vow.bump()/RAD;  // In whole Dai units
+        afterSpell.vow_hump     =  vow.hump()/RAD;  // In whole Dai units
+        afterSpell.dog_Hole     =  dog.Hole()/RAD;  // In whole Dai units
+        afterSpell.ilk_count    =  reg.count() + 1; // Num expected in system
 
         //
         // Test for all collateral based changes here
@@ -311,8 +301,8 @@ contract DssLibExecTest is Test {
                 keccak256(abi.encode(address(this), uint256(1))),
                 bytes32(uint256(999999999999 ether))
             );
-            gov.approve(address(chief), uint256(-1));
-            chief.lock(_sub(gov.balanceOf(address(this)), 1 ether));
+            gov.approve(address(chief), type(uint256).max);
+            chief.lock(gov.balanceOf(address(this)) - 1 ether);
 
             assertTrue(!spell.done());
 
@@ -328,7 +318,7 @@ contract DssLibExecTest is Test {
     function scheduleWaitAndCastFailDay() public {
         spell.schedule();
 
-        uint256 castTime = now + pause.delay();
+        uint256 castTime = block.timestamp + pause.delay();
         uint256 day = (castTime / 1 days + 3) % 7;
         if (day < 5) {
             castTime += 5 days - day * 86400;
@@ -341,7 +331,7 @@ contract DssLibExecTest is Test {
     function scheduleWaitAndCastFailEarly() public {
         spell.schedule();
 
-        uint256 castTime = now + pause.delay() + 24 hours;
+        uint256 castTime = block.timestamp + pause.delay() + 24 hours;
         uint256 hour = castTime / 1 hours % 24;
         if (hour >= 14) {
             castTime -= hour * 3600 - 13 hours;
@@ -354,7 +344,7 @@ contract DssLibExecTest is Test {
     function scheduleWaitAndCastFailLate() public {
         spell.schedule();
 
-        uint256 castTime = now + pause.delay();
+        uint256 castTime = block.timestamp + pause.delay();
         uint256 hour = castTime / 1 hours % 24;
         if (hour < 21) {
             castTime += 21 hours - hour * 3600;
@@ -367,7 +357,7 @@ contract DssLibExecTest is Test {
     function scheduleWaitAndCast() public {
         spell.schedule();
 
-        uint256 castTime = now + pause.delay();
+        uint256 castTime = block.timestamp + pause.delay();
         uint256 day = (castTime / 1 days + 3) % 7;
         if(day >= 5) {
             castTime += 7 days - day * 86400;
@@ -570,7 +560,7 @@ contract DssLibExecTest is Test {
         assertTrue(spell.done());
 
         pipXMPL.poke();
-        vm.warp(now + 3601);
+        vm.warp(block.timestamp + 3601);
         pipXMPL.poke();
         spot.poke("XMPL-A");
 
@@ -626,8 +616,8 @@ contract DssLibExecTest is Test {
         joinXMPLA.join(address(this), 10 * THOUSAND * WAD);
         (,,uint256 spotV,,) = vat.ilks("XMPL-A");
         // dart max amount of DAI
-        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(_mul(10 * THOUSAND * WAD, spotV) / RAY));
-        vm.warp(now + 1);
+        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(10 * THOUSAND * WAD * spotV / RAY));
+        vm.warp(block.timestamp + 1);
         jug.drip("XMPL-A");
         assertEq(clipXMPLA.kicks(), 0);
         dog.bark("XMPL-A", address(this), address(this));

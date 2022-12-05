@@ -17,8 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.16;
 
 import "forge-std/Test.sol";
 import "dss-interfaces/Interfaces.sol";
@@ -259,7 +258,7 @@ contract ActionTest is Test {
 
         vat.file(name, "line", rad(1000 ether));
 
-        gem.approve(address(join), uint256(-1));
+        gem.approve(address(join), type(uint256).max);
 
         vat.rely(address(join));
 
@@ -349,10 +348,10 @@ contract ActionTest is Test {
             mat:      105 * RAY / 100
         });
 
-        vm.store(address(clipperMom), 0, bytes32(uint256(address(action))));
-        vm.store(address(osmMom), 0, bytes32(uint256(address(action))));
+        vm.store(address(clipperMom), 0, bytes32(uint256(uint160(address(action)))));
+        vm.store(address(osmMom), 0, bytes32(uint256(uint160(address(action)))));
 
-        vm.store(address(govGuard), 0, bytes32(uint256(address(action))));
+        vm.store(address(govGuard), 0, bytes32(uint256(uint160(address(action)))));
     }
 
     // /******************************/
@@ -461,22 +460,25 @@ contract ActionTest is Test {
     function test_accumulateDSR() public {
         uint256 beforeChi = pot.chi();
         action.setDSR_test(1000000001243680656318820312); // 4%
+        assertEq(pot.dsr(), 1000000001243680656318820312);
         vm.warp(START_TIME + 1 days);
         action.accumulateDSR_test();
         uint256 afterChi = pot.chi();
 
-        assertTrue(afterChi - beforeChi > 0);
+        assertGt(afterChi, beforeChi);
     }
 
     function test_accumulateCollateralStabilityFees() public {
         jug.init("gold");
         (, uint256 beforeRate,,,) = vat.ilks("gold");
         action.setIlkStabilityFee_test("gold", 1000000001243680656318820312); // 4%
+        (uint256 duty,) = jug.ilks("gold");
+        assertEq(duty, 1000000001243680656318820312);
         vm.warp(START_TIME + 1 days);
         action.accumulateCollateralStabilityFees_test("gold");
         (, uint256 afterRate,,,) = vat.ilks("gold");
 
-        assertTrue(afterRate - beforeRate > 0);
+        assertGt(afterRate, beforeRate);
     }
 
     /*********************/
@@ -1162,17 +1164,17 @@ contract ActionTest is Test {
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(vat.Line(), rad(2400 ether));
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         assertEq(vat.Line(), rad(2400 ether));
         lerp.tick();
         assertEq(vat.Line(), rad(2300 ether + 1600));   // Small amount at the end is rounding errors
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         lerp.tick();
         assertEq(vat.Line(), rad(2200 ether + 800));
-        vm.warp(now + 6 hours);
+        vm.warp(block.timestamp + 6 hours);
         lerp.tick();
         assertEq(vat.Line(), rad(1600 ether + 800));
-        vm.warp(now + 1 days);
+        vm.warp(block.timestamp + 1 days);
         assertEq(vat.Line(), rad(1600 ether + 800));
         lerp.tick();
         assertEq(vat.Line(), rad(0 ether));
@@ -1192,21 +1194,21 @@ contract ActionTest is Test {
         (,,, uint line,) = vat.ilks(ilk);
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(line, rad(2400 ether));
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2400 ether));
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2300 ether + 1600));   // Small amount at the end is rounding errors
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2200 ether + 800));
-        vm.warp(now + 6 hours);
+        vm.warp(block.timestamp + 6 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(1600 ether + 800));
-        vm.warp(now + 1 days);
+        vm.warp(block.timestamp + 1 days);
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(1600 ether + 800));
         lerp.tick();

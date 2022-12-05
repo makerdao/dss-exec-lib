@@ -1,4 +1,4 @@
-build        :; DAPP_BUILD_OPTIMIZE=1 DAPP_BUILD_OPTIMIZE_RUNS=200 dapp --use solc:0.6.12 build
+build        :; DAPP_BUILD_OPTIMIZE=1 DAPP_BUILD_OPTIMIZE_RUNS=200 dapp --use solc:0.8.16 build
 clean        :; forge clean
 test         :; ./test.sh $(match)
 deploy       :; make build && dapp create DssExecLib
