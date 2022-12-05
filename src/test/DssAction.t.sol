@@ -469,8 +469,9 @@ contract ActionTest is Test {
     }
 
     function test_accumulateCollateralStabilityFees() public {
+        jug.init("gold");
         (, uint256 beforeRate,,,) = vat.ilks("gold");
-        action.setDSR_test(1000000001243680656318820312); // 4%
+        action.setIlkStabilityFee_test("gold", 1000000001243680656318820312); // 4%
         vm.warp(START_TIME + 1 days);
         action.accumulateCollateralStabilityFees_test("gold");
         (, uint256 afterRate,,,) = vat.ilks("gold");
