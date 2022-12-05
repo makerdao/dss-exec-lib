@@ -1,52 +1,6 @@
-[submodule "lib/ds-test"]
-	path = lib/ds-test
-	url = https://github.com/dapphub/ds-test
-[submodule "lib/dss"]
-	path = lib/dss
-	url = https://github.com/makerdao/dss
 [submodule "lib/dss-interfaces"]
 	path = lib/dss-interfaces
 	url = https://github.com/makerdao/dss-interfaces
-[submodule "lib/ds-math"]
-	path = lib/ds-math
-	url = https://github.com/dapphub/ds-math
-[submodule "lib/dss-chain-log"]
-	path = lib/dss-chain-log
-	url = https://github.com/makerdao/dss-chain-log
-[submodule "lib/mkr-authority"]
-	path = lib/mkr-authority
-	url = https://github.com/makerdao/mkr-authority
-[submodule "lib/osm-mom"]
-	path = lib/osm-mom
-	url = https://github.com/makerdao/osm-mom
-[submodule "lib/ilk-registry"]
-	path = lib/ilk-registry
-	url = https://github.com/makerdao/ilk-registry
-[submodule "lib/flipper-mom"]
-	path = lib/flipper-mom
-	url = https://github.com/makerdao/flipper-mom
-[submodule "lib/median"]
-	path = lib/median
-	url = https://github.com/makerdao/median
-[submodule "lib/ds-proxy"]
-	path = lib/ds-proxy
-	url = https://github.com/makerdao/ds-proxy
-	branch = solc-0.6
-[submodule "lib/dss-auto-line"]
-	path = lib/dss-auto-line
-	url = https://github.com/makerdao/dss-auto-line
-[submodule "lib/clipper-mom"]
-	path = lib/clipper-mom
-	url = https://github.com/makerdao/clipper-mom
-[submodule "lib/univ2-lp-oracle"]
-	path = lib/univ2-lp-oracle
-	url = https://github.com/makerdao/univ2-lp-oracle
-[submodule "lib/dss-lerp"]
-	path = lib/dss-lerp
-	url = https://github.com/makerdao/dss-lerp
-[submodule "lib/dss-direct-deposit"]
-	path = lib/dss-direct-deposit
-	url = https://github.com/makerdao/dss-direct-deposit
-[submodule "lib/MIP21-RWA-Example"]
-	path = lib/MIP21-RWA-Example
-	url = https://github.com/makerdao/MIP21-RWA-Example
+[submodule "lib/forge-std"]
+	path = lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

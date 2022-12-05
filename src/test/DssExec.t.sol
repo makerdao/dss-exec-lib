@@ -20,24 +20,13 @@
 pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "ds-test/test.sol";
-import "ds-math/math.sol";
-import "ds-token/token.sol";
-import "ds-value/value.sol";
-import "dss/join.sol";
-import "dss/abaci.sol";
-
+import "forge-std/Test.sol";
 import "dss-interfaces/Interfaces.sol";
 
 import "../DssExec.sol";
 import "../DssAction.sol";
 import "../CollateralOpts.sol";
 import "./rates.sol";
-
-interface Hevm {
-    function warp(uint256) external;
-    function store(address,bytes32,bytes32) external;
-}
 
 interface SpellLike {
     function done() external view returns (bool);
@@ -49,7 +38,17 @@ interface ClipFabLike {
     function newClip(address owner, address vat, address spotter, address dog, bytes32 ilk) external returns (address clip);
 }
 
+interface GemJoinFabLike {
+    function newGemJoin(address owner, bytes32 ilk, address gem) external returns (address join);
+}
+
+interface CalcFabLike {
+    function newLinearDecrease(address owner) external returns (address calc);
+}
+
 contract DssLibSpellAction is DssAction { // This could be changed to a library if the lib is hardcoded and the constructor removed
+
+    ChainlogAbstract constant public LOG = ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     function description() external override view returns (string memory) {
         return "DssLibSpellAction Description";
@@ -60,14 +59,14 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     function actions() public override {
 
         // Basic cob setup
-        DSToken xmpl_gem  = DSToken(0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
-        ClipAbstract xmpl_clip = ClipAbstract(ClipFabLike(0x0716F25fBaAae9b63803917b6125c10c313dF663).newClip(DssExecLib.pauseProxy(), DssExecLib.vat(), DssExecLib.spotter(), DssExecLib.dog(), "XMPL-A"));
-        GemJoin xmpl_join = new GemJoin(DssExecLib.vat(), "XMPL-A", address(xmpl_gem));
+        DSTokenAbstract xmpl_gem  = DSTokenAbstract(0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
+        ClipAbstract xmpl_clip = ClipAbstract(ClipFabLike(LOG.getAddress("CLIP_FAB")).newClip(DssExecLib.pauseProxy(), DssExecLib.vat(), DssExecLib.spotter(), DssExecLib.dog(), "XMPL-A"));
+        GemJoinAbstract xmpl_join = GemJoinAbstract(GemJoinFabLike(LOG.getAddress("JOIN_FAB")).newGemJoin(address(this), "XMPL-A", address(xmpl_gem)));
         xmpl_clip.rely(DssExecLib.pauseProxy());
         xmpl_join.rely(DssExecLib.pauseProxy());
         address xmpl_pip = 0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C; // Using USDT pip as a dummy
 
-        LinearDecrease xmpl_calc = new LinearDecrease();
+        LinearDecreaseAbstract xmpl_calc = LinearDecreaseAbstract(CalcFabLike(LOG.getAddress("CALC_FAB")).newLinearDecrease(address(this)));
         DssExecLib.setLinearDecrease(address(xmpl_calc), 1);
 
         CollateralOpts memory XMPL_A = CollateralOpts({
@@ -108,7 +107,7 @@ contract DssLibSpellAction is DssAction { // This could be changed to a library 
     }
 }
 
-contract DssLibExecTest is DSTest, DSMath {
+contract DssLibExecTest is Test {
 
     struct CollateralValues {
         uint256 line;
@@ -144,51 +143,53 @@ contract DssLibExecTest is DSTest, DSMath {
 
     event Debug(uint256);
 
+    ChainlogAbstract constant public LOG = ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
+
     // MAINNET ADDRESSES
-    PauseAbstract        pause = PauseAbstract(      0xbE286431454714F511008713973d3B053A2d38f3);
-    address         pauseProxy =                     0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB;
-    DSChiefAbstract      chief = DSChiefAbstract(    0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
-    VatAbstract            vat = VatAbstract(        0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
-    VowAbstract            vow = VowAbstract(        0xA950524441892A31ebddF91d3cEEFa04Bf454466);
-    CatAbstract            cat = CatAbstract(        0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
-    DogAbstract            dog = DogAbstract(        0x135954d155898D42C90D2a57824C690e0c7BEf1B);
-    PotAbstract            pot = PotAbstract(        0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
-    JugAbstract            jug = JugAbstract(        0x19c0976f590D67707E62397C87829d896Dc0f1F1);
-    SpotAbstract          spot = SpotAbstract(       0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
+    PauseAbstract        pause = PauseAbstract(      LOG.getAddress("MCD_PAUSE"));
+    address         pauseProxy =                     LOG.getAddress("MCD_PAUSE_PROXY");
+    DSChiefAbstract      chief = DSChiefAbstract(    LOG.getAddress("MCD_ADM"));
+    VatAbstract            vat = VatAbstract(        LOG.getAddress("MCD_VAT"));
+    VowAbstract            vow = VowAbstract(        LOG.getAddress("MCD_VOW"));
+    CatAbstract            cat = CatAbstract(        LOG.getAddress("MCD_CAT"));
+    DogAbstract            dog = DogAbstract(        LOG.getAddress("MCD_DOG"));
+    PotAbstract            pot = PotAbstract(        LOG.getAddress("MCD_POT"));
+    JugAbstract            jug = JugAbstract(        LOG.getAddress("MCD_JUG"));
+    SpotAbstract          spot = SpotAbstract(       LOG.getAddress("MCD_SPOT"));
 
-    DSTokenAbstract        gov = DSTokenAbstract(    0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
-    EndAbstract            end = EndAbstract(        0xBB856d1742fD182a90239D7AE85706C2FE4e5922);
-    IlkRegistryAbstract    reg = IlkRegistryAbstract(0x5a464C28D19848f44199D003BeF5ecc87d090F87);
+    DSTokenAbstract        gov = DSTokenAbstract(    LOG.getAddress("MCD_GOV"));
+    EndAbstract            end = EndAbstract(        LOG.getAddress("MCD_END"));
+    IlkRegistryAbstract    reg = IlkRegistryAbstract(LOG.getAddress("ILK_REGISTRY"));
 
-    OsmMomAbstract      osmMom = OsmMomAbstract(     0x76416A4d5190d071bfed309861527431304aA14f);
-    ClipperMomAbstract clipMom = ClipperMomAbstract( 0x79FBDF16b366DFb14F66cE4Ac2815Ca7296405A0);
+    OsmMomAbstract      osmMom = OsmMomAbstract(     LOG.getAddress("OSM_MOM"));
+    ClipperMomAbstract clipMom = ClipperMomAbstract( LOG.getAddress("CLIPPER_MOM"));
 
     // XMPL-A specific
     GemAbstract           xmpl = GemAbstract(        0xCE4F3774620764Ea881a8F8840Cbe0F701372283);
     GemJoinAbstract  joinXMPLA;
-    OsmAbstract        pipXMPL = OsmAbstract(        0x7a5918670B0C390aD25f7beE908c1ACc2d314A3C);
+    OsmAbstract        pipXMPL = OsmAbstract(        LOG.getAddress("PIP_USDT"));
     ClipAbstract     clipXMPLA;
-    MedianAbstract    medXMPLA = MedianAbstract(     0x56D4bBF358D7790579b55eA6Af3f605BcA2c0C3A); // USDT median
-
-    ChainlogAbstract chainlog  = ChainlogAbstract(   0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     SystemValues afterSpell;
-
-    Hevm hevm;
 
     Rates rates;
 
     DssExec spell;
 
-    // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
-    bytes20 constant CHEAT_CODE =
-        bytes20(uint160(uint256(keccak256('hevm cheat code'))));
-
     uint256 constant HUNDRED  = 10 ** 2;
     uint256 constant THOUSAND = 10 ** 3;
     uint256 constant MILLION  = 10 ** 6;
     uint256 constant BILLION  = 10 ** 9;
+    uint256 constant WAD      = 10 ** 18;
+    uint256 constant RAY      = 10 ** 27;
     uint256 constant RAD      = 10 ** 45;
+
+    function _sub(uint x, uint y) internal pure returns (uint z) {
+        require((z = x - y) <= x, "ds-math-sub-underflow");
+    }
+    function _mul(uint x, uint y) internal pure returns (uint z) {
+        require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
+    }
 
     // not provided in DSMath
     function _rpow(uint x, uint n, uint b) internal pure returns (uint z) {
@@ -237,7 +238,6 @@ contract DssLibExecTest is DSTest, DSMath {
     }
 
     function setUp() public {
-        hevm = Hevm(address(CHEAT_CODE));
         rates = new Rates();
 
         spell = new DssExec(
@@ -306,13 +306,13 @@ contract DssLibExecTest is DSTest, DSMath {
 
     function vote() private {
         if (chief.hat() != address(spell)) {
-            hevm.store(
+            vm.store(
                 address(gov),
                 keccak256(abi.encode(address(this), uint256(1))),
                 bytes32(uint256(999999999999 ether))
             );
             gov.approve(address(chief), uint256(-1));
-            chief.lock(sub(gov.balanceOf(address(this)), 1 ether));
+            chief.lock(_sub(gov.balanceOf(address(this)), 1 ether));
 
             assertTrue(!spell.done());
 
@@ -334,7 +334,7 @@ contract DssLibExecTest is DSTest, DSMath {
             castTime += 5 days - day * 86400;
         }
 
-        hevm.warp(castTime);
+        vm.warp(castTime);
         spell.cast();
     }
 
@@ -347,7 +347,7 @@ contract DssLibExecTest is DSTest, DSMath {
             castTime -= hour * 3600 - 13 hours;
         }
 
-        hevm.warp(castTime);
+        vm.warp(castTime);
         spell.cast();
     }
 
@@ -360,7 +360,7 @@ contract DssLibExecTest is DSTest, DSMath {
             castTime += 21 hours - hour * 3600;
         }
 
-        hevm.warp(castTime);
+        vm.warp(castTime);
         spell.cast();
     }
 
@@ -380,7 +380,7 @@ contract DssLibExecTest is DSTest, DSMath {
             castTime += 14 hours - hour * 3600;
         }
 
-        hevm.warp(spell.nextCastTime());
+        vm.warp(spell.nextCastTime());
         spell.cast();
     }
 
@@ -551,7 +551,7 @@ contract DssLibExecTest is DSTest, DSMath {
         }
     }
 
-    function testSpellIsCast_mainnet() public {
+    function test_spellIsCastMainnet() public {
         vote();
         scheduleWaitAndCast();
         assertTrue(spell.done());
@@ -564,25 +564,21 @@ contract DssLibExecTest is DSTest, DSMath {
         assertTrue(spell.action() != address(0));
     }
 
-    function testSpellIsCast_XMPL_INTEGRATION() public {
+    function test_spellIsCastXMPLIntegration() public {
         vote();
         scheduleWaitAndCast();
         assertTrue(spell.done());
 
         pipXMPL.poke();
-        hevm.warp(now + 3601);
+        vm.warp(now + 3601);
         pipXMPL.poke();
         spot.poke("XMPL-A");
 
-        hevm.store(
+        vm.store(
             address(xmpl),
             keccak256(abi.encode(address(this), uint256(3))),
             bytes32(uint256(10 * THOUSAND * WAD))
         );
-
-        // Check median matches pip.src()
-        assertEq(pipXMPL.src(), address(medXMPLA));
-
 
         (address clip,,,) = dog.ilks("XMPL-A");
         clipXMPLA = ClipAbstract(clip);
@@ -630,8 +626,8 @@ contract DssLibExecTest is DSTest, DSMath {
         joinXMPLA.join(address(this), 10 * THOUSAND * WAD);
         (,,uint256 spotV,,) = vat.ilks("XMPL-A");
         // dart max amount of DAI
-        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(mul(10 * THOUSAND * WAD, spotV) / RAY));
-        hevm.warp(now + 1);
+        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(_mul(10 * THOUSAND * WAD, spotV) / RAY));
+        vm.warp(now + 1);
         jug.drip("XMPL-A");
         assertEq(clipXMPLA.kicks(), 0);
         dog.bark("XMPL-A", address(this), address(this));
