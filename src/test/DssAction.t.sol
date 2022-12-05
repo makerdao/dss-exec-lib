@@ -125,9 +125,7 @@ contract ActionTest is Test {
         return wad * RAY;
     }
     function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        z = x * y;
-        require(y == 0 || z / y == x);
-        z = z / RAY;
+        z = x * y / RAY;
     }
     function rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
         assembly {
