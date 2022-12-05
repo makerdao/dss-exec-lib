@@ -184,7 +184,7 @@ contract DssLibExecTest is Test {
     uint256 constant RAD      = 10 ** 45;
 
     // not provided in DSMath
-    function _rpow(uint x, uint n, uint b) internal pure returns (uint z) {
+    function _rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
       assembly {
         switch x case 0 {switch n case 0 {z := b} default {z := 0}}
         default {
@@ -222,10 +222,10 @@ contract DssLibExecTest is Test {
         return (expectedRate_ > yearlyYield_) ? expectedRate_ - yearlyYield_ : yearlyYield_ - expectedRate_;
     }
 
-    function ray(uint wad) internal pure returns (uint) {
+    function ray(uint256 wad) internal pure returns (uint256) {
         return wad * 10 ** 9;
     }
-    function rad(uint wad) internal pure returns (uint) {
+    function rad(uint256 wad) internal pure returns (uint256) {
         return wad * RAY;
     }
 
@@ -382,7 +382,7 @@ contract DssLibExecTest is Test {
 
     function checkSystemValues(SystemValues storage values) internal {
         // dsr
-        uint expectedDSRRate = rates.rates(values.dsr_rate);
+        uint256 expectedDSRRate = rates.rates(values.dsr_rate);
         // make sure dsr is less than 100% APR
         // bc -l <<< 'scale=27; e( l(2.00)/(60 * 60 * 24 * 365) )'
         // 1000000021979553151239153027
@@ -393,7 +393,7 @@ contract DssLibExecTest is Test {
 
         {
         // Line values in RAD
-        uint normalizedLine = values.vat_Line * RAD;
+        uint256 normalizedLine = values.vat_Line * RAD;
         assertEq(vat.Line(), normalizedLine);
         assertTrue(
             (vat.Line() >= RAD && vat.Line() < 100 * BILLION * RAD) ||
@@ -409,7 +409,7 @@ contract DssLibExecTest is Test {
 
         {
         // dump values in WAD
-        uint normalizedDump = values.vow_dump * WAD;
+        uint256 normalizedDump = values.vow_dump * WAD;
         assertEq(vow.dump(), normalizedDump);
         assertTrue(
             (vow.dump() >= WAD && vow.dump() < 2 * THOUSAND * WAD) ||
@@ -418,7 +418,7 @@ contract DssLibExecTest is Test {
         }
         {
         // sump values in RAD
-        uint normalizedSump = values.vow_sump * RAD;
+        uint256 normalizedSump = values.vow_sump * RAD;
         assertEq(vow.sump(), normalizedSump);
         assertTrue(
             (vow.sump() >= RAD && vow.sump() < 500 * THOUSAND * RAD) ||
@@ -427,7 +427,7 @@ contract DssLibExecTest is Test {
         }
         {
         // bump values in RAD
-        uint normalizedBump = values.vow_bump * RAD;
+        uint256 normalizedBump = values.vow_bump * RAD;
         assertEq(vow.bump(), normalizedBump);
         assertTrue(
             (vow.bump() >= RAD && vow.bump() < HUNDRED * THOUSAND * RAD) ||
@@ -446,7 +446,7 @@ contract DssLibExecTest is Test {
 
         // Hole values in RAD
         {
-            uint normalizedHole = values.dog_Hole * RAD;
+            uint256 normalizedHole = values.dog_Hole * RAD;
             assertEq(dog.Hole(), normalizedHole);
         }
 
@@ -455,7 +455,7 @@ contract DssLibExecTest is Test {
     }
 
     function checkCollateralValues(bytes32 ilk, SystemValues storage values) internal {
-        (uint duty,)  = jug.ilks(ilk);
+        (uint256 duty,)  = jug.ilks(ilk);
 
         uint256 normRate;
         if (values.collaterals[ilk].pct > WAD) {
@@ -473,36 +473,36 @@ contract DssLibExecTest is Test {
         // 1000000073014496989316680335
         assertTrue(duty >= RAY && duty < 1000000073014496989316680335);  // gt 0 and lt 1000%
         {
-        (,,, uint line, uint dust) = vat.ilks(ilk);
+        (,,, uint256 line, uint256 dust) = vat.ilks(ilk);
         // Convert whole Dai units to expected RAD
-        uint normalizedTestLine = values.collaterals[ilk].line * RAD;
+        uint256 normalizedTestLine = values.collaterals[ilk].line * RAD;
         assertEq(line, normalizedTestLine);
         assertTrue((line >= RAD && line < BILLION * RAD) || line == 0);  // eq 0 or gt eq 1 RAD and lt 1B
-        uint normalizedTestDust = values.collaterals[ilk].dust * RAD;
+        uint256 normalizedTestDust = values.collaterals[ilk].dust * RAD;
         assertEq(dust, normalizedTestDust);
         assertTrue((dust >= RAD && dust < 100 * THOUSAND * RAD) || dust == 0); // eq 0 or gt eq 1 and lt 10k
         }
         {
-        (, uint chop, uint hole, uint dirt) = dog.ilks(ilk);
-        (,,,, uint dust) = vat.ilks(ilk);
+        (, uint256 chop, uint256 hole, uint256 dirt) = dog.ilks(ilk);
+        (,,,, uint256 dust) = vat.ilks(ilk);
 
         assertEq(hole, values.collaterals[ilk].hole * RAD);
         assertTrue(dirt <= hole + dust);
 
         // Convert BP to system expected value
-        uint normalizedTestChop = (values.collaterals[ilk].chop * 10**14) + WAD;
+        uint256 normalizedTestChop = (values.collaterals[ilk].chop * 10**14) + WAD;
         assertEq(chop, normalizedTestChop);
         // make sure chop is less than 100%
         assertTrue(chop >= WAD && chop < 2 * WAD);   // penalty gt eq 0% and lt 100%
         // Convert whole Dai units to expected RAD
-        uint normalizedTestHole = values.collaterals[ilk].hole * RAD;
+        uint256 normalizedTestHole = values.collaterals[ilk].hole * RAD;
         assertEq(hole, normalizedTestHole);
         assertTrue(hole >= RAD && hole < MILLION * RAD);
         }
         {
-        (,uint mat) = spot.ilks(ilk);
+        (,uint256 mat) = spot.ilks(ilk);
         // Convert BP to system expected value
-        uint normalizedTestMat = (values.collaterals[ilk].mat * 10**23);
+        uint256 normalizedTestMat = (values.collaterals[ilk].mat * 10**23);
         assertEq(mat, normalizedTestMat);
         assertTrue(mat >= RAY && mat < 10 * RAY);    // cr eq 100% and lt 1000%
         }
@@ -597,12 +597,12 @@ contract DssLibExecTest is Test {
 
         // Deposit collateral, generate DAI
         assertEq(vat.dai(address(this)), 0);
-        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(2500 * WAD));
+        vat.frob("XMPL-A", address(this), address(this), address(this), int256(10 * THOUSAND * WAD), int256(2500 * WAD));
         assertEq(vat.gem("XMPL-A", address(this)), 0);
         assertEq(vat.dai(address(this)), 2500 * RAD);
 
         // Payback DAI, withdraw collateral
-        vat.frob("XMPL-A", address(this), address(this), address(this), -int(10 * THOUSAND * WAD), -int(2500 * WAD));
+        vat.frob("XMPL-A", address(this), address(this), address(this), -int256(10 * THOUSAND * WAD), -int256(2500 * WAD));
         assertEq(vat.gem("XMPL-A", address(this)), 10 * THOUSAND * WAD);
         assertEq(vat.dai(address(this)), 0);
 
@@ -616,7 +616,7 @@ contract DssLibExecTest is Test {
         joinXMPLA.join(address(this), 10 * THOUSAND * WAD);
         (,,uint256 spotV,,) = vat.ilks("XMPL-A");
         // dart max amount of DAI
-        vat.frob("XMPL-A", address(this), address(this), address(this), int(10 * THOUSAND * WAD), int(10 * THOUSAND * WAD * spotV / RAY));
+        vat.frob("XMPL-A", address(this), address(this), address(this), int256(10 * THOUSAND * WAD), int256(10 * THOUSAND * WAD * spotV / RAY));
         vm.warp(block.timestamp + 1);
         jug.drip("XMPL-A");
         assertEq(clipXMPLA.kicks(), 0);

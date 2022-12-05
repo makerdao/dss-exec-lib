@@ -118,13 +118,13 @@ contract ActionTest is Test {
 
     address constant UNIV2ORACLE_FAB = 0xc968B955BCA6c2a3c828d699cCaCbFDC02402D89;
 
-    function ray(uint wad) internal pure returns (uint) {
+    function ray(uint256 wad) internal pure returns (uint256) {
         return wad * 10 ** 9;
     }
-    function rad(uint wad) internal pure returns (uint) {
+    function rad(uint256 wad) internal pure returns (uint256) {
         return wad * RAY;
     }
-    function rmul(uint x, uint y) internal pure returns (uint z) {
+    function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         z = x * y;
         require(y == 0 || z / y == x);
         z = z / RAY;
@@ -155,26 +155,26 @@ contract ActionTest is Test {
             }
         }
     }
-    function min(uint x, uint y) internal pure returns (uint z) {
+    function min(uint256 x, uint256 y) internal pure returns (uint256 z) {
         (x >= y) ? z = y : z = x;
     }
-    function dai(address urn) internal view returns (uint) {
+    function dai(address urn) internal view returns (uint256) {
         return vat.dai(urn) / RAY;
     }
-    function ink(bytes32 ilk, address urn) internal view returns (uint) {
-        (uint ink_, uint art_) = vat.urns(ilk, urn); art_;
+    function ink(bytes32 ilk, address urn) internal view returns (uint256) {
+        (uint256 ink_, uint256 art_) = vat.urns(ilk, urn); art_;
         return ink_;
     }
-    function art(bytes32 ilk, address urn) internal view returns (uint) {
-        (uint ink_, uint art_) = vat.urns(ilk, urn); ink_;
+    function art(bytes32 ilk, address urn) internal view returns (uint256) {
+        (uint256 ink_, uint256 art_) = vat.urns(ilk, urn); ink_;
         return art_;
     }
-    function Art(bytes32 ilk) internal view returns (uint) {
-        (uint Art_, uint rate_, uint spot_, uint line_, uint dust_) = vat.ilks(ilk);
+    function Art(bytes32 ilk) internal view returns (uint256) {
+        (uint256 Art_, uint256 rate_, uint256 spot_, uint256 line_, uint256 dust_) = vat.ilks(ilk);
         rate_; spot_; line_; dust_;
         return Art_;
     }
-    function balanceOf(bytes32 ilk, address usr) internal view returns (uint) {
+    function balanceOf(bytes32 ilk, address usr) internal view returns (uint256) {
         return ilks[ilk].gem.balanceOf(usr);
     }
     function stringToBytes32(string memory source) public pure returns (bytes32 result) {
@@ -211,7 +211,7 @@ contract ActionTest is Test {
         // Edge case - ward is already set
         if (base.wards(target) == 1) return;
 
-        for (int i = 0; i < 100; i++) {
+        for (int256 i = 0; i < 100; i++) {
             // Scan the storage for the ward storage slot
             bytes32 prevValue = vm.load(
                 address(base),
@@ -1191,7 +1191,7 @@ contract ActionTest is Test {
         assertEq(lerp.end(), rad(0 ether));
         assertEq(lerp.duration(), 1 days);
         assertTrue(!lerp.done());
-        (,,, uint line,) = vat.ilks(ilk);
+        (,,, uint256 line,) = vat.ilks(ilk);
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(line, rad(2400 ether));
         vm.warp(block.timestamp + 1 hours);

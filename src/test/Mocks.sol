@@ -33,16 +33,16 @@ contract MockToken {
         symbol = symbol_;
     }
 
-    function approve(address guy, uint wad) public returns (bool) {
+    function approve(address guy, uint256 wad) public returns (bool) {
         allowance[msg.sender][guy] = wad;
         return true;
     }
 
-    function transfer(address dst, uint wad) external returns (bool) {
+    function transfer(address dst, uint256 wad) external returns (bool) {
         return transferFrom(msg.sender, dst, wad);
     }
 
-    function transferFrom(address src, address dst, uint wad)
+    function transferFrom(address src, address dst, uint256 wad)
         public
         returns (bool)
     {
@@ -57,12 +57,12 @@ contract MockToken {
 
         return true;
     }
-    function mint(address guy, uint wad) public {
+    function mint(address guy, uint256 wad) public {
         balanceOf[guy] = balanceOf[guy] + wad;
         totalSupply = totalSupply + wad;
     }
 
-    function burn(address guy, uint wad) public {
+    function burn(address guy, uint256 wad) public {
         if (guy != msg.sender && allowance[guy][msg.sender] != type(uint256).max) {
             require(allowance[guy][msg.sender] >= wad, "ds-token-insufficient-approval");
             allowance[guy][msg.sender] = allowance[guy][msg.sender] - wad;
@@ -98,7 +98,7 @@ contract MockValue {
 contract MockMedian {
 
     // --- Auth ---
-    mapping (address => uint) public wards;
+    mapping (address => uint256) public wards;
     function rely(address usr) external auth { wards[usr] = 1; }
     function deny(address usr) external auth { wards[usr] = 0; }
     modifier auth {
@@ -155,7 +155,7 @@ contract MockMedian {
         uint256 last = 0;
         uint256 zzz = age;
 
-        for (uint i = 0; i < val_.length; i++) {
+        for (uint256 i = 0; i < val_.length; i++) {
             // Validate the values were signed by an authorized oracle
             address signer = recover(val_[i], age_[i], v[i], r[i], s[i]);
             // Check that signer is an oracle
@@ -178,7 +178,7 @@ contract MockMedian {
     }
 
     function lift(address[] calldata a) external auth {
-        for (uint i = 0; i < a.length; i++) {
+        for (uint256 i = 0; i < a.length; i++) {
             require(a[i] != address(0), "Median/no-oracle-0");
             uint8 s = uint8(uint256(uint160(a[i])) >> 152);
             require(slot[s] == address(0), "Median/signer-already-exists");
@@ -188,7 +188,7 @@ contract MockMedian {
     }
 
     function drop(address[] calldata a) external auth {
-       for (uint i = 0; i < a.length; i++) {
+       for (uint256 i = 0; i < a.length; i++) {
             orcl[a[i]] = 0;
             slot[uint8(uint256(uint160(a[i])) >> 152)] = address(0);
        }
@@ -210,14 +210,14 @@ contract MockMedian {
     }
 
     function kiss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             require(a[i] != address(0), "Median/no-contract-0");
             bud[a[i]] = 1;
         }
     }
 
     function diss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             bud[a[i]] = 0;
         }
     }
@@ -226,7 +226,7 @@ contract MockMedian {
 contract MockOsm {
 
     // --- Auth ---
-    mapping (address => uint) public wards;
+    mapping (address => uint256) public wards;
     function rely(address usr) external auth { wards[usr] = 1; }
     function deny(address usr) external auth { wards[usr] = 0; }
     modifier auth {
@@ -274,11 +274,11 @@ contract MockOsm {
         src = src_;
     }
 
-    function era() internal view returns (uint) {
+    function era() internal view returns (uint256) {
         return block.timestamp;
     }
 
-    function prev(uint ts) internal view returns (uint64) {
+    function prev(uint256 ts) internal view returns (uint64) {
         require(hop != 0, "OSM/hop-is-zero");
         return uint64(ts - (ts % hop));
     }
@@ -302,23 +302,23 @@ contract MockOsm {
         (bytes32 wut, bool ok) = DSValueAbstract(src).peek();
         if (ok) {
             cur = nxt;
-            nxt = Feed(uint128(uint(wut)), 1);
+            nxt = Feed(uint128(uint256(wut)), 1);
             zzz = prev(era());
-            emit LogValue(bytes32(uint(cur.val)));
+            emit LogValue(bytes32(uint256(cur.val)));
         }
     }
 
     function peek() external view toll returns (bytes32,bool) {
-        return (bytes32(uint(cur.val)), cur.has == 1);
+        return (bytes32(uint256(cur.val)), cur.has == 1);
     }
 
     function peep() external view toll returns (bytes32,bool) {
-        return (bytes32(uint(nxt.val)), nxt.has == 1);
+        return (bytes32(uint256(nxt.val)), nxt.has == 1);
     }
 
     function read() external view toll returns (bytes32) {
         require(cur.has == 1, "OSM/no-current-value");
-        return (bytes32(uint(cur.val)));
+        return (bytes32(uint256(cur.val)));
     }
 
     function kiss(address a) external auth {
@@ -331,14 +331,14 @@ contract MockOsm {
     }
 
     function kiss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             require(a[i] != address(0), "OSM/no-contract-0");
             bud[a[i]] = 1;
         }
     }
 
     function diss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             bud[a[i]] = 0;
         }
     }
