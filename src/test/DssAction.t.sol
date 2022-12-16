@@ -17,8 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.16;
 
 import "forge-std/Test.sol";
 import "dss-interfaces/Interfaces.sol";
@@ -119,16 +118,14 @@ contract ActionTest is Test {
 
     address constant UNIV2ORACLE_FAB = 0xc968B955BCA6c2a3c828d699cCaCbFDC02402D89;
 
-    function ray(uint wad) internal pure returns (uint) {
+    function ray(uint256 wad) internal pure returns (uint256) {
         return wad * 10 ** 9;
     }
-    function rad(uint wad) internal pure returns (uint) {
+    function rad(uint256 wad) internal pure returns (uint256) {
         return wad * RAY;
     }
-    function rmul(uint x, uint y) internal pure returns (uint z) {
-        z = x * y;
-        require(y == 0 || z / y == x);
-        z = z / RAY;
+    function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        z = x * y / RAY;
     }
     function rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
         assembly {
@@ -156,26 +153,26 @@ contract ActionTest is Test {
             }
         }
     }
-    function min(uint x, uint y) internal pure returns (uint z) {
+    function min(uint256 x, uint256 y) internal pure returns (uint256 z) {
         (x >= y) ? z = y : z = x;
     }
-    function dai(address urn) internal view returns (uint) {
+    function dai(address urn) internal view returns (uint256) {
         return vat.dai(urn) / RAY;
     }
-    function ink(bytes32 ilk, address urn) internal view returns (uint) {
-        (uint ink_, uint art_) = vat.urns(ilk, urn); art_;
+    function ink(bytes32 ilk, address urn) internal view returns (uint256) {
+        (uint256 ink_, uint256 art_) = vat.urns(ilk, urn); art_;
         return ink_;
     }
-    function art(bytes32 ilk, address urn) internal view returns (uint) {
-        (uint ink_, uint art_) = vat.urns(ilk, urn); ink_;
+    function art(bytes32 ilk, address urn) internal view returns (uint256) {
+        (uint256 ink_, uint256 art_) = vat.urns(ilk, urn); ink_;
         return art_;
     }
-    function Art(bytes32 ilk) internal view returns (uint) {
-        (uint Art_, uint rate_, uint spot_, uint line_, uint dust_) = vat.ilks(ilk);
+    function Art(bytes32 ilk) internal view returns (uint256) {
+        (uint256 Art_, uint256 rate_, uint256 spot_, uint256 line_, uint256 dust_) = vat.ilks(ilk);
         rate_; spot_; line_; dust_;
         return Art_;
     }
-    function balanceOf(bytes32 ilk, address usr) internal view returns (uint) {
+    function balanceOf(bytes32 ilk, address usr) internal view returns (uint256) {
         return ilks[ilk].gem.balanceOf(usr);
     }
     function stringToBytes32(string memory source) public pure returns (bytes32 result) {
@@ -212,7 +209,7 @@ contract ActionTest is Test {
         // Edge case - ward is already set
         if (base.wards(target) == 1) return;
 
-        for (int i = 0; i < 100; i++) {
+        for (int256 i = 0; i < 100; i++) {
             // Scan the storage for the ward storage slot
             bytes32 prevValue = vm.load(
                 address(base),
@@ -259,7 +256,7 @@ contract ActionTest is Test {
 
         vat.file(name, "line", rad(1000 ether));
 
-        gem.approve(address(join), uint256(-1));
+        gem.approve(address(join), type(uint256).max);
 
         vat.rely(address(join));
 
@@ -349,10 +346,10 @@ contract ActionTest is Test {
             mat:      105 * RAY / 100
         });
 
-        vm.store(address(clipperMom), 0, bytes32(uint256(address(action))));
-        vm.store(address(osmMom), 0, bytes32(uint256(address(action))));
+        vm.store(address(clipperMom), 0, bytes32(uint256(uint160(address(action)))));
+        vm.store(address(osmMom), 0, bytes32(uint256(uint160(address(action)))));
 
-        vm.store(address(govGuard), 0, bytes32(uint256(address(action))));
+        vm.store(address(govGuard), 0, bytes32(uint256(uint160(address(action)))));
     }
 
     // /******************************/
@@ -461,22 +458,25 @@ contract ActionTest is Test {
     function test_accumulateDSR() public {
         uint256 beforeChi = pot.chi();
         action.setDSR_test(1000000001243680656318820312); // 4%
+        assertEq(pot.dsr(), 1000000001243680656318820312);
         vm.warp(START_TIME + 1 days);
         action.accumulateDSR_test();
         uint256 afterChi = pot.chi();
 
-        assertTrue(afterChi - beforeChi > 0);
+        assertGt(afterChi, beforeChi);
     }
 
     function test_accumulateCollateralStabilityFees() public {
         jug.init("gold");
         (, uint256 beforeRate,,,) = vat.ilks("gold");
         action.setIlkStabilityFee_test("gold", 1000000001243680656318820312); // 4%
+        (uint256 duty,) = jug.ilks("gold");
+        assertEq(duty, 1000000001243680656318820312);
         vm.warp(START_TIME + 1 days);
         action.accumulateCollateralStabilityFees_test("gold");
         (, uint256 afterRate,,,) = vat.ilks("gold");
 
-        assertTrue(afterRate - beforeRate > 0);
+        assertGt(afterRate, beforeRate);
     }
 
     /*********************/
@@ -1162,17 +1162,17 @@ contract ActionTest is Test {
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(vat.Line(), rad(2400 ether));
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         assertEq(vat.Line(), rad(2400 ether));
         lerp.tick();
         assertEq(vat.Line(), rad(2300 ether + 1600));   // Small amount at the end is rounding errors
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         lerp.tick();
         assertEq(vat.Line(), rad(2200 ether + 800));
-        vm.warp(now + 6 hours);
+        vm.warp(block.timestamp + 6 hours);
         lerp.tick();
         assertEq(vat.Line(), rad(1600 ether + 800));
-        vm.warp(now + 1 days);
+        vm.warp(block.timestamp + 1 days);
         assertEq(vat.Line(), rad(1600 ether + 800));
         lerp.tick();
         assertEq(vat.Line(), rad(0 ether));
@@ -1189,24 +1189,24 @@ contract ActionTest is Test {
         assertEq(lerp.end(), rad(0 ether));
         assertEq(lerp.duration(), 1 days);
         assertTrue(!lerp.done());
-        (,,, uint line,) = vat.ilks(ilk);
+        (,,, uint256 line,) = vat.ilks(ilk);
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(line, rad(2400 ether));
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2400 ether));
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2300 ether + 1600));   // Small amount at the end is rounding errors
-        vm.warp(now + 1 hours);
+        vm.warp(block.timestamp + 1 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(2200 ether + 800));
-        vm.warp(now + 6 hours);
+        vm.warp(block.timestamp + 6 hours);
         lerp.tick();
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(1600 ether + 800));
-        vm.warp(now + 1 days);
+        vm.warp(block.timestamp + 1 days);
         (,,,line,) = vat.ilks(ilk);
         assertEq(line, rad(1600 ether + 800));
         lerp.tick();

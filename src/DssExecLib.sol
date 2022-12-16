@@ -17,8 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.16;
 
 import { CollateralOpts } from "./CollateralOpts.sol";
 
@@ -57,7 +56,7 @@ interface DssVat {
     function nope(address) external;
     function ilks(bytes32) external returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
     function Line() external view returns (uint256);
-    function suck(address, address, uint) external;
+    function suck(address, address, uint256) external;
 }
 
 interface ClipLike {
@@ -77,8 +76,8 @@ interface JoinLike {
     function ilk() external returns (bytes32);
     function gem() external returns (address);
     function dec() external returns (uint256);
-    function join(address, uint) external;
-    function exit(address, uint) external;
+    function join(address, uint256) external;
+    function exit(address, uint256) external;
 }
 
 // Includes Median and OSM functions
@@ -156,26 +155,11 @@ library DssExecLib {
     /**********************/
     /*** Math Functions ***/
     /**********************/
-    function add(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        require((z = x + y) >= x);
-    }
-    function sub(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        require((z = x - y) <= x);
-    }
-    function mul(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        require(y == 0 || (z = x * y) / y == x);
-    }
-    function wmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        z = add(mul(x, y), WAD / 2) / WAD;
-    }
-    function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        z = add(mul(x, y), RAY / 2) / RAY;
-    }
     function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        z = add(mul(x, WAD), y / 2) / y;
+        z = (x * WAD + y / 2) / y;
     }
     function rdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        z = add(mul(x, RAY), y / 2) / y;
+        z = (x * RAY + y / 2) / y;
     }
 
     /****************************/
@@ -441,7 +425,7 @@ library DssExecLib {
     function increaseGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-Line-increase-precision"
         address _vat = vat();
-        setValue(_vat, "Line", add(DssVat(_vat).Line(), _amount * RAD));
+        setValue(_vat, "Line", DssVat(_vat).Line() + _amount * RAD);
     }
     /**
         @dev Decrease the global debt ceiling by a specific amount. Amount will be converted to the correct internal precision.
@@ -450,7 +434,7 @@ library DssExecLib {
     function decreaseGlobalDebtCeiling(uint256 _amount) public {
         require(_amount < WAD);  // "LibDssExec/incorrect-Line-decrease-precision"
         address _vat = vat();
-        setValue(_vat, "Line", sub(DssVat(_vat).Line(), _amount * RAD));
+        setValue(_vat, "Line", DssVat(_vat).Line() - _amount * RAD);
     }
     /**
         @dev Set the Dai Savings Rate. See: docs/rates.txt
@@ -485,7 +469,7 @@ library DssExecLib {
     */
     function setMinSurplusAuctionBidIncrease(uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flap-beg-precision"
-        setValue(flap(), "beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flap(), "beg", WAD + wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
     /**
         @dev Set bid duration for surplus auctions.
@@ -531,7 +515,7 @@ library DssExecLib {
     */
     function setMinDebtAuctionBidIncrease(uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flop-beg-precision"
-        setValue(flop(), "beg", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flop(), "beg", WAD + wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
     /**
         @dev Set bid duration for debt auctions.
@@ -557,7 +541,7 @@ library DssExecLib {
     */
     function setDebtAuctionMKRIncreaseRate(uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-flop-pad-precision"
-        setValue(flop(), "pad", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(flop(), "pad", WAD + wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
     }
     /**
         @dev Set the maximum total DAI amount that can be out for liquidation in the system at any point. Amount will be converted to the correct internal precision.
@@ -630,7 +614,7 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         address _vat = vat();
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setValue(_vat, _ilk, "line", add(line_, _amount * RAD));
+        setValue(_vat, _ilk, "line", line_ + _amount * RAD);
         if (_global) { increaseGlobalDebtCeiling(_amount); }
     }
     /**
@@ -643,7 +627,7 @@ library DssExecLib {
         require(_amount < WAD);  // "LibDssExec/incorrect-ilk-line-precision"
         address _vat = vat();
         (,,,uint256 line_,) = DssVat(_vat).ilks(_ilk);
-        setValue(_vat, _ilk, "line", sub(line_, _amount * RAD));
+        setValue(_vat, _ilk, "line", line_ - _amount * RAD);
         if (_global) { decreaseGlobalDebtCeiling(_amount); }
     }
     /**
@@ -711,7 +695,7 @@ library DssExecLib {
     */
     function setIlkLiquidationPenalty(bytes32 _ilk, uint256 _pct_bps) public {
         require(_pct_bps < BPS_ONE_HUNDRED_PCT);  // "LibDssExec/incorrect-ilk-chop-precision"
-        setValue(dog(), _ilk, "chop", add(WAD, wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT)));
+        setValue(dog(), _ilk, "chop", WAD + wdiv(_pct_bps, BPS_ONE_HUNDRED_PCT));
         (bool ok,) = clip(_ilk).call(abi.encodeWithSignature("upchost()")); ok;
     }
     /**

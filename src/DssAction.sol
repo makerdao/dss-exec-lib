@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
+pragma solidity ^0.8.16;
 
 import { DssExecLib } from "./DssExecLib.sol";
 import { CollateralOpts } from "./CollateralOpts.sol";
@@ -60,7 +60,7 @@ abstract contract DssAction {
 
     // Returns the next available cast time
     function nextCastTime(uint256 eta) external view returns (uint256 castTime) {
-        require(eta <= uint40(-1));
+        require(eta <= type(uint40).max);
         castTime = DssExecLib.nextCastTime(uint40(eta), uint40(block.timestamp), officeHours());
     }
 }

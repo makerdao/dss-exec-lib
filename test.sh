@@ -7,7 +7,7 @@ export FOUNDRY_OPTIMIZER=true
 export FOUNDRY_OPTIMIZER_RUNS=200
 
 if [[ -z "$1" ]]; then
-    forge test --use "0.6.12" --fork-url "$ETH_RPC_URL" -vv --force
+    forge test --use "0.8.16" --fork-url "$ETH_RPC_URL" -vv --force
 else
-    forge test --use "0.6.12" --fork-url "$ETH_RPC_URL" --match "$1" -vvv --force
+    forge test --use "0.8.16" --fork-url "$ETH_RPC_URL" --match "$1" -vvv --force
 fi

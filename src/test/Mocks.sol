@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
+pragma solidity ^0.8.16;
 
 import "dss-interfaces/Interfaces.sol";
 
@@ -29,56 +29,48 @@ contract MockToken {
     uint8                                             public  decimals = 18; // standard token precision. override to customize
     string                                            public  name = "";     // Optional token name
 
-
-    function _add(uint x, uint y) internal pure returns (uint z) {
-        require((z = x + y) >= x, "ds-math-add-overflow");
-    }
-    function _sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, "ds-math-sub-underflow");
-    }
-
-    constructor(string memory symbol_) public {
+    constructor(string memory symbol_) {
         symbol = symbol_;
     }
 
-    function approve(address guy, uint wad) public returns (bool) {
+    function approve(address guy, uint256 wad) public returns (bool) {
         allowance[msg.sender][guy] = wad;
         return true;
     }
 
-    function transfer(address dst, uint wad) external returns (bool) {
+    function transfer(address dst, uint256 wad) external returns (bool) {
         return transferFrom(msg.sender, dst, wad);
     }
 
-    function transferFrom(address src, address dst, uint wad)
+    function transferFrom(address src, address dst, uint256 wad)
         public
         returns (bool)
     {
-        if (src != msg.sender && allowance[src][msg.sender] != uint(-1)) {
+        if (src != msg.sender && allowance[src][msg.sender] != type(uint256).max) {
             require(allowance[src][msg.sender] >= wad, "ds-token-insufficient-approval");
-            allowance[src][msg.sender] = _sub(allowance[src][msg.sender], wad);
+            allowance[src][msg.sender] = allowance[src][msg.sender] - wad;
         }
 
         require(balanceOf[src] >= wad, "ds-token-insufficient-balance");
-        balanceOf[src] = _sub(balanceOf[src], wad);
-        balanceOf[dst] = _add(balanceOf[dst], wad);
+        balanceOf[src] = balanceOf[src] - wad;
+        balanceOf[dst] = balanceOf[dst] + wad;
 
         return true;
     }
-    function mint(address guy, uint wad) public {
-        balanceOf[guy] = _add(balanceOf[guy], wad);
-        totalSupply = _add(totalSupply, wad);
+    function mint(address guy, uint256 wad) public {
+        balanceOf[guy] = balanceOf[guy] + wad;
+        totalSupply = totalSupply + wad;
     }
 
-    function burn(address guy, uint wad) public {
-        if (guy != msg.sender && allowance[guy][msg.sender] != uint(-1)) {
+    function burn(address guy, uint256 wad) public {
+        if (guy != msg.sender && allowance[guy][msg.sender] != type(uint256).max) {
             require(allowance[guy][msg.sender] >= wad, "ds-token-insufficient-approval");
-            allowance[guy][msg.sender] = _sub(allowance[guy][msg.sender], wad);
+            allowance[guy][msg.sender] = allowance[guy][msg.sender] - wad;
         }
 
         require(balanceOf[guy] >= wad, "ds-token-insufficient-balance");
-        balanceOf[guy] = _sub(balanceOf[guy], wad);
-        totalSupply = _sub(totalSupply, wad);
+        balanceOf[guy] = balanceOf[guy] - wad;
+        totalSupply = totalSupply - wad;
     }
 }
 
@@ -106,7 +98,7 @@ contract MockValue {
 contract MockMedian {
 
     // --- Auth ---
-    mapping (address => uint) public wards;
+    mapping (address => uint256) public wards;
     function rely(address usr) external auth { wards[usr] = 1; }
     function deny(address usr) external auth { wards[usr] = 0; }
     modifier auth {
@@ -133,7 +125,7 @@ contract MockMedian {
     event LogMedianPrice(uint256 val, uint256 age);
 
     //Set type of Oracle
-    constructor() public {
+    constructor() {
         wards[msg.sender] = 1;
     }
 
@@ -163,7 +155,7 @@ contract MockMedian {
         uint256 last = 0;
         uint256 zzz = age;
 
-        for (uint i = 0; i < val_.length; i++) {
+        for (uint256 i = 0; i < val_.length; i++) {
             // Validate the values were signed by an authorized oracle
             address signer = recover(val_[i], age_[i], v[i], r[i], s[i]);
             // Check that signer is an oracle
@@ -174,7 +166,7 @@ contract MockMedian {
             require(val_[i] >= last, "Median/messages-not-in-order");
             last = val_[i];
             // Bloom filter for signer uniqueness
-            uint8 sl = uint8(uint256(signer) >> 152);
+            uint8 sl = uint8(uint256(uint160(signer)) >> 152);
             require((bloom >> sl) % 2 == 0, "Median/oracle-already-signed");
             bloom += uint256(2) ** sl;
         }
@@ -186,9 +178,9 @@ contract MockMedian {
     }
 
     function lift(address[] calldata a) external auth {
-        for (uint i = 0; i < a.length; i++) {
+        for (uint256 i = 0; i < a.length; i++) {
             require(a[i] != address(0), "Median/no-oracle-0");
-            uint8 s = uint8(uint256(a[i]) >> 152);
+            uint8 s = uint8(uint256(uint160(a[i])) >> 152);
             require(slot[s] == address(0), "Median/signer-already-exists");
             orcl[a[i]] = 1;
             slot[s] = a[i];
@@ -196,9 +188,9 @@ contract MockMedian {
     }
 
     function drop(address[] calldata a) external auth {
-       for (uint i = 0; i < a.length; i++) {
+       for (uint256 i = 0; i < a.length; i++) {
             orcl[a[i]] = 0;
-            slot[uint8(uint256(a[i]) >> 152)] = address(0);
+            slot[uint8(uint256(uint160(a[i])) >> 152)] = address(0);
        }
     }
 
@@ -218,14 +210,14 @@ contract MockMedian {
     }
 
     function kiss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             require(a[i] != address(0), "Median/no-contract-0");
             bud[a[i]] = 1;
         }
     }
 
     function diss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             bud[a[i]] = 0;
         }
     }
@@ -234,7 +226,7 @@ contract MockMedian {
 contract MockOsm {
 
     // --- Auth ---
-    mapping (address => uint) public wards;
+    mapping (address => uint256) public wards;
     function rely(address usr) external auth { wards[usr] = 1; }
     function deny(address usr) external auth { wards[usr] = 0; }
     modifier auth {
@@ -245,12 +237,6 @@ contract MockOsm {
     // --- Stop ---
     uint256 public stopped;
     modifier stoppable { require(stopped == 0, "OSM/is-stopped"); _; }
-
-    // --- Math ---
-    function add(uint64 x, uint64 y) internal pure returns (uint64 z) {
-        z = x + y;
-        require(z >= x);
-    }
 
     address public src;
     uint16  constant ONE_HOUR = uint16(3600);
@@ -272,7 +258,7 @@ contract MockOsm {
 
     event LogValue(bytes32 val);
 
-    constructor (address src_) public {
+    constructor (address src_) {
         wards[msg.sender] = 1;
         src = src_;
     }
@@ -288,11 +274,11 @@ contract MockOsm {
         src = src_;
     }
 
-    function era() internal view returns (uint) {
+    function era() internal view returns (uint256) {
         return block.timestamp;
     }
 
-    function prev(uint ts) internal view returns (uint64) {
+    function prev(uint256 ts) internal view returns (uint64) {
         require(hop != 0, "OSM/hop-is-zero");
         return uint64(ts - (ts % hop));
     }
@@ -308,7 +294,7 @@ contract MockOsm {
     }
 
     function pass() public view returns (bool ok) {
-        return era() >= add(zzz, hop);
+        return era() >= zzz + hop;
     }
 
     function poke() external stoppable {
@@ -316,23 +302,23 @@ contract MockOsm {
         (bytes32 wut, bool ok) = DSValueAbstract(src).peek();
         if (ok) {
             cur = nxt;
-            nxt = Feed(uint128(uint(wut)), 1);
+            nxt = Feed(uint128(uint256(wut)), 1);
             zzz = prev(era());
-            emit LogValue(bytes32(uint(cur.val)));
+            emit LogValue(bytes32(uint256(cur.val)));
         }
     }
 
     function peek() external view toll returns (bytes32,bool) {
-        return (bytes32(uint(cur.val)), cur.has == 1);
+        return (bytes32(uint256(cur.val)), cur.has == 1);
     }
 
     function peep() external view toll returns (bytes32,bool) {
-        return (bytes32(uint(nxt.val)), nxt.has == 1);
+        return (bytes32(uint256(nxt.val)), nxt.has == 1);
     }
 
     function read() external view toll returns (bytes32) {
         require(cur.has == 1, "OSM/no-current-value");
-        return (bytes32(uint(cur.val)));
+        return (bytes32(uint256(cur.val)));
     }
 
     function kiss(address a) external auth {
@@ -345,14 +331,14 @@ contract MockOsm {
     }
 
     function kiss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             require(a[i] != address(0), "OSM/no-contract-0");
             bud[a[i]] = 1;
         }
     }
 
     function diss(address[] calldata a) external auth {
-        for(uint i = 0; i < a.length; i++) {
+        for(uint256 i = 0; i < a.length; i++) {
             bud[a[i]] = 0;
         }
     }
@@ -360,7 +346,7 @@ contract MockOsm {
 
 contract MockUniPair {
     address public token0; address public token1;
-    constructor(address _token0, address _token1) public {
+    constructor(address _token0, address _token1) {
         token0 = _token0;  token1 = _token1;
     }
 }

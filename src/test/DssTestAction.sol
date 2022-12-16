@@ -17,28 +17,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.16;
 
 import "../DssAction.sol";
 
 contract DssTestNoOfficeHoursAction is DssAction {
-    function description() public override view returns (string memory) {
+    function description() public override pure returns (string memory) {
         return "No Office Hours Action";
     }
 
-    function actions() public override {
+    function actions() public override pure {
         require(!officeHours());
     }
 
-    function officeHours() public view override returns (bool) {
+    function officeHours() public override pure returns (bool) {
         return false;
     }
 }
 
 contract DssTestAction is DssAction {
 
-    function description() external override view returns (string memory) {
+    function description() external override pure returns (string memory) {
         return "DssTestAction";
     }
 

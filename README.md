@@ -24,7 +24,7 @@ import {DssAction} from "lib/dss-exec-lib/src/DssAction.sol";
 
 contract SpellAction is DssAction {
 
-    constructor(address lib, bool officeHours) DssAction(lib, officeHours) public {}
+    constructor(address lib, bool officeHours) DssAction(lib, officeHours) {}
 
     uint256 constant MILLION  = 10 ** 6;
 
@@ -46,7 +46,7 @@ The spell itself is deployed as follows:
 ```js
 new DssExec(
     "A test dss exec spell",      // Description
-    now + 30 days,                // Expiration
+    block.timestamp + 30 days,    // Expiration
     address(new SpellAction())
 );
 ```

@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.12;
+pragma solidity ^0.8.16;
 
 interface PauseAbstract {
     function delay() external view returns (uint256);
@@ -62,9 +62,9 @@ contract DssExec {
     }
 
     // @param _description  A string description of the spell
-    // @param _expiration   The timestamp this spell will expire. (Ex. now + 30 days)
+    // @param _expiration   The timestamp this spell will expire. (Ex. block.timestamp + 30 days)
     // @param _spellAction  The address of the spell action
-    constructor(uint256 _expiration, address _spellAction) public {
+    constructor(uint256 _expiration, address _spellAction) {
         pause       = PauseAbstract(log.getAddress("MCD_PAUSE"));
         expiration  = _expiration;
         action      = _spellAction;
@@ -77,9 +77,9 @@ contract DssExec {
     }
 
     function schedule() public {
-        require(now <= expiration, "This contract has expired");
+        require(block.timestamp <= expiration, "This contract has expired");
         require(eta == 0, "This spell has already been scheduled");
-        eta = now + PauseAbstract(pause).delay();
+        eta = block.timestamp + PauseAbstract(pause).delay();
         pause.plot(action, tag, sig, eta);
     }
 
