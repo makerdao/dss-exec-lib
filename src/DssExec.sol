@@ -21,6 +21,7 @@ pragma solidity ^0.8.16;
 
 interface PauseAbstract {
     function delay() external view returns (uint256);
+    function plans(bytes32) external view returns (bool);
     function plot(address, bytes32, bytes calldata, uint256) external;
     function exec(address, bytes32, bytes calldata, uint256) external returns (bytes memory);
 }
@@ -78,7 +79,9 @@ contract DssExec {
 
     function schedule() public {
         require(block.timestamp <= expiration, "This contract has expired");
-        require(eta == 0, "This spell has already been scheduled");
+        require(eta == 0 ||
+                pause.plans(keccak256(abi.encode(action, tag, sig, eta))) == false,
+                "This spell has already been scheduled");
         eta = block.timestamp + PauseAbstract(pause).delay();
         pause.plot(action, tag, sig, eta);
     }
