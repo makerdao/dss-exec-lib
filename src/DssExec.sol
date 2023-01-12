@@ -79,6 +79,7 @@ contract DssExec {
 
     function schedule() public {
         require(block.timestamp <= expiration, "This contract has expired");
+        require(!done, "spell-already-cast");
         require(eta == 0 ||
                 pause.plans(keccak256(abi.encode(action, tag, sig, eta))) == false,
                 "This spell has already been scheduled");
